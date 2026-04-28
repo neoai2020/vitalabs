@@ -122,6 +122,11 @@ export default function CheckoutPage() {
       items: state?.items,
     }))
 
+    const timeoutId = setTimeout(() => {
+      setErrorMsg('Payment is taking longer than expected. Please check your email for confirmation or try again.')
+      setStatus('ready')
+    }, 60_000)
+
     try {
       const result = await hyperRef.current.confirmPayment({
         elements: widgetsRef.current,
@@ -130,15 +135,20 @@ export default function CheckoutPage() {
         },
       })
 
+      clearTimeout(timeoutId)
+
       if (result?.error) {
         setErrorMsg(result.error.message)
         setStatus('ready')
+      } else if (result?.status === 'failed') {
+        setErrorMsg('Payment was declined. Please try a different card.')
+        setStatus('ready')
       } else {
-        // Payment succeeded without redirect (no 3DS) — navigate manually
         setStatus('succeeded')
         window.location.href = `${window.location.origin}${returnPath}`
       }
     } catch (err) {
+      clearTimeout(timeoutId)
       console.error('Payment submission error:', err)
       setErrorMsg(err instanceof Error ? err.message : 'Payment failed')
       setStatus('ready')
