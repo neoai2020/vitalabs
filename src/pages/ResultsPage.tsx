@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { PEPTIDES, type Peptide, recommendedDoseIndex } from '../data/peptides'
 import { recommendPeptides, getStackRecommendations, type StackSuggestion } from '../lib/recommend'
 import { benefitHeadline, benefitSubline, durationLabel, energyLabel, getExperienceLevel, goalLabel, pillarDetailSummary, subFocusSummary } from '../lib/quizLabels'
@@ -207,6 +207,7 @@ function ShieldIcon() {
 }
 
 export default function ResultsPage() {
+  const navigate = useNavigate()
   const answers = useMemo(() => loadQuiz(), [])
   const valid = answers.goal && answers.researchAck
   const rec = useMemo(() => valid ? recommendPeptides(answers) : null, [answers, valid])
@@ -245,6 +246,22 @@ export default function ResultsPage() {
     .filter((s) => checkedStacks.has(s.peptide.id))
     .reduce((sum, s) => sum + s.discountedPrice, 0)
 
+  const goToCheckout = () => {
+    const total = primaryPrice.now + stackTotal
+    const hasStack = stackTotal > 0
+    navigate('/checkout', {
+      state: {
+        sku: primary.sku,
+        compound: primary.compound,
+        image: primary.image,
+        amount: Math.round(total * 100),
+        quantity: 1,
+        description: hasStack ? `${primary.sku} + Stack` : `${primary.sku} — 1 Month Supply`,
+        displayPrice: `£${total.toFixed(2)}`,
+      },
+    })
+  }
+
   const headline = benefitHeadline(merged)
   const subline = benefitSubline(merged, primary.sku, primaryPrice.now)
 
@@ -266,7 +283,7 @@ export default function ResultsPage() {
             <a href="#reviews">Reviews</a>
             <a href="#faq">FAQ</a>
           </nav>
-          <a href="#plans" className="fp-header-cta">Claim My Match</a>
+          <button type="button" className="fp-header-cta" onClick={goToCheckout}>Claim My Match</button>
         </div>
       </header>
 
@@ -327,7 +344,7 @@ export default function ResultsPage() {
                 <li><CheckIcon /> 30-day guarantee — zero risk to try</li>
                 <li><CheckIcon /> Free tracked delivery to your door</li>
               </ul>
-              <a href="#plans" className="fp-btn fp-hero-cta-btn">Claim My Match — £{primaryPrice.now}</a>
+              <button type="button" className="fp-btn fp-hero-cta-btn" onClick={goToCheckout}>Claim My Match — £{primaryPrice.now}</button>
               <div className="fp-hero-guarantee">
                 <ShieldIcon />
                 <span>99.3%+ verified purity · UK-regulated lab · Third-party tested</span>
@@ -441,7 +458,7 @@ export default function ResultsPage() {
                 level={level}
               />
             )}
-            <PlanCard peptide={primary} rank={1} isBeginner={isBeginner} level={level} stackTotal={stackTotal} />
+            <PlanCard peptide={primary} rank={1} isBeginner={isBeginner} level={level} stackTotal={stackTotal} onCheckout={goToCheckout} />
             {stacks[1] && (
               <StackCheckCard
                 stack={stacks[1]}
@@ -615,7 +632,7 @@ export default function ResultsPage() {
           <p>
             {primary.sku} + Practitioner guidance + Dosing protocol + 30-day guarantee. Everything you need for £{primaryPrice.now}.
           </p>
-          <a href="#plans" className="fp-btn fp-btn--light fp-btn--large">Get {primary.sku} Now — £{primaryPrice.now}</a>
+          <button type="button" className="fp-btn fp-btn--light fp-btn--large" onClick={goToCheckout}>Get {primary.sku} Now — £{primaryPrice.now}</button>
           <div className="fp-cta-trust">
             <span>🔒 Secure checkout</span>
             <span>🛡️ 30-day guarantee</span>
@@ -633,7 +650,7 @@ export default function ResultsPage() {
               <span className="fp-sticky-now">£{(Math.round((primaryPrice.now + stackTotal) * 100) / 100).toFixed(2)}</span>
             </span>
           </div>
-          <a href="#plans" className="fp-btn fp-btn--sm">{stackTotal > 0 ? 'Get Full Stack' : 'Claim My Match'}</a>
+          <button type="button" className="fp-btn fp-btn--sm" onClick={goToCheckout}>{stackTotal > 0 ? 'Get Full Stack' : 'Claim My Match'}</button>
         </div>
       </div>
 
@@ -704,7 +721,7 @@ function StackCheckCard({
   )
 }
 
-function PlanCard({ peptide, rank, isBeginner, level, stackTotal }: { peptide: Peptide; rank: number; isBeginner: boolean; level: 'beginner' | 'intermediate' | 'advanced'; stackTotal: number }) {
+function PlanCard({ peptide, rank, isBeginner, level, stackTotal, onCheckout }: { peptide: Peptide; rank: number; isBeginner: boolean; level: 'beginner' | 'intermediate' | 'advanced'; stackTotal: number; onCheckout: () => void }) {
   const recIdx = recommendedDoseIndex(peptide, level)
   const [selectedDose, setSelectedDose] = useState(recIdx)
   const dose = peptide.doses[selectedDose] || peptide.doses[0]
@@ -749,12 +766,12 @@ function PlanCard({ peptide, rank, isBeginner, level, stackTotal }: { peptide: P
           }
           <div><CheckIcon /> 30-day quality guarantee</div>
         </div>
-        <a href="#plans" className="fp-btn fp-plan-cta">
+        <button type="button" className="fp-btn fp-plan-cta" onClick={onCheckout}>
           {stackTotal > 0
             ? `Get Full Stack — £${total.toFixed(2)}`
             : `Get ${peptide.sku} Now — £${dose.price}`
           }
-        </a>
+        </button>
         {stackTotal > 0 && (
           <p className="fp-plan-stack-breakdown">
             {peptide.sku} £{dose.price} + stack savings applied
