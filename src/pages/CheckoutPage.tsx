@@ -123,16 +123,20 @@ export default function CheckoutPage() {
     }))
 
     try {
-      const { error } = await hyperRef.current.confirmPayment({
+      const result = await hyperRef.current.confirmPayment({
         elements: widgetsRef.current,
         confirmParams: {
           return_url: `${window.location.origin}${returnPath}`,
         },
       })
 
-      if (error) {
-        setErrorMsg(error.message)
+      if (result?.error) {
+        setErrorMsg(result.error.message)
         setStatus('ready')
+      } else {
+        // Payment succeeded without redirect (no 3DS) — navigate manually
+        setStatus('succeeded')
+        window.location.href = `${window.location.origin}${returnPath}`
       }
     } catch (err) {
       console.error('Payment submission error:', err)
