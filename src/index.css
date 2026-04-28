@@ -3535,16 +3535,16 @@ h1, h2, h3 {
 }
 
 .fp-scheck-name {
-  font-size: 1.05rem;
-  font-weight: 800;
+  font-size: 1.15rem;
+  font-weight: 900;
   color: var(--fp-olive);
   margin: 0;
 }
 
 .fp-scheck-tagline {
-  font-size: 0.82rem;
+  font-size: 1rem;
   color: var(--fp-text-soft);
-  line-height: 1.4;
+  line-height: 1.5;
   margin: 0;
 }
 
@@ -3555,27 +3555,27 @@ h1, h2, h3 {
   flex-wrap: wrap;
 }
 .fp-scheck-now {
-  font-size: 1.35rem;
+  font-size: 1.65rem;
   font-weight: 800;
   color: var(--fp-olive);
 }
 .fp-scheck-was {
-  font-size: 0.88rem;
+  font-size: 1.05rem;
   color: var(--fp-text-muted);
   text-decoration: line-through;
 }
 .fp-scheck-save {
-  font-size: 0.68rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--fp-green);
   background: rgba(34,197,94,0.08);
   border-radius: 4px;
-  padding: 0.15rem 0.5rem;
+  padding: 0.2rem 0.55rem;
 }
 
 .fp-scheck-why {
-  font-size: 0.82rem;
-  line-height: 1.5;
+  font-size: 1rem;
+  line-height: 1.55;
   color: var(--fp-text);
   margin: 0;
   padding: 0.65rem 0;
@@ -3587,8 +3587,8 @@ h1, h2, h3 {
 }
 
 .fp-scheck-expect {
-  font-size: 0.78rem;
-  line-height: 1.45;
+  font-size: 0.95rem;
+  line-height: 1.55;
   color: var(--fp-text-soft);
   margin: 0;
 }
@@ -3596,8 +3596,8 @@ h1, h2, h3 {
 .fp-scheck-features {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  font-size: 0.82rem;
+  gap: 0.5rem;
+  font-size: 1rem;
   color: var(--fp-text);
 }
 .fp-scheck-features div {
