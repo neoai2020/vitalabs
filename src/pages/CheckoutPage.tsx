@@ -27,7 +27,7 @@ export default function CheckoutPage() {
           <div className="ck-empty">
             <h1>No product selected</h1>
             <p>Please choose a product from your results page first.</p>
-            <Link className="ck-btn ck-btn--primary" to="/tsl">Back to results</Link>
+            <Link className="ck-btn ck-btn--primary" to="/results">Back to results</Link>
           </div>
         </div>
       </div>
@@ -45,13 +45,15 @@ export default function CheckoutPage() {
         setStatus('loading')
         setErrorMsg(null)
 
+        const skus = state!.items.map(i => i.sku).join(', ')
+
         const { clientSecret } = await createPaymentIntent({
           amount: state!.amount,
           currency: 'GBP',
           description: state!.description,
           email: state!.email,
           metadata: {
-            sku: state!.sku,
+            skus,
             quantity: String(state!.quantity),
           },
         })
@@ -118,7 +120,7 @@ export default function CheckoutPage() {
             <div className="ck-success-icon">✓</div>
             <h1>Payment complete</h1>
             <p>
-              Thank you for your order. Your {state.sku} protocol is being prepared
+              Thank you for your order. Your protocol is being prepared
               and you'll receive a confirmation email shortly.
             </p>
             <div className="ck-success-details">
@@ -147,20 +149,18 @@ export default function CheckoutPage() {
           <div className="ck-summary">
             <h2 className="ck-summary-title">Order summary</h2>
             <div className="ck-summary-card">
-              <div className="ck-summary-product">
-                {state.image && (
-                  <img src={state.image} alt={state.sku} className="ck-summary-img" />
-                )}
-                <div className="ck-summary-info">
-                  <h3>{state.sku}</h3>
-                  <p className="ck-summary-compound">{state.compound}</p>
-                  <p className="ck-summary-qty">Qty: {state.quantity}</p>
+              {state.items.map((item, i) => (
+                <div key={i} className={`ck-summary-product ${i > 0 ? 'ck-summary-product--stack' : ''}`}>
+                  {item.image && (
+                    <img src={item.image} alt={item.sku} className="ck-summary-img" />
+                  )}
+                  <div className="ck-summary-info">
+                    <h3>{item.sku}</h3>
+                    <p className="ck-summary-compound">{item.compound}</p>
+                  </div>
+                  <span className="ck-summary-item-price">{item.displayPrice}</span>
                 </div>
-              </div>
-              <div className="ck-summary-line">
-                <span>{state.description}</span>
-                <span>{state.displayPrice}</span>
-              </div>
+              ))}
               <div className="ck-summary-line ck-summary-line--ship">
                 <span>Shipping (UK tracked)</span>
                 <span className="ck-summary-free">FREE</span>

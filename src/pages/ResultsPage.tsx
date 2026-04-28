@@ -248,15 +248,29 @@ export default function ResultsPage() {
 
   const goToCheckout = () => {
     const total = primaryPrice.now + stackTotal
-    const hasStack = stackTotal > 0
-    navigate('/checkout', {
-      state: {
+    const activeStacks = stacks.filter((s) => checkedStacks.has(s.peptide.id))
+    const items = [
+      {
         sku: primary.sku,
         compound: primary.compound,
         image: primary.image,
+        price: primaryPrice.now,
+        displayPrice: `£${primaryPrice.now}`,
+      },
+      ...activeStacks.map((s) => ({
+        sku: s.peptide.sku,
+        compound: s.peptide.compound,
+        image: s.peptide.image,
+        price: s.discountedPrice,
+        displayPrice: `£${s.discountedPrice.toFixed(2)}`,
+      })),
+    ]
+    navigate('/checkout', {
+      state: {
+        items,
         amount: Math.round(total * 100),
-        quantity: 1,
-        description: hasStack ? `${primary.sku} + Stack` : `${primary.sku} — 1 Month Supply`,
+        quantity: items.length,
+        description: items.length > 1 ? `${primary.sku} + Stack (${items.length} items)` : `${primary.sku} — 1 Month Supply`,
         displayPrice: `£${total.toFixed(2)}`,
       },
     })

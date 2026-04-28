@@ -282,9 +282,15 @@ function OfferCard({
   const goToCheckout = (p: Peptide, dosePrice: number) => {
     navigate('/checkout', {
       state: {
-        sku: p.sku,
-        compound: p.compound,
-        image: p.image,
+        items: [
+          {
+            sku: p.sku,
+            compound: p.compound,
+            image: p.image,
+            price: dosePrice,
+            displayPrice: `£${dosePrice}`,
+          },
+        ],
         amount: Math.round(dosePrice * 100),
         quantity: 1,
         description: `${p.sku} — 1 Month Supply`,
@@ -485,9 +491,7 @@ export default function TSLPage() {
             className="tsl-head-cta"
             onClick={() => navigate('/checkout', {
               state: {
-                sku: primary.sku,
-                compound: primary.compound,
-                image: primary.image,
+                items: [{ sku: primary.sku, compound: primary.compound, image: primary.image, price, displayPrice: `£${price}` }],
                 amount: Math.round(price * 100),
                 quantity: 1,
                 description: `${primary.sku} — 1 Month Supply`,
@@ -562,9 +566,7 @@ export default function TSLPage() {
                 className="tsl-cta tsl-cta--primary"
                 onClick={() => navigate('/checkout', {
                   state: {
-                    sku: primary.sku,
-                    compound: primary.compound,
-                    image: primary.image,
+                    items: [{ sku: primary.sku, compound: primary.compound, image: primary.image, price, displayPrice: `£${price}` }],
                     amount: Math.round(price * 100),
                     quantity: 1,
                     description: `${primary.sku} — 1 Month Supply`,
@@ -636,9 +638,7 @@ export default function TSLPage() {
             className="tsl-cta tsl-cta--primary tsl-cta--sm"
             onClick={() => navigate('/checkout', {
               state: {
-                sku: primary.sku,
-                compound: primary.compound,
-                image: primary.image,
+                items: [{ sku: primary.sku, compound: primary.compound, image: primary.image, price, displayPrice: `£${price}` }],
                 amount: Math.round(price * 100),
                 quantity: 1,
                 description: `${primary.sku} — 1 Month Supply`,

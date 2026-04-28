@@ -32,10 +32,16 @@ declare global {
 
 /* ── Checkout state passed via React Router ── */
 
-export interface CheckoutState {
+export interface CheckoutItem {
   sku: string
   compound: string
   image: string | null
+  price: number
+  displayPrice: string
+}
+
+export interface CheckoutState {
+  items: CheckoutItem[]
   amount: number
   quantity: number
   description: string

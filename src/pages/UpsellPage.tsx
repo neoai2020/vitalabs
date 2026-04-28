@@ -122,9 +122,15 @@ export default function UpsellPage() {
   const handleAccept = () => {
     navigate('/checkout', {
       state: {
-        sku: primary.sku,
-        compound: primary.compound,
-        image: primary.image,
+        items: [
+          {
+            sku: primary.sku,
+            compound: primary.compound,
+            image: primary.image,
+            price: threeMonthDiscount,
+            displayPrice: `£${threeMonthDiscount}`,
+          },
+        ],
         amount: threeMonthDiscount * 100,
         quantity: 3,
         description: `${primary.sku} — 3 Month Supply`,
@@ -140,9 +146,15 @@ export default function UpsellPage() {
     }
     navigate('/checkout', {
       state: {
-        sku: primary.sku,
-        compound: primary.compound,
-        image: primary.image,
+        items: [
+          {
+            sku: primary.sku,
+            compound: primary.compound,
+            image: primary.image,
+            price: oneMonthPrice.now,
+            displayPrice: `£${oneMonthPrice.now}`,
+          },
+        ],
         amount: oneMonthPrice.now * 100,
         quantity: 1,
         description: `${primary.sku} — 1 Month Supply`,
