@@ -47,6 +47,7 @@ export interface CheckoutState {
   description: string
   displayPrice: string
   email?: string
+  returnPath?: string
 }
 
 /* ── Edge Function call ── */

@@ -135,6 +135,7 @@ export default function UpsellPage() {
         quantity: 3,
         description: `${primary.sku} — 3 Month Supply`,
         displayPrice: `£${threeMonthDiscount}`,
+        returnPath: '/order-complete',
       },
     })
   }
@@ -159,6 +160,7 @@ export default function UpsellPage() {
         quantity: 1,
         description: `${primary.sku} — 1 Month Supply`,
         displayPrice: `£${oneMonthPrice.now}`,
+        returnPath: '/order-complete',
       },
     })
   }

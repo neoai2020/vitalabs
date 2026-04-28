@@ -48,11 +48,8 @@ export default function CheckoutPage() {
   const initStarted = useRef(false)
   const paymentContainerRef = useRef<HTMLDivElement | null>(null)
 
-  const params = new URLSearchParams(window.location.search)
-  const isComplete = params.get('result') === 'complete'
-
   useEffect(() => {
-    if (!state || isComplete || initStarted.current) return
+    if (!state || initStarted.current) return
     initStarted.current = true
 
     let cancelled = false
@@ -108,7 +105,7 @@ export default function CheckoutPage() {
 
     init()
     return () => { cancelled = true }
-  }, [state, isComplete])
+  }, [state])
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
@@ -117,11 +114,19 @@ export default function CheckoutPage() {
     setStatus('submitting')
     setErrorMsg(null)
 
+    const returnPath = state?.returnPath || '/order-complete'
+
+    sessionStorage.setItem('peptiva-last-order', JSON.stringify({
+      description: state?.description,
+      displayPrice: state?.displayPrice,
+      items: state?.items,
+    }))
+
     try {
       const { error } = await hyperRef.current.confirmPayment({
         elements: widgetsRef.current,
         confirmParams: {
-          return_url: `${window.location.origin}/checkout?result=complete`,
+          return_url: `${window.location.origin}${returnPath}`,
         },
       })
 
@@ -134,7 +139,7 @@ export default function CheckoutPage() {
       setErrorMsg(err instanceof Error ? err.message : 'Payment failed')
       setStatus('ready')
     }
-  }, [status])
+  }, [status, state])
 
   if (!state) {
     return (
@@ -144,28 +149,6 @@ export default function CheckoutPage() {
             <h1>No product selected</h1>
             <p>Please choose a product from your results page first.</p>
             <Link className="ck-btn ck-btn--pay" to="/results">Back to results</Link>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (isComplete) {
-    return (
-      <div className="ck-page">
-        <div className="ck-wrap">
-          <div className="ck-success">
-            <div className="ck-success-icon">✓</div>
-            <h1>Payment complete!</h1>
-            <p>
-              Thank you for your order. Your protocol is being prepared
-              and you'll receive a confirmation email shortly.
-            </p>
-            <div className="ck-success-details">
-              <span>Order: {state.description}</span>
-              <span>Amount: {state.displayPrice}</span>
-            </div>
-            <Link className="ck-btn ck-btn--pay" to="/">Return to Peptiva</Link>
           </div>
         </div>
       </div>

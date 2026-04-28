@@ -299,6 +299,7 @@ function OfferCard({
         quantity: 1,
         description: `${p.sku} — 1 Month Supply`,
         displayPrice: `£${dosePrice}`,
+        returnPath: '/upsell',
       },
     })
   }
