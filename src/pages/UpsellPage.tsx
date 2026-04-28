@@ -120,8 +120,17 @@ export default function UpsellPage() {
   const totalVsRetailSaved = vsRetailTotal - threeMonthDiscount
 
   const handleAccept = () => {
-    // Payment gateway placeholder
-    alert('Payment gateway coming soon — 3-month supply added!')
+    navigate('/checkout', {
+      state: {
+        sku: primary.sku,
+        compound: primary.compound,
+        image: primary.image,
+        amount: threeMonthDiscount * 100,
+        quantity: 3,
+        description: `${primary.sku} — 3 Month Supply`,
+        displayPrice: `£${threeMonthDiscount}`,
+      },
+    })
   }
 
   const handleDecline = () => {
@@ -129,7 +138,17 @@ export default function UpsellPage() {
       setDeclining(true)
       return
     }
-    navigate('/checkout')
+    navigate('/checkout', {
+      state: {
+        sku: primary.sku,
+        compound: primary.compound,
+        image: primary.image,
+        amount: oneMonthPrice.now * 100,
+        quantity: 1,
+        description: `${primary.sku} — 1 Month Supply`,
+        displayPrice: `£${oneMonthPrice.now}`,
+      },
+    })
   }
 
   return (

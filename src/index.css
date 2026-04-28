@@ -2013,9 +2013,19 @@ h1, h2, h3 {
   color: var(--tsl-muted);
 }
 
-.tsl-also-matched a {
+.tsl-also-matched a,
+.tsl-also-matched-link {
   color: var(--tsl-accent);
   font-weight: 600;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+  padding: 0;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
 }
 /* ── FAQ ── */
 .tsl-faq-section {
@@ -7136,4 +7146,325 @@ h1, h2, h3 {
 .ob-finish-btn {
   background: linear-gradient(135deg, var(--brand), var(--accent));
   padding: 0.75rem 2rem;
+}
+
+/* ============================================
+   CHECKOUT PAGE
+   ============================================ */
+.ck-page {
+  min-height: 100vh;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+}
+
+.ck-header {
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 1.25rem;
+}
+
+.ck-header-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ck-logo {
+  font-family: var(--font-display, 'Plus Jakarta Sans', sans-serif);
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: var(--brand);
+  text-decoration: none;
+}
+
+.ck-header-secure {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.ck-wrap {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 3rem;
+  flex: 1;
+}
+
+.ck-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .ck-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .ck-summary { order: -1; }
+}
+
+/* ── Order summary ── */
+.ck-summary-title,
+.ck-payment-title {
+  font-family: var(--font-display, 'Plus Jakarta Sans', sans-serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--text);
+}
+
+.ck-summary-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.ck-summary-product {
+  display: flex;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+
+.ck-summary-img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+.ck-summary-info h3 {
+  font-weight: 700;
+  font-size: 1rem;
+  margin: 0 0 0.15rem;
+  color: var(--text);
+}
+
+.ck-summary-compound {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin: 0 0 0.25rem;
+}
+
+.ck-summary-qty {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.ck-summary-line {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  color: var(--text);
+  padding: 0.35rem 0;
+}
+
+.ck-summary-line--ship {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.ck-summary-free {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.ck-summary-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.ck-summary-trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* ── Payment form ── */
+.ck-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ck-payment-element {
+  min-height: 200px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.ck-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.ck-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--border);
+  border-top-color: var(--brand);
+  border-radius: 50%;
+  animation: ck-spin 0.7s linear infinite;
+}
+
+@keyframes ck-spin {
+  to { transform: rotate(360deg); }
+}
+
+.ck-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+[data-theme="dark"] .ck-error {
+  background: #450a0a;
+  border-color: #7f1d1d;
+  color: #fca5a5;
+}
+
+.ck-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 0.75rem 1.5rem;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.ck-btn--primary {
+  background: linear-gradient(135deg, var(--brand), var(--accent, var(--brand)));
+  color: #fff;
+}
+
+.ck-btn--primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.ck-btn--primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ck-btn--full {
+  width: 100%;
+  padding: 0.9rem;
+  font-size: 1rem;
+}
+
+.ck-payment-note {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.ck-back {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  margin-top: 1.5rem;
+}
+
+.ck-back:hover {
+  color: var(--text);
+}
+
+/* ── Success state ── */
+.ck-success,
+.ck-empty {
+  text-align: center;
+  padding: 4rem 1rem;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.ck-success-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #16a34a;
+  color: #fff;
+  font-size: 1.75rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.25rem;
+}
+
+.ck-success h1,
+.ck-empty h1 {
+  font-family: var(--font-display, 'Plus Jakarta Sans', sans-serif);
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0 0 0.75rem;
+  color: var(--text);
+}
+
+.ck-success p,
+.ck-empty p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0 0 1.25rem;
+}
+
+.ck-success-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+}
+
+/* ── Footer ── */
+.ck-footer {
+  text-align: center;
+  padding: 1.5rem 1.25rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+}
+
+.ck-footer p {
+  margin: 0 0 0.25rem;
 }

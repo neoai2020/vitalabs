@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { PEPTIDES, type Peptide, getBasePrice, recommendedDoseIndex } from '../data/peptides'
 import { recommendPeptides } from '../lib/recommend'
 import {
@@ -22,10 +22,6 @@ const PILLAR_CATEGORY: Record<string, string> = {
 }
 
 const EXPIRY_MS = 24 * 60 * 60 * 1000
-
-function getCheckoutUrl(p: Peptide): string {
-  return p.catalogUrl || 'https://www.apexpharma.io/products'
-}
 
 function fromGbp(p: Peptide, level: 'beginner' | 'intermediate' | 'advanced' = 'intermediate') {
   const idx = recommendedDoseIndex(p, level)
@@ -277,10 +273,25 @@ function OfferCard({
 }: {
   primary: Peptide; secondary: Peptide | null; level: 'beginner' | 'intermediate' | 'advanced'; isBeginner: boolean; completedAt: number | null
 }) {
+  const navigate = useNavigate()
   const [ref, visible] = useReveal<HTMLDivElement>()
   const recIdx = recommendedDoseIndex(primary, level)
   const [selectedDose, setSelectedDose] = useState(recIdx)
   const dose = primary.doses[selectedDose] || primary.doses[0]
+
+  const goToCheckout = (p: Peptide, dosePrice: number) => {
+    navigate('/checkout', {
+      state: {
+        sku: p.sku,
+        compound: p.compound,
+        image: p.image,
+        amount: Math.round(dosePrice * 100),
+        quantity: 1,
+        description: `${p.sku} — 1 Month Supply`,
+        displayPrice: `£${dosePrice}`,
+      },
+    })
+  }
 
   return (
     <div ref={ref} className={`tsl-offer-section ${visible ? 'is-visible' : ''}`} id="offer">
@@ -329,14 +340,13 @@ function OfferCard({
               <li><CheckSvg /> Batch certificate with QR verification</li>
             </ul>
 
-            <a
-              href={getCheckoutUrl(primary)}
+            <button
+              type="button"
               className="tsl-cta tsl-cta--primary"
-              target="_blank"
-              rel="noopener noreferrer"
+              onClick={() => goToCheckout(primary, dose.price)}
             >
               Start My {primary.sku} Protocol — £{dose.price}
-            </a>
+            </button>
 
             <div className="tsl-offer-trust">
               <ShieldSvg />
@@ -350,9 +360,13 @@ function OfferCard({
         <div className="tsl-also-matched">
           <p>
             Also matched: <strong>{secondary.sku}</strong> — from £{fromGbp(secondary, level)}.{' '}
-            <a href={getCheckoutUrl(secondary)} target="_blank" rel="noopener noreferrer">
+            <button
+              type="button"
+              className="tsl-also-matched-link"
+              onClick={() => goToCheckout(secondary, fromGbp(secondary, level))}
+            >
               View {secondary.sku} →
-            </a>
+            </button>
           </p>
         </div>
       )}
@@ -418,6 +432,7 @@ function ShieldSvg() {
 
 /* ── Main page ── */
 export default function TSLPage() {
+  const navigate = useNavigate()
   const answers = useMemo(() => loadQuiz(), [])
   const valid = answers.goal && answers.researchAck
   const rec = useMemo(() => (valid ? recommendPeptides(answers) : null), [answers, valid])
@@ -465,9 +480,23 @@ export default function TSLPage() {
             <a href="#offer">Protocol</a>
             <a href="#faq">FAQ</a>
           </nav>
-          <a className="tsl-head-cta" href={getCheckoutUrl(primary)} target="_blank" rel="noopener noreferrer">
+          <button
+            type="button"
+            className="tsl-head-cta"
+            onClick={() => navigate('/checkout', {
+              state: {
+                sku: primary.sku,
+                compound: primary.compound,
+                image: primary.image,
+                amount: Math.round(price * 100),
+                quantity: 1,
+                description: `${primary.sku} — 1 Month Supply`,
+                displayPrice: `£${price}`,
+              },
+            })}
+          >
             Get started
-          </a>
+          </button>
         </div>
       </header>
 
@@ -591,14 +620,23 @@ export default function TSLPage() {
               <span>From £{price}</span>
             </div>
           </div>
-          <a
-            href={getCheckoutUrl(primary)}
+          <button
+            type="button"
             className="tsl-cta tsl-cta--primary tsl-cta--sm"
-            target="_blank"
-            rel="noopener noreferrer"
+            onClick={() => navigate('/checkout', {
+              state: {
+                sku: primary.sku,
+                compound: primary.compound,
+                image: primary.image,
+                amount: Math.round(price * 100),
+                quantity: 1,
+                description: `${primary.sku} — 1 Month Supply`,
+                displayPrice: `£${price}`,
+              },
+            })}
           >
             Start My Protocol
-          </a>
+          </button>
         </div>
       </div>
 
