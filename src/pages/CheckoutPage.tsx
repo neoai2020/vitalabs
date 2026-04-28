@@ -192,14 +192,19 @@ export default function CheckoutPage() {
           <div className="ck-payment">
             <h2 className="ck-payment-title">Payment details</h2>
             <form onSubmit={handleSubmit} className="ck-form">
-              <div ref={paymentContainerRef} className="ck-payment-element">
-                {status === 'loading' && (
+              {status === 'loading' && (
+                <div className="ck-payment-element">
                   <div className="ck-loading">
                     <div className="ck-spinner" />
                     <p>Loading payment form...</p>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
+              <div
+                ref={paymentContainerRef}
+                className="ck-payment-element"
+                style={{ display: status === 'loading' ? 'none' : undefined }}
+              />
 
               {errorMsg && (
                 <div className="ck-error" role="alert">
