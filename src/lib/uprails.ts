@@ -89,9 +89,9 @@ export function getHyperInstance(): HyperInstance {
 }
 
 export const UPRAILS_APPEARANCE: HyperAppearance = {
-  theme: 'midnight',
+  theme: 'default',
   variables: {
-    colorPrimary: '#41175e',
+    colorPrimary: '#0f766e',
     colorBackground: '#ffffff',
     colorText: '#1a1a2e',
     borderRadius: '8px',
