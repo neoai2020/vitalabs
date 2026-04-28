@@ -557,12 +557,23 @@ export default function TSLPage() {
                 <span>Category: <strong>{primary.category}</strong></span>
                 <span>Purity: <strong>99.3%+ verified</strong></span>
               </div>
-              <a
-                href="#offer"
+              <button
+                type="button"
                 className="tsl-cta tsl-cta--primary"
+                onClick={() => navigate('/checkout', {
+                  state: {
+                    sku: primary.sku,
+                    compound: primary.compound,
+                    image: primary.image,
+                    amount: Math.round(price * 100),
+                    quantity: 1,
+                    description: `${primary.sku} — 1 Month Supply`,
+                    displayPrice: `£${price}`,
+                  },
+                })}
               >
                 Get {primary.sku} — From £{price}
-              </a>
+              </button>
             </div>
           </div>
         </div>
