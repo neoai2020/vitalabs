@@ -279,10 +279,6 @@ function OfferCard({
   const [selectedDose, setSelectedDose] = useState(recIdx)
   const dose = primary.doses[selectedDose] || primary.doses[0]
 
-  const scrollToOffer = () => {
-    document.getElementById('offer')?.scrollIntoView({ behavior: 'smooth' })
-  }
-
   const goToCheckout = (p: Peptide, dosePrice: number) => {
     navigate('/checkout', {
       state: {
@@ -443,7 +439,6 @@ function ShieldSvg() {
 
 /* ── Main page ── */
 export default function TSLPage() {
-  const navigate = useNavigate()
   const answers = useMemo(() => loadQuiz(), [])
   const valid = answers.goal && answers.researchAck
   const rec = useMemo(() => (valid ? recommendPeptides(answers) : null), [answers, valid])
@@ -471,6 +466,10 @@ export default function TSLPage() {
   const name = merged.lead?.firstName || null
   const outcome = subFocusSummary(merged)
   const reasons = getAnswerReasons(primary.id, goal, merged as unknown as Record<string, unknown>, level)
+
+  const scrollToOffer = () => {
+    document.getElementById('offer')?.scrollIntoView({ behavior: 'smooth' })
+  }
 
   return (
     <div className="tsl tsl--results">

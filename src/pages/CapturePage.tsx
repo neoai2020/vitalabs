@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { loadQuiz, saveQuiz } from '../lib/quizStorage'
-import { triggerVapiCall } from '../lib/vapiCall'
+import { scheduleVapiCall } from '../lib/vapiCall'
 
 export default function CapturePage() {
   const navigate = useNavigate()
@@ -24,13 +24,10 @@ export default function CapturePage() {
     saveQuiz(answers)
 
     if (answers.lead.phone) {
-      const DELAY_MS = 15 * 60 * 1000
-      console.log(`[VAPI] AI call scheduled in 15 minutes for ${answers.lead.phone}`)
-      setTimeout(async () => {
-        const result = await triggerVapiCall(answers)
-        if (result.ok) console.log('[VAPI] Call triggered:', result.callId)
-        else console.warn('[VAPI] Call failed:', result.error)
-      }, DELAY_MS)
+      scheduleVapiCall(answers).then(result => {
+        if (result.ok) console.log('[VAPI] Call scheduled server-side:', result.callAt)
+        else console.warn('[VAPI] Schedule failed:', result.error)
+      })
     }
 
     navigate('/results', { replace: true })

@@ -2,6 +2,7 @@ import type { QuizAnswers } from '../types/quiz'
 import { recommendPeptides } from './recommend'
 import { getCompoundCopy } from './compoundCopy'
 import { goalLabel, pillarDetailSummary, durationLabel, energyLabel } from './quizLabels'
+import { supabase } from './supabase'
 
 const VAPI_API_URL = 'https://api.vapi.ai/call/phone'
 const VAPI_API_KEY = import.meta.env.VITE_VAPI_API_KEY as string
@@ -49,6 +50,34 @@ function formatPhoneE164(phone: string): string {
   if (digits.length === 10) return `+44${digits}`
 
   return phone.startsWith('+') ? phone : `+${digits}`
+}
+
+export async function scheduleVapiCall(answers: QuizAnswers): Promise<{ ok: boolean; callAt?: string; error?: string }> {
+  const phone = answers.lead?.phone
+  if (!phone?.trim()) return { ok: false, error: 'No phone number provided' }
+
+  const payload = buildPayload(answers)
+  const customerNumber = formatPhoneE164(phone.trim())
+
+  try {
+    const { data, error } = await supabase.functions.invoke('schedule-call', {
+      body: {
+        phone: customerNumber,
+        firstName: payload.firstName,
+        variableValues: payload,
+      },
+    })
+
+    if (error) {
+      console.error('[VAPI] Schedule error:', error)
+      return { ok: false, error: error.message }
+    }
+
+    return { ok: true, callAt: data?.callAt }
+  } catch (err) {
+    console.error('[VAPI] Schedule network error:', err)
+    return { ok: false, error: 'Network error' }
+  }
 }
 
 export async function triggerVapiCall(answers: QuizAnswers): Promise<{ ok: boolean; callId?: string; error?: string }> {
