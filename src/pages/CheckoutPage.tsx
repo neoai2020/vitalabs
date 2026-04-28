@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   createPaymentIntent,
@@ -18,25 +18,15 @@ export default function CheckoutPage() {
 
   const hyperRef = useRef<ReturnType<typeof getHyperInstance> | null>(null)
   const widgetsRef = useRef<ReturnType<ReturnType<typeof getHyperInstance>['widgets']> | null>(null)
-  const mountedRef = useRef(false)
+  const initStarted = useRef(false)
+  const paymentContainerRef = useRef<HTMLDivElement | null>(null)
 
-  if (!state) {
-    return (
-      <div className="ck-page">
-        <div className="ck-wrap">
-          <div className="ck-empty">
-            <h1>No product selected</h1>
-            <p>Please choose a product from your results page first.</p>
-            <Link className="ck-btn ck-btn--primary" to="/results">Back to results</Link>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  const params = new URLSearchParams(window.location.search)
+  const isComplete = params.get('result') === 'complete'
 
   useEffect(() => {
-    if (mountedRef.current) return
-    mountedRef.current = true
+    if (!state || isComplete || initStarted.current) return
+    initStarted.current = true
 
     let cancelled = false
 
@@ -70,7 +60,15 @@ export default function CheckoutPage() {
         widgetsRef.current = widgets
 
         const paymentElement = widgets.create('payment')
-        paymentElement.mount('#payment-element')
+
+        const container = paymentContainerRef.current
+        if (container) {
+          container.innerHTML = ''
+          const mount = document.createElement('div')
+          mount.id = 'payment-element'
+          container.appendChild(mount)
+          paymentElement.mount('#payment-element')
+        }
 
         setStatus('ready')
       } catch (err) {
@@ -83,9 +81,9 @@ export default function CheckoutPage() {
 
     init()
     return () => { cancelled = true }
-  }, [])
+  }, [state, isComplete])
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     if (!hyperRef.current || !widgetsRef.current || status === 'submitting') return
 
@@ -109,10 +107,23 @@ export default function CheckoutPage() {
       setErrorMsg(err instanceof Error ? err.message : 'Payment failed')
       setStatus('ready')
     }
+  }, [status])
+
+  if (!state) {
+    return (
+      <div className="ck-page">
+        <div className="ck-wrap">
+          <div className="ck-empty">
+            <h1>No product selected</h1>
+            <p>Please choose a product from your results page first.</p>
+            <Link className="ck-btn ck-btn--primary" to="/results">Back to results</Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
-  const params = new URLSearchParams(window.location.search)
-  if (params.get('result') === 'complete') {
+  if (isComplete) {
     return (
       <div className="ck-page">
         <div className="ck-wrap">
@@ -181,10 +192,7 @@ export default function CheckoutPage() {
           <div className="ck-payment">
             <h2 className="ck-payment-title">Payment details</h2>
             <form onSubmit={handleSubmit} className="ck-form">
-              <div
-                id="payment-element"
-                className="ck-payment-element"
-              >
+              <div ref={paymentContainerRef} className="ck-payment-element">
                 {status === 'loading' && (
                   <div className="ck-loading">
                     <div className="ck-spinner" />
