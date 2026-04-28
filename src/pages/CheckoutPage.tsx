@@ -45,67 +45,60 @@ export default function CheckoutPage() {
 
   const hyperRef = useRef<ReturnType<typeof getHyperInstance> | null>(null)
   const widgetsRef = useRef<ReturnType<ReturnType<typeof getHyperInstance>['widgets']> | null>(null)
-  const initStarted = useRef(false)
   const paymentContainerRef = useRef<HTMLDivElement | null>(null)
+  const [initCount, setInitCount] = useState(0)
+
+  const initPayment = useCallback(async () => {
+    if (!state) return
+
+    try {
+      setStatus('loading')
+      setErrorMsg(null)
+
+      const skus = state.items.map(i => i.sku).join(', ')
+
+      const { clientSecret } = await createPaymentIntent({
+        amount: state.amount,
+        currency: 'GBP',
+        description: state.description,
+        email: state.email,
+        metadata: {
+          skus,
+          quantity: String(state.quantity),
+        },
+      })
+
+      const hyper = getHyperInstance()
+      hyperRef.current = hyper
+
+      const widgets = hyper.widgets({
+        clientSecret,
+        appearance: UPRAILS_APPEARANCE,
+      })
+      widgetsRef.current = widgets
+
+      const paymentElement = widgets.create('payment')
+
+      const container = paymentContainerRef.current
+      if (container) {
+        container.innerHTML = ''
+        const mount = document.createElement('div')
+        mount.id = 'payment-element'
+        container.appendChild(mount)
+        paymentElement.mount('#payment-element')
+      }
+
+      setStatus('ready')
+    } catch (err) {
+      console.error('Checkout init failed:', err)
+      setErrorMsg(err instanceof Error ? err.message : 'Failed to load payment form')
+      setStatus('failed')
+    }
+  }, [state])
 
   useEffect(() => {
-    if (!state || initStarted.current) return
-    initStarted.current = true
-
-    let cancelled = false
-
-    async function init() {
-      try {
-        setStatus('loading')
-        setErrorMsg(null)
-
-        const skus = state!.items.map(i => i.sku).join(', ')
-
-        const { clientSecret } = await createPaymentIntent({
-          amount: state!.amount,
-          currency: 'GBP',
-          description: state!.description,
-          email: state!.email,
-          metadata: {
-            skus,
-            quantity: String(state!.quantity),
-          },
-        })
-
-        if (cancelled) return
-
-        const hyper = getHyperInstance()
-        hyperRef.current = hyper
-
-        const widgets = hyper.widgets({
-          clientSecret,
-          appearance: UPRAILS_APPEARANCE,
-        })
-        widgetsRef.current = widgets
-
-        const paymentElement = widgets.create('payment')
-
-        const container = paymentContainerRef.current
-        if (container) {
-          container.innerHTML = ''
-          const mount = document.createElement('div')
-          mount.id = 'payment-element'
-          container.appendChild(mount)
-          paymentElement.mount('#payment-element')
-        }
-
-        setStatus('ready')
-      } catch (err) {
-        if (cancelled) return
-        console.error('Checkout init failed:', err)
-        setErrorMsg(err instanceof Error ? err.message : 'Failed to load payment form')
-        setStatus('failed')
-      }
-    }
-
-    init()
-    return () => { cancelled = true }
-  }, [state])
+    initPayment()
+  }, [initPayment, initCount])
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
@@ -140,7 +133,7 @@ export default function CheckoutPage() {
 
       if (result?.error) {
         setErrorMsg(result.error.message)
-        setStatus('ready')
+        setInitCount(c => c + 1)
         return
       }
 
@@ -150,25 +143,22 @@ export default function CheckoutPage() {
         window.location.href = `${window.location.origin}${returnPath}`
       } else if (paymentStatus === 'failed' || paymentStatus === 'cancelled') {
         setErrorMsg('Payment was declined. Please check your card details or try a different card.')
-        setStatus('ready')
+        setInitCount(c => c + 1)
       } else if (paymentStatus === 'requires_payment_method') {
         setErrorMsg('Payment failed. Please check your card details and try again.')
-        setStatus('ready')
+        setInitCount(c => c + 1)
       } else if (paymentStatus === 'requires_action') {
-        // 3DS or other action needed — SDK should handle redirect automatically
-        // If we reach here, something went wrong with the redirect
         setErrorMsg('Additional authentication required. Please try again.')
         setStatus('ready')
       } else {
-        // Unknown status — don't assume success
         setErrorMsg(`Payment could not be completed (${paymentStatus || 'unknown'}). Please try again.`)
-        setStatus('ready')
+        setInitCount(c => c + 1)
       }
     } catch (err) {
       clearTimeout(timeoutId)
       console.error('Payment submission error:', err)
       setErrorMsg(err instanceof Error ? err.message : 'Payment failed')
-      setStatus('ready')
+      setInitCount(c => c + 1)
     }
   }, [status, state])
 
