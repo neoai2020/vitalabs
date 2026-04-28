@@ -279,6 +279,10 @@ function OfferCard({
   const [selectedDose, setSelectedDose] = useState(recIdx)
   const dose = primary.doses[selectedDose] || primary.doses[0]
 
+  const scrollToOffer = () => {
+    document.getElementById('offer')?.scrollIntoView({ behavior: 'smooth' })
+  }
+
   const goToCheckout = (p: Peptide, dosePrice: number) => {
     navigate('/checkout', {
       state: {
@@ -489,15 +493,7 @@ export default function TSLPage() {
           <button
             type="button"
             className="tsl-head-cta"
-            onClick={() => navigate('/checkout', {
-              state: {
-                items: [{ sku: primary.sku, compound: primary.compound, image: primary.image, price, displayPrice: `£${price}` }],
-                amount: Math.round(price * 100),
-                quantity: 1,
-                description: `${primary.sku} — 1 Month Supply`,
-                displayPrice: `£${price}`,
-              },
-            })}
+            onClick={scrollToOffer}
           >
             Get started
           </button>
@@ -564,15 +560,7 @@ export default function TSLPage() {
               <button
                 type="button"
                 className="tsl-cta tsl-cta--primary"
-                onClick={() => navigate('/checkout', {
-                  state: {
-                    items: [{ sku: primary.sku, compound: primary.compound, image: primary.image, price, displayPrice: `£${price}` }],
-                    amount: Math.round(price * 100),
-                    quantity: 1,
-                    description: `${primary.sku} — 1 Month Supply`,
-                    displayPrice: `£${price}`,
-                  },
-                })}
+                onClick={scrollToOffer}
               >
                 Get {primary.sku} — From £{price}
               </button>
@@ -636,15 +624,7 @@ export default function TSLPage() {
           <button
             type="button"
             className="tsl-cta tsl-cta--primary tsl-cta--sm"
-            onClick={() => navigate('/checkout', {
-              state: {
-                items: [{ sku: primary.sku, compound: primary.compound, image: primary.image, price, displayPrice: `£${price}` }],
-                amount: Math.round(price * 100),
-                quantity: 1,
-                description: `${primary.sku} — 1 Month Supply`,
-                displayPrice: `£${price}`,
-              },
-            })}
+            onClick={scrollToOffer}
           >
             Start My Protocol
           </button>

@@ -246,6 +246,10 @@ export default function ResultsPage() {
     .filter((s) => checkedStacks.has(s.peptide.id))
     .reduce((sum, s) => sum + s.discountedPrice, 0)
 
+  const scrollToPlans = () => {
+    document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth' })
+  }
+
   const goToCheckout = () => {
     const total = primaryPrice.now + stackTotal
     const activeStacks = stacks.filter((s) => checkedStacks.has(s.peptide.id))
@@ -297,7 +301,7 @@ export default function ResultsPage() {
             <a href="#reviews">Reviews</a>
             <a href="#faq">FAQ</a>
           </nav>
-          <button type="button" className="fp-header-cta" onClick={goToCheckout}>Claim My Match</button>
+          <button type="button" className="fp-header-cta" onClick={scrollToPlans}>Claim My Match</button>
         </div>
       </header>
 
@@ -358,7 +362,7 @@ export default function ResultsPage() {
                 <li><CheckIcon /> 30-day guarantee — zero risk to try</li>
                 <li><CheckIcon /> Free tracked delivery to your door</li>
               </ul>
-              <button type="button" className="fp-btn fp-hero-cta-btn" onClick={goToCheckout}>Claim My Match — £{primaryPrice.now}</button>
+              <button type="button" className="fp-btn fp-hero-cta-btn" onClick={scrollToPlans}>Claim My Match — £{primaryPrice.now}</button>
               <div className="fp-hero-guarantee">
                 <ShieldIcon />
                 <span>99.3%+ verified purity · UK-regulated lab · Third-party tested</span>
@@ -646,7 +650,7 @@ export default function ResultsPage() {
           <p>
             {primary.sku} + Practitioner guidance + Dosing protocol + 30-day guarantee. Everything you need for £{primaryPrice.now}.
           </p>
-          <button type="button" className="fp-btn fp-btn--light fp-btn--large" onClick={goToCheckout}>Get {primary.sku} Now — £{primaryPrice.now}</button>
+          <button type="button" className="fp-btn fp-btn--light fp-btn--large" onClick={scrollToPlans}>Get {primary.sku} Now — £{primaryPrice.now}</button>
           <div className="fp-cta-trust">
             <span>🔒 Secure checkout</span>
             <span>🛡️ 30-day guarantee</span>
@@ -664,7 +668,7 @@ export default function ResultsPage() {
               <span className="fp-sticky-now">£{(Math.round((primaryPrice.now + stackTotal) * 100) / 100).toFixed(2)}</span>
             </span>
           </div>
-          <button type="button" className="fp-btn fp-btn--sm" onClick={goToCheckout}>{stackTotal > 0 ? 'Get Full Stack' : 'Claim My Match'}</button>
+          <button type="button" className="fp-btn fp-btn--sm" onClick={scrollToPlans}>{stackTotal > 0 ? 'Get Full Stack' : 'Claim My Match'}</button>
         </div>
       </div>
 
