@@ -136,16 +136,33 @@ export default function CheckoutPage() {
       })
 
       clearTimeout(timeoutId)
+      console.log('[Checkout] confirmPayment result:', JSON.stringify(result))
 
       if (result?.error) {
         setErrorMsg(result.error.message)
         setStatus('ready')
-      } else if (result?.status === 'failed') {
-        setErrorMsg('Payment was declined. Please try a different card.')
-        setStatus('ready')
-      } else {
+        return
+      }
+
+      const paymentStatus = result?.status
+      if (paymentStatus === 'succeeded' || paymentStatus === 'processing') {
         setStatus('succeeded')
         window.location.href = `${window.location.origin}${returnPath}`
+      } else if (paymentStatus === 'failed' || paymentStatus === 'cancelled') {
+        setErrorMsg('Payment was declined. Please check your card details or try a different card.')
+        setStatus('ready')
+      } else if (paymentStatus === 'requires_payment_method') {
+        setErrorMsg('Payment failed. Please check your card details and try again.')
+        setStatus('ready')
+      } else if (paymentStatus === 'requires_action') {
+        // 3DS or other action needed — SDK should handle redirect automatically
+        // If we reach here, something went wrong with the redirect
+        setErrorMsg('Additional authentication required. Please try again.')
+        setStatus('ready')
+      } else {
+        // Unknown status — don't assume success
+        setErrorMsg(`Payment could not be completed (${paymentStatus || 'unknown'}). Please try again.`)
+        setStatus('ready')
       }
     } catch (err) {
       clearTimeout(timeoutId)
