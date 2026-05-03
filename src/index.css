@@ -7468,27 +7468,51 @@ h1, h2, h3 {
   line-height: 1.45;
 }
 
-/* ── Trust row ── */
-.ck-trust-row {
-  display: flex;
-  justify-content: center;
-  gap: 1.25rem;
-  margin-top: 1rem;
-  flex-wrap: wrap;
+/* ── Guarantee boxes ── */
+.ck-guarantees {
+  margin-top: 1.25rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem;
 }
 
-.ck-trust-item {
+.ck-guarantee {
   display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-size: 0.75rem;
-  font-weight: 600;
+  gap: 0.6rem;
+  align-items: flex-start;
+  background: #fff;
+  border: 1px solid #e2e5ec;
+  border-radius: 10px;
+  padding: 0.75rem 0.85rem;
+}
+
+[data-theme="dark"] .ck-guarantee { background: var(--bg-surface); border-color: var(--border); }
+
+.ck-guarantee-icon {
+  flex-shrink: 0;
+  color: #0f766e;
+  line-height: 1;
+  margin-top: 0.05rem;
+}
+
+[data-theme="dark"] .ck-guarantee-icon { color: var(--brand); }
+
+.ck-guarantee strong {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 0.15rem;
+}
+
+[data-theme="dark"] .ck-guarantee strong { color: var(--text); }
+
+.ck-guarantee p {
+  font-size: 0.72rem;
   color: #6b7280;
+  margin: 0;
+  line-height: 1.4;
 }
-
-.ck-trust-item svg { color: #0f766e; }
-
-[data-theme="dark"] .ck-trust-item svg { color: var(--brand); }
 
 /* ── Back link ── */
 .ck-back {
@@ -7838,10 +7862,8 @@ h1, h2, h3 {
 }
 
 @media (max-width: 480px) {
-  .ck-trust-row {
-    flex-direction: column;
-    align-items: center;
-    gap: 0.35rem;
+  .ck-guarantees {
+    grid-template-columns: 1fr;
   }
 
   .ck-urgency {

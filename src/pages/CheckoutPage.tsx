@@ -309,19 +309,43 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Trust row */}
-            <div className="ck-trust-row">
-              <div className="ck-trust-item">
-                <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
-                <span>Secure payment</span>
+            {/* Guarantee boxes */}
+            <div className="ck-guarantees">
+              <div className="ck-guarantee">
+                <div className="ck-guarantee-icon">
+                  <svg viewBox="0 0 20 20" fill="currentColor" width="22" height="22"><path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5C17.944 5.678 18 6.379 18 7.1c0 5.523-3.626 9.132-8 11.9-4.374-2.768-8-6.377-8-11.9 0-.721.056-1.422.166-2.1z" clipRule="evenodd" /></svg>
+                </div>
+                <div>
+                  <strong>30-Day Money-Back Guarantee</strong>
+                  <p>Not satisfied? Full refund, no questions asked.</p>
+                </div>
               </div>
-              <div className="ck-trust-item">
-                <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zm0 16a3 3 0 01-3-3h6a3 3 0 01-3 3z" /></svg>
-                <span>Free tracked shipping</span>
+              <div className="ck-guarantee">
+                <div className="ck-guarantee-icon">
+                  <svg viewBox="0 0 20 20" fill="currentColor" width="22" height="22"><path fillRule="evenodd" d="M7 2a1 1 0 00-.707 1.707L7 4.414v3.758a1 1 0 01-.293.707l-4 4C1.817 13.769 2.432 15 3.414 15H9v2a1 1 0 102 0v-2h5.586c.982 0 1.597-1.231.707-2.121l-4-4A1 1 0 0113 8.172V4.414l.707-.707A1 1 0 0013 2H7zm2 6.172V4h2v4.172a3 3 0 00.879 2.12l1.168 1.169a.25.25 0 01-.177.426H6.13a.25.25 0 01-.177-.426l1.168-1.169A3 3 0 009 8.172z" clipRule="evenodd" /></svg>
+                </div>
+                <div>
+                  <strong>99.3%+ Purity Verified</strong>
+                  <p>Every batch tested in our UK-regulated laboratory. COA included.</p>
+                </div>
               </div>
-              <div className="ck-trust-item">
-                <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5C17.944 5.678 18 6.379 18 7.1c0 5.523-3.626 9.132-8 11.9-4.374-2.768-8-6.377-8-11.9 0-.721.056-1.422.166-2.1z" clipRule="evenodd" /></svg>
-                <span>30-day guarantee</span>
+              <div className="ck-guarantee">
+                <div className="ck-guarantee-icon">
+                  <svg viewBox="0 0 20 20" fill="currentColor" width="22" height="22"><path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" /><path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1v-5h2.05a2.5 2.5 0 014.9 0H19a1 1 0 001-1v-2a1 1 0 00-.293-.707l-3-3A1 1 0 0016 3h-2a1 1 0 00-1 1v5H4V5a1 1 0 00-1-1z" /></svg>
+                </div>
+                <div>
+                  <strong>Free Tracked Shipping</strong>
+                  <p>Dispatched within 24 hours. Discreet, tamper-proof packaging.</p>
+                </div>
+              </div>
+              <div className="ck-guarantee">
+                <div className="ck-guarantee-icon">
+                  <svg viewBox="0 0 20 20" fill="currentColor" width="22" height="22"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
+                </div>
+                <div>
+                  <strong>Bank-Level Security</strong>
+                  <p>256-bit SSL encryption. Your details never touch our servers.</p>
+                </div>
               </div>
             </div>
 
