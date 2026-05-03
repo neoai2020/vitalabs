@@ -276,7 +276,7 @@ export default function ResultsPage() {
         quantity: items.length,
         description: items.length > 1 ? `${primary.sku} + Stack (${items.length} items)` : `${primary.sku} — 1 Month Supply`,
         displayPrice: `£${total.toFixed(2)}`,
-        returnPath: '/upsell',
+        returnPath: '/order-complete',
       },
     })
   }
