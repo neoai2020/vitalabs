@@ -34,6 +34,13 @@ export default function CheckoutPage() {
   const [customerEmail, setCustomerEmail] = useState(state?.email ?? '')
   const [customerPhone, setCustomerPhone] = useState('')
 
+  const [shippingCountry, setShippingCountry] = useState('GB')
+  const [shippingAddress1, setShippingAddress1] = useState('')
+  const [shippingAddress2, setShippingAddress2] = useState('')
+  const [shippingCity, setShippingCity] = useState('')
+  const [shippingCounty, setShippingCounty] = useState('')
+  const [shippingPostcode, setShippingPostcode] = useState('')
+
   const hyperRef = useRef<ReturnType<typeof getHyperInstance> | null>(null)
   const widgetsRef = useRef<ReturnType<ReturnType<typeof getHyperInstance>['widgets']> | null>(null)
   const paymentContainerRef = useRef<HTMLDivElement | null>(null)
@@ -58,6 +65,13 @@ export default function CheckoutPage() {
         metadata: {
           skus,
           quantity: String(state.quantity),
+          shipping_name: customerName,
+          shipping_address1: shippingAddress1,
+          shipping_address2: shippingAddress2,
+          shipping_city: shippingCity,
+          shipping_county: shippingCounty,
+          shipping_postcode: shippingPostcode,
+          shipping_country: shippingCountry,
         },
       })
 
@@ -102,6 +116,11 @@ export default function CheckoutPage() {
       return
     }
 
+    if (!shippingAddress1.trim() || !shippingCity.trim() || !shippingPostcode.trim()) {
+      setErrorMsg('Please fill in your shipping address.')
+      return
+    }
+
     setStatus('submitting')
     setErrorMsg(null)
 
@@ -114,6 +133,14 @@ export default function CheckoutPage() {
       customerName,
       customerEmail,
       customerPhone,
+      shippingAddress: {
+        address1: shippingAddress1,
+        address2: shippingAddress2,
+        city: shippingCity,
+        county: shippingCounty,
+        postcode: shippingPostcode,
+        country: shippingCountry,
+      },
     }))
 
     const timeoutId = setTimeout(() => {
@@ -161,7 +188,7 @@ export default function CheckoutPage() {
       setErrorMsg(err instanceof Error ? err.message : 'Payment failed')
       setInitCount(c => c + 1)
     }
-  }, [status, state, customerName, customerEmail, customerPhone])
+  }, [status, state, customerName, customerEmail, customerPhone, shippingCountry, shippingAddress1, shippingAddress2, shippingCity, shippingCounty, shippingPostcode])
 
   if (!state) {
     return (
@@ -258,6 +285,118 @@ export default function CheckoutPage() {
                     required
                   />
                   <span className="ck-field-hint">For delivery updates only.</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Shipping Address */}
+            <div className="ck-section">
+              <h2 className="ck-section-title">Shipping Address</h2>
+              <div className="ck-card">
+                <div className="ck-field">
+                  <label className="ck-label" htmlFor="ck-country">Country / Region *</label>
+                  <select
+                    id="ck-country"
+                    className="ck-input ck-select"
+                    value={shippingCountry}
+                    onChange={e => setShippingCountry(e.target.value)}
+                    autoComplete="country"
+                    required
+                  >
+                    <option value="GB">United Kingdom</option>
+                    <option value="US">United States</option>
+                    <option value="CA">Canada</option>
+                    <option value="AU">Australia</option>
+                    <option value="IE">Ireland</option>
+                    <option value="DE">Germany</option>
+                    <option value="FR">France</option>
+                    <option value="NL">Netherlands</option>
+                    <option value="BE">Belgium</option>
+                    <option value="IT">Italy</option>
+                    <option value="ES">Spain</option>
+                    <option value="PT">Portugal</option>
+                    <option value="AT">Austria</option>
+                    <option value="CH">Switzerland</option>
+                    <option value="SE">Sweden</option>
+                    <option value="NO">Norway</option>
+                    <option value="DK">Denmark</option>
+                    <option value="FI">Finland</option>
+                    <option value="PL">Poland</option>
+                    <option value="NZ">New Zealand</option>
+                    <option value="SG">Singapore</option>
+                    <option value="AE">United Arab Emirates</option>
+                    <option value="ZA">South Africa</option>
+                    <option value="JP">Japan</option>
+                  </select>
+                </div>
+                <div className="ck-field">
+                  <label className="ck-label" htmlFor="ck-address1">Address *</label>
+                  <input
+                    id="ck-address1"
+                    type="text"
+                    className="ck-input"
+                    placeholder="Street address"
+                    value={shippingAddress1}
+                    onChange={e => setShippingAddress1(e.target.value)}
+                    autoComplete="address-line1"
+                    required
+                  />
+                </div>
+                <div className="ck-field">
+                  <label className="ck-label" htmlFor="ck-address2">Apartment, suite, etc. (optional)</label>
+                  <input
+                    id="ck-address2"
+                    type="text"
+                    className="ck-input"
+                    placeholder="Apartment, suite, unit, etc."
+                    value={shippingAddress2}
+                    onChange={e => setShippingAddress2(e.target.value)}
+                    autoComplete="address-line2"
+                  />
+                </div>
+                <div className="ck-field-row">
+                  <div className="ck-field">
+                    <label className="ck-label" htmlFor="ck-city">City *</label>
+                    <input
+                      id="ck-city"
+                      type="text"
+                      className="ck-input"
+                      placeholder="City"
+                      value={shippingCity}
+                      onChange={e => setShippingCity(e.target.value)}
+                      autoComplete="address-level2"
+                      required
+                    />
+                  </div>
+                  <div className="ck-field">
+                    <label className="ck-label" htmlFor="ck-county">
+                      {shippingCountry === 'US' ? 'State' : shippingCountry === 'CA' ? 'Province' : 'County'}
+                    </label>
+                    <input
+                      id="ck-county"
+                      type="text"
+                      className="ck-input"
+                      placeholder={shippingCountry === 'US' ? 'State' : shippingCountry === 'CA' ? 'Province' : 'County'}
+                      value={shippingCounty}
+                      onChange={e => setShippingCounty(e.target.value)}
+                      autoComplete="address-level1"
+                    />
+                  </div>
+                </div>
+                <div className="ck-field">
+                  <label className="ck-label" htmlFor="ck-postcode">
+                    {shippingCountry === 'US' ? 'ZIP Code' : 'Postcode'} *
+                  </label>
+                  <input
+                    id="ck-postcode"
+                    type="text"
+                    className="ck-input"
+                    placeholder={shippingCountry === 'US' ? '10001' : 'SW1A 1AA'}
+                    value={shippingPostcode}
+                    onChange={e => setShippingPostcode(e.target.value)}
+                    autoComplete="postal-code"
+                    required
+                  />
                 </div>
               </div>
             </div>
