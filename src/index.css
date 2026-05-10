@@ -8049,6 +8049,42 @@ h1, h2, h3 {
 
 [data-theme="dark"] .oc-total { background: var(--bg); }
 
+/* ── Order detail blocks (customer + shipping) ── */
+.oc-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  text-align: left;
+  margin-bottom: 1.75rem;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 10px;
+}
+
+[data-theme="dark"] .oc-details { background: var(--bg); }
+
+.oc-detail-block h3 {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+  margin: 0 0 0.35rem;
+}
+
+[data-theme="dark"] .oc-detail-block h3 { color: var(--text-secondary); }
+
+.oc-detail-block p {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+@media (max-width: 480px) {
+  .oc-details { grid-template-columns: 1fr; }
+}
+
 .oc-next-steps {
   text-align: left;
   margin-bottom: 1.5rem;

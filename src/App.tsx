@@ -6,6 +6,7 @@ import ResultsPage from './pages/ResultsPage'
 import UpsellPage from './pages/UpsellPage'
 import TSLPage from './pages/TSLPage'
 import CheckoutPage from './pages/CheckoutPage'
+import TestPaymentPage from './pages/TestPaymentPage'
 import OrderCompletePage from './pages/OrderCompletePage'
 import ThemeToggle from './components/ThemeToggle'
 import { AuthProvider, useAuth } from './members/context/AuthContext'
@@ -72,6 +73,7 @@ export default function App() {
         <Route path="/upsell" element={<UpsellPage />} />
         <Route path="/tsl" element={<TSLPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/test-payment" element={<TestPaymentPage />} />
         <Route path="/order-complete" element={<OrderCompletePage />} />
         <Route path="/members/*" element={<MembersRoutes />} />
         <Route path="*" element={<Navigate to="/" replace />} />

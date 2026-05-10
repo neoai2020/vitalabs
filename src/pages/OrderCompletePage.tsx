@@ -5,6 +5,17 @@ interface OrderInfo {
   description?: string
   displayPrice?: string
   items?: { sku: string; compound: string; image: string | null; displayPrice: string }[]
+  customerName?: string
+  customerEmail?: string
+  customerPhone?: string
+  shippingAddress?: {
+    address1: string
+    address2: string
+    city: string
+    county: string
+    postcode: string
+    country: string
+  }
 }
 
 export default function OrderCompletePage() {
@@ -52,6 +63,31 @@ export default function OrderCompletePage() {
             <div className="oc-total">
               <span>Total paid</span>
               <span>{order.displayPrice}</span>
+            </div>
+          )}
+
+          {(order?.customerName || order?.shippingAddress) && (
+            <div className="oc-details">
+              {order.customerName && (
+                <div className="oc-detail-block">
+                  <h3>Customer</h3>
+                  <p>{order.customerName}</p>
+                  {order.customerEmail && <p>{order.customerEmail}</p>}
+                  {order.customerPhone && <p>{order.customerPhone}</p>}
+                </div>
+              )}
+              {order.shippingAddress && (
+                <div className="oc-detail-block">
+                  <h3>Shipping to</h3>
+                  <p>{order.shippingAddress.address1}</p>
+                  {order.shippingAddress.address2 && <p>{order.shippingAddress.address2}</p>}
+                  <p>
+                    {order.shippingAddress.city}
+                    {order.shippingAddress.county ? `, ${order.shippingAddress.county}` : ''}
+                  </p>
+                  <p>{order.shippingAddress.postcode}</p>
+                </div>
+              )}
             </div>
           )}
 
