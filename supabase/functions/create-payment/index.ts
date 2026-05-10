@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 
-const UPRAILS_API_URL = 'https://api.sandbox.uprails.com/payments'
+const UPRAILS_API_URL = 'https://api.uprails.com/payments'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
