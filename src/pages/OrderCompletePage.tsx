@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
 
 interface OrderInfo {
   description?: string
   displayPrice?: string
-  items?: { sku: string; compound: string; image: string | null; displayPrice: string }[]
+  amount?: number
+  items?: { sku: string; compound: string; image: string | null; displayPrice: string; price?: number }[]
   customerName?: string
   customerEmail?: string
   customerPhone?: string
@@ -20,12 +22,30 @@ interface OrderInfo {
 
 export default function OrderCompletePage() {
   const [order, setOrder] = useState<OrderInfo | null>(null)
+  const webhookSent = useRef(false)
 
   useEffect(() => {
     window.scrollTo(0, 0)
     try {
       const stored = sessionStorage.getItem('peptiva-last-order')
-      if (stored) setOrder(JSON.parse(stored))
+      if (stored) {
+        const parsed = JSON.parse(stored) as OrderInfo
+        setOrder(parsed)
+
+        if (!webhookSent.current && parsed.customerEmail) {
+          webhookSent.current = true
+          supabase.functions.invoke('order-webhook', {
+            body: {
+              customerName: parsed.customerName,
+              customerEmail: parsed.customerEmail,
+              customerPhone: parsed.customerPhone,
+              shippingAddress: parsed.shippingAddress,
+              items: parsed.items,
+              amount: parsed.amount,
+            },
+          }).catch(err => console.error('[OrderComplete] Zapier webhook failed:', err))
+        }
+      }
     } catch { /* ignore */ }
   }, [])
 
