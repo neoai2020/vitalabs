@@ -199,23 +199,30 @@ export default function CheckoutPage() {
       if (paymentStatus === 'succeeded' || paymentStatus === 'processing') {
         setStatus('succeeded')
 
-        supabase.functions.invoke('order-webhook', {
-          body: {
-            customerName,
-            customerEmail,
-            customerPhone,
-            shippingAddress: {
-              address1: shippingAddress1,
-              address2: shippingAddress2,
-              city: shippingCity,
-              county: shippingCounty,
-              postcode: shippingPostcode,
-              country: shippingCountry,
-            },
-            items: state?.items,
-            amount: state?.amount,
-          },
-        }).catch(err => console.error('[Checkout] Zapier webhook failed:', err))
+        try {
+          await Promise.race([
+            supabase.functions.invoke('order-webhook', {
+              body: {
+                customerName,
+                customerEmail,
+                customerPhone,
+                shippingAddress: {
+                  address1: shippingAddress1,
+                  address2: shippingAddress2,
+                  city: shippingCity,
+                  county: shippingCounty,
+                  postcode: shippingPostcode,
+                  country: shippingCountry,
+                },
+                items: state?.items,
+                amount: state?.amount,
+              },
+            }),
+            new Promise(resolve => setTimeout(resolve, 5000)),
+          ])
+        } catch (err) {
+          console.error('[Checkout] Zapier webhook failed:', err)
+        }
 
         window.location.href = `${window.location.origin}${returnPath}`
       } else if (paymentStatus === 'failed' || paymentStatus === 'cancelled') {
