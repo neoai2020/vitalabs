@@ -43,6 +43,7 @@ export default function CheckoutPage() {
   const [shippingCounty, setShippingCounty] = useState('')
   const [shippingPostcode, setShippingPostcode] = useState('')
 
+  const customerIdRef = useRef<string | null>(null)
   const hyperRef = useRef<ReturnType<typeof getHyperInstance> | null>(null)
   const widgetsRef = useRef<ReturnType<ReturnType<typeof getHyperInstance>['widgets']> | null>(null)
   const paymentContainerRef = useRef<HTMLDivElement | null>(null)
@@ -126,28 +127,31 @@ export default function CheckoutPage() {
     setStatus('submitting')
     setErrorMsg(null)
 
-    try {
-      const nameParts = customerName.trim().split(/\s+/)
-      const firstName = nameParts[0] || ''
-      const lastName = nameParts.slice(1).join(' ') || ''
+    if (!customerIdRef.current) {
+      try {
+        const nameParts = customerName.trim().split(/\s+/)
+        const firstName = nameParts[0] || ''
+        const lastName = nameParts.slice(1).join(' ') || ''
 
-      await createCustomer({
-        email: customerEmail.trim(),
-        name: customerName.trim(),
-        phone: customerPhone.trim(),
-        address: {
-          line1: shippingAddress1.trim(),
-          line2: shippingAddress2.trim() || undefined,
-          city: shippingCity.trim(),
-          state: shippingCounty.trim() || undefined,
-          zip: shippingPostcode.trim(),
-          country: shippingCountry,
-          first_name: firstName,
-          last_name: lastName,
-        },
-      })
-    } catch (err) {
-      console.error('Failed to create customer:', err)
+        const { customerId } = await createCustomer({
+          email: customerEmail.trim(),
+          name: customerName.trim(),
+          phone: customerPhone.trim(),
+          address: {
+            line1: shippingAddress1.trim(),
+            line2: shippingAddress2.trim() || undefined,
+            city: shippingCity.trim(),
+            state: shippingCounty.trim() || undefined,
+            zip: shippingPostcode.trim(),
+            country: shippingCountry,
+            first_name: firstName,
+            last_name: lastName,
+          },
+        })
+        customerIdRef.current = customerId
+      } catch (err) {
+        console.error('Failed to create customer:', err)
+      }
     }
 
     const returnPath = state?.returnPath || '/order-complete'
