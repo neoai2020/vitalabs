@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
+  createCustomer,
   createPaymentIntent,
   getHyperInstance,
   UPRAILS_APPEARANCE,
   type CheckoutState,
 } from '../lib/uprails'
+import { supabase } from '../lib/supabase'
 
 type Status = 'idle' | 'loading' | 'ready' | 'submitting' | 'succeeded' | 'failed'
 
@@ -124,6 +126,30 @@ export default function CheckoutPage() {
     setStatus('submitting')
     setErrorMsg(null)
 
+    try {
+      const nameParts = customerName.trim().split(/\s+/)
+      const firstName = nameParts[0] || ''
+      const lastName = nameParts.slice(1).join(' ') || ''
+
+      await createCustomer({
+        email: customerEmail.trim(),
+        name: customerName.trim(),
+        phone: customerPhone.trim(),
+        address: {
+          line1: shippingAddress1.trim(),
+          line2: shippingAddress2.trim() || undefined,
+          city: shippingCity.trim(),
+          state: shippingCounty.trim() || undefined,
+          zip: shippingPostcode.trim(),
+          country: shippingCountry,
+          first_name: firstName,
+          last_name: lastName,
+        },
+      })
+    } catch (err) {
+      console.error('Failed to create customer:', err)
+    }
+
     const returnPath = state?.returnPath || '/order-complete'
 
     sessionStorage.setItem('peptiva-last-order', JSON.stringify({
@@ -168,6 +194,25 @@ export default function CheckoutPage() {
       const paymentStatus = result?.status
       if (paymentStatus === 'succeeded' || paymentStatus === 'processing') {
         setStatus('succeeded')
+
+        supabase.functions.invoke('order-webhook', {
+          body: {
+            customerName,
+            customerEmail,
+            customerPhone,
+            shippingAddress: {
+              address1: shippingAddress1,
+              address2: shippingAddress2,
+              city: shippingCity,
+              county: shippingCounty,
+              postcode: shippingPostcode,
+              country: shippingCountry,
+            },
+            items: state?.items,
+            amount: state?.amount,
+          },
+        }).catch(err => console.error('[Checkout] Zapier webhook failed:', err))
+
         window.location.href = `${window.location.origin}${returnPath}`
       } else if (paymentStatus === 'failed' || paymentStatus === 'cancelled') {
         setErrorMsg('Payment was declined. Please check your card details or try a different card.')

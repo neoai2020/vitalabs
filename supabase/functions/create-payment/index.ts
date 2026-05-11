@@ -13,6 +13,7 @@ interface CreatePaymentBody {
   currency: string
   description?: string
   email?: string
+  customer_id?: string
   metadata?: Record<string, string>
 }
 
@@ -52,6 +53,7 @@ serve(async (req: Request) => {
       confirm: false,
       description: body.description || 'Peptiva order',
       ...(body.email && { email: body.email }),
+      ...(body.customer_id && { customer_id: body.customer_id }),
       ...(body.metadata && { metadata: body.metadata }),
     }
 

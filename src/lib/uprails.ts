@@ -50,7 +50,43 @@ export interface CheckoutState {
   returnPath?: string
 }
 
-/* ── Edge Function call ── */
+/* ── Edge Function calls ── */
+
+interface CreateCustomerResponse {
+  customerId: string
+}
+
+export async function createCustomer(opts: {
+  email?: string
+  name?: string
+  phone?: string
+  phoneCountryCode?: string
+  address?: {
+    line1?: string
+    line2?: string
+    city?: string
+    state?: string
+    zip?: string
+    country?: string
+    first_name?: string
+    last_name?: string
+  }
+  metadata?: Record<string, string>
+}): Promise<CreateCustomerResponse> {
+  const { data, error } = await supabase.functions.invoke('create-customer', {
+    body: {
+      email: opts.email,
+      name: opts.name,
+      phone: opts.phone,
+      phone_country_code: opts.phoneCountryCode,
+      address: opts.address,
+      metadata: opts.metadata,
+    },
+  })
+
+  if (error) throw new Error(error.message ?? 'Failed to create customer')
+  return data as CreateCustomerResponse
+}
 
 interface CreatePaymentResponse {
   clientSecret: string
@@ -63,6 +99,7 @@ export async function createPaymentIntent(opts: {
   currency?: string
   description?: string
   email?: string
+  customerId?: string
   metadata?: Record<string, string>
 }): Promise<CreatePaymentResponse> {
   const { data, error } = await supabase.functions.invoke('create-payment', {
@@ -71,6 +108,7 @@ export async function createPaymentIntent(opts: {
       currency: opts.currency ?? 'GBP',
       description: opts.description,
       email: opts.email,
+      customer_id: opts.customerId,
       metadata: opts.metadata,
     },
   })
