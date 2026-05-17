@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 export default function ThemeToggle() {
   const [dark, setDark] = useState(() => {
     const stored = localStorage.getItem('peptiva-theme')
-    return stored ? stored === 'dark' : true
+    return stored ? stored === 'dark' : false
   })
 
   useEffect(() => {

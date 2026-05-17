@@ -190,7 +190,7 @@ export default function SupportPage() {
               <span className="m-contact-icon">📧</span>
               <h4>Email Support</h4>
               <p>Send a detailed question. We respond within 24 hours, usually much faster.</p>
-              <a href="mailto:support@peptiva.co.uk" className="m-btn-outline">support@peptiva.co.uk</a>
+              <a href="mailto:support@peptivalabs.io" className="m-btn-outline">support@peptivalabs.io</a>
             </div>
             <div className="m-contact-card">
               <span className="m-contact-icon">📞</span>

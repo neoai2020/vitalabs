@@ -28,6 +28,14 @@ export default function CheckoutPage() {
   const { state } = useLocation() as { state: CheckoutState | null }
   const navigate = useNavigate()
 
+  useEffect(() => {
+    const prev = document.documentElement.getAttribute('data-theme')
+    document.documentElement.setAttribute('data-theme', 'light')
+    return () => {
+      if (prev) document.documentElement.setAttribute('data-theme', prev)
+    }
+  }, [])
+
   const [status, setStatus] = useState<Status>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
@@ -591,7 +599,7 @@ export default function CheckoutPage() {
             {/* Need help */}
             <div className="ck-help-box">
               <strong>Need Help?</strong>
-              <p>Email us at <a href="mailto:support@peptiva.co.uk">support@peptiva.co.uk</a></p>
+              <p>Email us at <a href="mailto:support@peptivalabs.io">support@peptivalabs.io</a></p>
             </div>
           </div>
         </div>
