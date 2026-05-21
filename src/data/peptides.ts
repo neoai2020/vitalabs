@@ -54,7 +54,7 @@ export const PEPTIDES: Peptide[] = [
     catalogUrl: PRODUCTS_BASE,
     tags: ['metabolic', 'triple', 'glp', 'maximum', 'advanced', 'enhanced'],
     doses: [
-      { label: 'Standard', mg: 'enhanced', price: 199.99 },
+      { label: '45mg', mg: '45mg', price: 199.99 },
     ],
   },
   {
@@ -88,7 +88,7 @@ export const PEPTIDES: Peptide[] = [
     catalogUrl: PRODUCTS_BASE,
     tags: ['metabolic', 'appetite', 'satiation', 'gentle', 'new'],
     doses: [
-      { label: 'Standard', mg: 'standard', price: 79.99 },
+      { label: '4mg', mg: '4mg', price: 79.99 },
     ],
   },
 
@@ -106,7 +106,7 @@ export const PEPTIDES: Peptide[] = [
     catalogUrl: PRODUCTS_BASE,
     tags: ['recovery', 'injury', 'inflammation', 'tissue'],
     doses: [
-      { label: 'Standard', mg: 'standard', price: 79.99 },
+      { label: '5mg', mg: '5mg', price: 79.99 },
     ],
   },
   {
@@ -122,7 +122,7 @@ export const PEPTIDES: Peptide[] = [
     catalogUrl: PRODUCTS_BASE,
     tags: ['recovery', 'training', 'repair'],
     doses: [
-      { label: 'Standard', mg: 'standard', price: 79.99 },
+      { label: '5mg', mg: '5mg', price: 79.99 },
     ],
   },
   {
@@ -138,7 +138,7 @@ export const PEPTIDES: Peptide[] = [
     catalogUrl: PRODUCTS_BASE,
     tags: ['recovery', 'injury', 'synergy', 'inflammation'],
     doses: [
-      { label: 'Standard', mg: 'standard', price: 119.99 },
+      { label: '10mg', mg: '10mg', price: 119.99 },
     ],
   },
 
@@ -156,7 +156,7 @@ export const PEPTIDES: Peptide[] = [
     catalogUrl: PRODUCTS_BASE,
     tags: ['skin_aging', 'recovery', 'collagen', 'full_stack'],
     doses: [
-      { label: 'Standard', mg: 'standard', price: 129.99 },
+      { label: '15mg', mg: '15mg', price: 129.99 },
     ],
   },
   {
@@ -172,7 +172,7 @@ export const PEPTIDES: Peptide[] = [
     catalogUrl: PRODUCTS_BASE,
     tags: ['skin_aging', 'collagen', 'visible'],
     doses: [
-      { label: 'Standard', mg: 'standard', price: 99.99 },
+      { label: '5mg', mg: '5mg', price: 99.99 },
     ],
   },
   {
@@ -188,7 +188,7 @@ export const PEPTIDES: Peptide[] = [
     catalogUrl: PRODUCTS_BASE,
     tags: ['cellular', 'mitochondrial', 'metabolic_cell'],
     doses: [
-      { label: 'Standard', mg: 'standard', price: 89.99 },
+      { label: '10mg', mg: '10mg', price: 89.99 },
     ],
   },
   {

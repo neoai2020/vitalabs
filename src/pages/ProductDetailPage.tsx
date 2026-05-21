@@ -111,29 +111,6 @@ function DosageCalculator({ doses, compound }: { doses: { label: string; mg: str
     }
   }, [selectedStrength, totalMg, mgPerKlik])
 
-  const hasMgStrengths = totalMg > 0
-
-  if (!hasMgStrengths) {
-    return (
-      <div className="calc">
-        <div className="calc-head">
-          <h3 className="calc-h3">Dosage Calculator</h3>
-          <p className="calc-intro">Dosage guidance for {compound}</p>
-        </div>
-        <div className="calc-result">
-          <h4>Recommended Protocol</h4>
-          <div className="calc-result-grid">
-            <div className="calc-result-item"><span>Dose</span><strong>{strength?.label || 'Standard'}</strong></div>
-            <div className="calc-result-item"><span>Frequency</span><strong>Once weekly</strong></div>
-            <div className="calc-result-item"><span>Injection</span><strong>Subcutaneous</strong></div>
-            <div className="calc-result-item"><span>Cycle</span><strong>8–12 weeks</strong></div>
-          </div>
-          <p className="calc-note">Administer at the same time each week. Always follow your clinician's instructions. This calculator provides general guidance only.</p>
-        </div>
-      </div>
-    )
-  }
-
   const klikPresets = [10, 20, 30, 40, 50, 60]
 
   return (
