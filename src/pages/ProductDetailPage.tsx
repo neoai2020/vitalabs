@@ -77,119 +77,164 @@ function BuyButton({ product, selectedDose, className }: { product: { sku: strin
   )
 }
 
-function DosageCalculator({ doses }: { doses: { label: string; mg: string; price: number }[] }) {
-  const [weight, setWeight] = useState(80)
-  const [experience, setExperience] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner')
-  const [goal, setGoal] = useState<'moderate' | 'standard' | 'aggressive'>('standard')
+const KLIKS_PER_PEN = 240
 
-  const recommendation = useMemo(() => {
-    const hasMgDoses = doses.length > 1
-    let doseIdx = 0
-    let weeklyMg = ''
-    let frequency = 'Once weekly subcutaneous injection'
-    let duration = '8–12 weeks'
-    let note = ''
-    let mgPerKg = ''
+function DosageCalculator({ doses, compound }: { doses: { label: string; mg: string; price: number }[]; compound: string }) {
+  const [selectedStrength, setSelectedStrength] = useState(0)
+  const [requiredDose, setRequiredDose] = useState(5)
+  const [penKliks, setPenKliks] = useState(0)
 
-    if (hasMgDoses) {
-      // Multi-dose products: weight + experience + goal determine the dose tier
-      let tierScore = 0
-      if (experience === 'intermediate') tierScore += 1
-      if (experience === 'advanced') tierScore += 2
-      if (goal === 'aggressive') tierScore += 1
-      if (weight > 100) tierScore += 1
+  const strength = doses[selectedStrength]
+  const totalMg = parseFloat(strength?.mg) || 0
+  const mgPerKlik = totalMg > 0 ? totalMg / KLIKS_PER_PEN : 0
+  const maxKliks = 60
 
-      doseIdx = Math.min(tierScore, doses.length - 1)
-      // cap beginner at first dose regardless
-      if (experience === 'beginner') doseIdx = 0
+  const result = useMemo(() => {
+    if (totalMg <= 0) return null
 
-      const selectedDose = doses[doseIdx]
-      const mgNum = parseFloat(selectedDose.mg) || 0
-      weeklyMg = selectedDose.label
-      mgPerKg = mgNum > 0 ? `${(mgNum / weight).toFixed(2)} mg/kg` : '—'
+    const kliksNeeded = Math.round(requiredDose / mgPerKlik)
+    const actualDose = kliksNeeded * mgPerKlik
 
-      if (experience === 'beginner') {
-        duration = '8–12 weeks'
-        note = `Starting dose of ${selectedDose.label} recommended for your weight (${weight}kg). Begin here for 4 weeks to assess tolerance before considering an increase.`
-      } else if (experience === 'intermediate') {
-        duration = '12–16 weeks'
-        note = `Based on your weight (${weight}kg) and experience, ${selectedDose.label} provides optimal efficacy. Monitor weekly and adjust if needed.`
-      } else {
-        duration = '16–20 weeks'
-        note = `Advanced protocol: ${selectedDose.label} for ${weight}kg body weight. Ensure lower doses have been well-tolerated before starting here.`
-      }
-    } else {
-      // Single-dose products
-      const selectedDose = doses[0]
-      weeklyMg = selectedDose?.label || 'Standard'
-      const mgNum = parseFloat(selectedDose?.mg || '0') || 0
-      mgPerKg = mgNum > 0 ? `${(mgNum / weight).toFixed(2)} mg/kg` : '—'
-
-      if (experience === 'beginner') {
-        duration = '8–12 weeks'
-        frequency = 'Once weekly subcutaneous injection'
-        note = `Standard protocol for ${weight}kg body weight. This is the recommended cycle for first-time users. Administer at the same time each week for consistent levels.`
-      } else if (experience === 'intermediate') {
-        duration = '12–16 weeks'
-        frequency = goal === 'aggressive' ? '2x weekly subcutaneous injection' : 'Once weekly subcutaneous injection'
-        note = `Extended protocol for experienced users at ${weight}kg. ${goal === 'aggressive' ? 'Split dosing (2x/week) may improve steady-state levels.' : 'Once weekly remains effective for most users.'}`
-      } else {
-        duration = '16–24 weeks'
-        frequency = goal === 'aggressive' ? '2x weekly subcutaneous injection' : 'Once weekly subcutaneous injection'
-        note = `Advanced protocol for ${weight}kg. ${goal === 'aggressive' ? 'Twice-weekly administration maintains higher steady-state concentration.' : 'Extended duration compensates for tolerance building.'}`
-      }
+    return {
+      kliks: kliksNeeded,
+      actualDose: actualDose.toFixed(2),
+      mgPerKlik: mgPerKlik.toFixed(4),
+      totalKliks: KLIKS_PER_PEN,
     }
+  }, [requiredDose, mgPerKlik, totalMg])
 
-    return { dose: weeklyMg, frequency, duration, note, mgPerKg }
-  }, [weight, experience, goal, doses])
+  const resultFromSlider = useMemo(() => {
+    if (totalMg <= 0 || penKliks === 0) return null
+    const dose = penKliks * mgPerKlik
+    return {
+      kliks: penKliks,
+      dose: dose.toFixed(2),
+    }
+  }, [penKliks, mgPerKlik, totalMg])
+
+  useEffect(() => {
+    if (totalMg > 0) {
+      const defaultDose = totalMg <= 10 ? 2.5 : totalMg <= 30 ? 5 : 7.5
+      setRequiredDose(defaultDose)
+      setPenKliks(Math.round(defaultDose / mgPerKlik))
+    }
+  }, [selectedStrength, totalMg, mgPerKlik])
+
+  const hasMgStrengths = totalMg > 0
+
+  if (!hasMgStrengths) {
+    return (
+      <div className="calc">
+        <div className="calc-head">
+          <h3 className="calc-h3">Dosage Calculator</h3>
+          <p className="calc-intro">Dosage guidance for {compound}</p>
+        </div>
+        <div className="calc-result">
+          <h4>Recommended Protocol</h4>
+          <div className="calc-result-grid">
+            <div className="calc-result-item"><span>Dose</span><strong>{strength?.label || 'Standard'}</strong></div>
+            <div className="calc-result-item"><span>Frequency</span><strong>Once weekly</strong></div>
+            <div className="calc-result-item"><span>Injection</span><strong>Subcutaneous</strong></div>
+            <div className="calc-result-item"><span>Cycle</span><strong>8–12 weeks</strong></div>
+          </div>
+          <p className="calc-note">Administer at the same time each week. Always follow your clinician's instructions. This calculator provides general guidance only.</p>
+        </div>
+      </div>
+    )
+  }
+
+  const klikPresets = [10, 20, 30, 40, 50, 60]
 
   return (
     <div className="calc">
       <div className="calc-head">
-        <h3 className="calc-h3">Personalised Dosage Calculator</h3>
-        <p className="calc-intro">Adjust the inputs below and see your recommended protocol update in real-time.</p>
+        <h3 className="calc-h3">Dosage Calculator</h3>
+        <div className="calc-product-badge">
+          <strong>{compound} | {strength.label}</strong>
+          <span>Category: {doses.length > 1 ? 'Multiple strengths available' : 'Single strength'}</span>
+        </div>
       </div>
+
+      {doses.length > 1 && (
+        <div className="calc-field">
+          <label>Select Strength</label>
+          <div className="calc-strength-btns">
+            {doses.map((d, i) => (
+              <button key={i} type="button" className={`calc-str-btn ${selectedStrength === i ? 'calc-str-btn--active' : ''}`} onClick={() => setSelectedStrength(i)}>
+                {d.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="calc-body">
         <div className="calc-field">
-          <label>Your Body Weight</label>
+          <label>Required dose (mg)</label>
+          <input
+            type="number"
+            className="calc-dose-input"
+            value={requiredDose}
+            onChange={(e) => {
+              const v = parseFloat(e.target.value) || 0
+              setRequiredDose(v)
+              setPenKliks(Math.round(v / mgPerKlik))
+            }}
+            min={0}
+            max={totalMg}
+            step={0.5}
+          />
+          <p className="calc-dose-meta">{mgPerKlik.toFixed(4)} mg per KLIK · Total {KLIKS_PER_PEN} KLIK / pen</p>
+        </div>
+
+        <div className="calc-field">
+          <label>Pen KLIKs</label>
           <div className="calc-range">
-            <input type="range" min={50} max={150} value={weight} onChange={(e) => setWeight(Number(e.target.value))} />
-            <span className="calc-range-val">{weight} kg</span>
+            <input
+              type="range"
+              min={0}
+              max={maxKliks}
+              value={penKliks}
+              onChange={(e) => {
+                const k = Number(e.target.value)
+                setPenKliks(k)
+                setRequiredDose(parseFloat((k * mgPerKlik).toFixed(2)))
+              }}
+            />
+            <div className="calc-range-labels">
+              <span>0</span>
+              <span className="calc-range-current">{penKliks} KLIK · {(penKliks * mgPerKlik).toFixed(1)} mg</span>
+              <span>{maxKliks} KLIK</span>
+            </div>
           </div>
-        </div>
-        <div className="calc-field">
-          <label>Experience with Peptides</label>
-          <div className="calc-opts">
-            {(['beginner', 'intermediate', 'advanced'] as const).map((lvl) => (
-              <button key={lvl} type="button" className={`calc-opt ${experience === lvl ? 'calc-opt--active' : ''}`} onClick={() => setExperience(lvl)}>
-                <strong>{lvl.charAt(0).toUpperCase() + lvl.slice(1)}</strong>
-                <span>{lvl === 'beginner' ? 'No prior use' : lvl === 'intermediate' ? '1–12 months' : '12+ months'}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="calc-field">
-          <label>Protocol Intensity</label>
-          <div className="calc-opts">
-            {(['moderate', 'standard', 'aggressive'] as const).map((g) => (
-              <button key={g} type="button" className={`calc-opt ${goal === g ? 'calc-opt--active' : ''}`} onClick={() => setGoal(g)}>
-                <strong>{g.charAt(0).toUpperCase() + g.slice(1)}</strong>
-                <span>{g === 'moderate' ? 'Gentle start' : g === 'standard' ? 'Balanced' : 'Maximum effect'}</span>
+          <div className="calc-klik-presets">
+            {klikPresets.map(k => (
+              <button
+                key={k}
+                type="button"
+                className={`calc-klik-btn ${penKliks === k ? 'calc-klik-btn--active' : ''}`}
+                onClick={() => {
+                  setPenKliks(k)
+                  setRequiredDose(parseFloat((k * mgPerKlik).toFixed(2)))
+                }}
+              >
+                {k} KLIK
               </button>
             ))}
           </div>
         </div>
       </div>
-      <div className="calc-result">
-        <h4>Your Recommended Protocol</h4>
-        <div className="calc-result-grid">
-          <div className="calc-result-item"><span>Weekly Dose</span><strong>{recommendation.dose}</strong></div>
-          <div className="calc-result-item"><span>Frequency</span><strong>{recommendation.frequency}</strong></div>
-          <div className="calc-result-item"><span>Cycle Length</span><strong>{recommendation.duration}</strong></div>
-          <div className="calc-result-item"><span>Dose/Weight Ratio</span><strong>{recommendation.mgPerKg}</strong></div>
+
+      {result && (
+        <div className="calc-result">
+          <h4>Result</h4>
+          <p className="calc-result-main">
+            For <strong>{requiredDose} mg</strong> on the <strong>{strength.label}</strong> pen, take <strong>{result.kliks} KLIKS</strong>.
+          </p>
+          <p className="calc-result-detail">{result.mgPerKlik} mg per KLIK · Actual: {result.actualDose} mg</p>
+          <p className="calc-note">Note: Some pens have a max dial per injection (cycle). This is a math converter. Always follow your clinician / product instructions.</p>
         </div>
-        <p className="calc-note">{recommendation.note}</p>
-      </div>
+      )}
     </div>
   )
 }
@@ -290,7 +335,7 @@ export default function ProductDetailPage() {
             <h2 className="h2">Dosage Calculator</h2>
             <p className="section-sub">Get a personalised recommendation in seconds.</p>
           </div>
-          <DosageCalculator doses={product.doses} />
+          <DosageCalculator doses={product.doses} compound={product.compound} />
           <div className="st-center" style={{ marginTop: '2rem' }}>
             <BuyButton product={product} selectedDose={selectedDose} className="btn btn--glow btn--lg" />
           </div>

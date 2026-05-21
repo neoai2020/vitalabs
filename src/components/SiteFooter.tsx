@@ -26,7 +26,7 @@ export default function SiteFooter() {
           </div>
           <div className="st-footer-col">
             <h4>Support</h4>
-            <a href="mailto:support@peptiva.co.uk">support@peptiva.co.uk</a>
+            <a href="mailto:support@peptivalabs.io">support@peptivalabs.io</a>
           </div>
         </div>
         <div className="st-footer-bottom">

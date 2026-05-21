@@ -58,7 +58,7 @@ export default function DisclaimerPage() {
 
           <section>
             <h2>10. Contact</h2>
-            <p>If you have questions about this disclaimer or our products, contact us at <a href="mailto:support@peptiva.co.uk">support@peptiva.co.uk</a>.</p>
+            <p>If you have questions about this disclaimer or our products, contact us at <a href="mailto:support@peptivalabs.io">support@peptivalabs.io</a>.</p>
           </section>
         </div>
       </main>

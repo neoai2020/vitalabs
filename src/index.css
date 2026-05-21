@@ -7183,11 +7183,14 @@ h1, h2, h3 {
 }
 
 .ck-logo {
-  font-family: var(--font-display, 'Plus Jakarta Sans', sans-serif);
-  font-weight: 800;
-  font-size: 1.25rem;
-  color: var(--brand);
   text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+.ck-logo-img {
+  height: 42px;
+  width: auto;
+  object-fit: contain;
 }
 
 .ck-header-right {

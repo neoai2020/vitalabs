@@ -89,7 +89,7 @@ export default function TermsPage() {
 
           <section>
             <h2>14. Contact</h2>
-            <p>If you have any questions about these Terms, please contact us at <a href="mailto:support@peptiva.co.uk">support@peptiva.co.uk</a>.</p>
+            <p>If you have any questions about these Terms, please contact us at <a href="mailto:support@peptivalabs.io">support@peptivalabs.io</a>.</p>
           </section>
         </div>
       </main>
