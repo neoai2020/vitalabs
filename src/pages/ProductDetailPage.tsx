@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useParams, Link, Navigate, useNavigate } from 'react-router-dom'
 import { PEPTIDES, getPeptideById } from '../data/peptides'
 import { getProductContent } from '../data/productContent'
@@ -102,15 +102,6 @@ function DosageCalculator({ doses, compound }: { doses: { label: string; mg: str
       totalKliks: KLIKS_PER_PEN,
     }
   }, [requiredDose, mgPerKlik, totalMg])
-
-  const resultFromSlider = useMemo(() => {
-    if (totalMg <= 0 || penKliks === 0) return null
-    const dose = penKliks * mgPerKlik
-    return {
-      kliks: penKliks,
-      dose: dose.toFixed(2),
-    }
-  }, [penKliks, mgPerKlik, totalMg])
 
   useEffect(() => {
     if (totalMg > 0) {
