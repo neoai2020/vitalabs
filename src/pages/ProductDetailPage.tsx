@@ -238,6 +238,12 @@ export default function ProductDetailPage() {
               <span className="gold-stars">★★★★★</span>
               <span>{avgRating} ({reviews.length} verified reviews)</span>
             </div>
+
+            {/* Image shown here on mobile only */}
+            <div className="pdp-hero-img-mobile">
+              {product.image && <img src={product.image} alt={product.compound} className="pdp-hero-img" />}
+            </div>
+
             <p className="pdp-hero-desc">{product.description}</p>
 
             {product.doses.length > 1 && (
