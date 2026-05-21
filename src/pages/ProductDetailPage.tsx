@@ -81,7 +81,7 @@ const KLIKS_PER_PEN = 240
 
 function DosageCalculator({ doses, compound }: { doses: { label: string; mg: string; price: number }[]; compound: string }) {
   const [selectedStrength, setSelectedStrength] = useState(0)
-  const [requiredDose, setRequiredDose] = useState(5)
+  const [requiredDose, setRequiredDose] = useState(0)
   const [penKliks, setPenKliks] = useState(0)
 
   const strength = doses[selectedStrength]
@@ -90,7 +90,7 @@ function DosageCalculator({ doses, compound }: { doses: { label: string; mg: str
   const maxKliks = 60
 
   const result = useMemo(() => {
-    if (totalMg <= 0) return null
+    if (totalMg <= 0 || requiredDose <= 0) return null
 
     const kliksNeeded = Math.round(requiredDose / mgPerKlik)
     const actualDose = kliksNeeded * mgPerKlik
@@ -104,12 +104,9 @@ function DosageCalculator({ doses, compound }: { doses: { label: string; mg: str
   }, [requiredDose, mgPerKlik, totalMg])
 
   useEffect(() => {
-    if (totalMg > 0) {
-      const defaultDose = totalMg <= 10 ? 2.5 : totalMg <= 30 ? 5 : 7.5
-      setRequiredDose(defaultDose)
-      setPenKliks(Math.round(defaultDose / mgPerKlik))
-    }
-  }, [selectedStrength, totalMg, mgPerKlik])
+    setRequiredDose(0)
+    setPenKliks(0)
+  }, [selectedStrength])
 
   const klikPresets = [10, 20, 30, 40, 50, 60]
 
