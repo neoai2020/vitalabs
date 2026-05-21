@@ -60,7 +60,7 @@ const REVIEWS = [
   {
     name: 'Emma K.',
     rating: 5,
-    text: 'Lost 9kg in the first month on Tirzepatide. Appetite just vanishes naturally — it doesn\'t feel forced at all. The quiz matched me perfectly.',
+    text: 'Lost 9kg in the first month on Tirzepatide. Appetite just vanishes naturally — it doesn\'t feel forced at all. Peptiva matched me perfectly.',
     product: 'Tirzepatide 20mg',
     result: '-9kg in 4 weeks',
   },
@@ -90,15 +90,12 @@ export default function LandingPage() {
                 protocol engine. Verified purity. Personalised dosing. Real results.
               </p>
               <div className="hero-btns">
-                <Link to="/quiz" className="btn btn--glow">
-                  Find Your Match
+                <Link to="/products" className="btn btn--glow">
+                  Browse Products
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </Link>
-                <Link to="/products" className="btn btn--ghost">
-                  Browse Products
-                </Link>
               </div>
-              <p className="hero-note">Free quiz · No email needed · 60-second results</p>
+              <p className="hero-note">Pharmaceutical-grade · Free UK shipping · Protocol guide included</p>
             </div>
             <div className="hero-visual">
               <img src="/images/hero-main.png" alt="Peptiva Research" className="hero-img" />
@@ -161,19 +158,19 @@ export default function LandingPage() {
         <div className="st-container">
           <div className="section-head section-head--light">
             <span className="overline overline--light">How It Works</span>
-            <h2 className="h2 h2--light">From Quiz to Results in 4 Simple Steps</h2>
+            <h2 className="h2 h2--light">From Order to Results in 4 Simple Steps</h2>
           </div>
           <div className="steps-row">
             <div className="step">
               <span className="step-num">01</span>
-              <h3 className="step-title">Take the Quiz</h3>
-              <p className="step-desc">Answer questions about your goals, health history, and experience level. Takes 60 seconds.</p>
+              <h3 className="step-title">Choose Your Product</h3>
+              <p className="step-desc">Browse our catalogue and select the peptide matched to your goals. Use the dosage calculator for guidance.</p>
             </div>
             <div className="step-arrow">→</div>
             <div className="step">
               <span className="step-num">02</span>
-              <h3 className="step-title">Get Matched</h3>
-              <p className="step-desc">Our algorithm recommends the optimal compound and dosage for your specific biology.</p>
+              <h3 className="step-title">Place Your Order</h3>
+              <p className="step-desc">Secure checkout with fast processing. All orders ship within 24 hours in discreet packaging.</p>
             </div>
             <div className="step-arrow">→</div>
             <div className="step">
@@ -254,16 +251,16 @@ export default function LandingPage() {
       {/* CTA */}
       <section className="section section--dark cta-section">
         <div className="st-container st-center">
-          <h2 className="cta-h2">Not Sure Where to Start?</h2>
+          <h2 className="cta-h2">Ready to Start Your Protocol?</h2>
           <p className="cta-sub">
-            Take our 60-second quiz and get a personalised compound recommendation 
-            based on your goals, health profile, and experience level.
+            Browse our full catalogue of pharmaceutical-grade peptides. Each product includes 
+            a personalised dosing guide, free UK shipping, and practitioner support.
           </p>
-          <Link to="/quiz" className="btn btn--glow btn--lg">
-            Take the Free Quiz
+          <Link to="/products" className="btn btn--glow btn--lg">
+            Browse All Products
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </Link>
-          <p className="cta-note">No email required · Instant results · 100% free</p>
+          <p className="cta-note">Free UK shipping · Protocol guide included · 30-day guarantee</p>
         </div>
       </section>
 

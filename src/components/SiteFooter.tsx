@@ -12,7 +12,6 @@ export default function SiteFooter() {
           <div className="st-footer-col">
             <h4>Products</h4>
             <Link to="/products">All Peptides</Link>
-            <Link to="/quiz">Peptide Quiz</Link>
           </div>
           <div className="st-footer-col">
             <h4>Company</h4>

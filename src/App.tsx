@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import LandingPage from './pages/LandingPage'
 import ProductsPage from './pages/ProductsPage'
@@ -61,6 +62,12 @@ function MembersRoutes() {
   )
 }
 
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+  return null
+}
+
 export default function App() {
   const { pathname } = useLocation()
   const hideThemeToggle =
@@ -73,6 +80,7 @@ export default function App() {
 
   return (
     <AuthProvider>
+      <ScrollToTop />
       <Routes>
         {/* Main site */}
         <Route path="/" element={<LandingPage />} />

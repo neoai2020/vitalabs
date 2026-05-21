@@ -244,7 +244,6 @@ export default function ProductDetailPage() {
 
             <div className="pdp-hero-btns">
               <BuyButton product={product} selectedDose={selectedDose} />
-              <Link to="/quiz" className="btn btn--ghost">Not Sure? Take the Quiz</Link>
             </div>
 
             <div className="pdp-hero-trust">
@@ -455,7 +454,6 @@ export default function ProductDetailPage() {
           <p className="section-sub" style={{ marginBottom: '1.5rem' }}>Order now and receive your product with a complete dosing guide within 24 hours.</p>
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             <BuyButton product={product} selectedDose={selectedDose} />
-            <Link to="/quiz" className="btn btn--outline-dark">Take the Quiz Instead</Link>
           </div>
         </div>
       </section>
