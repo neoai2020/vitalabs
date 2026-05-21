@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { PEPTIDES } from '../data/peptides'
 import SiteNav from '../components/SiteNav'
 import SiteFooter from '../components/SiteFooter'
+import { TrustpilotSection } from '../components/TrustpilotBadge'
 
 const CATEGORIES = [
   {
@@ -119,6 +120,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* TRUSTPILOT */}
+      <TrustpilotSection />
 
       {/* CATEGORIES — with infographic images */}
       <section className="section">

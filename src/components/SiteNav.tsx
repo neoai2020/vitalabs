@@ -8,7 +8,6 @@ export default function SiteNav() {
   const links = [
     { to: '/', label: 'Home' },
     { to: '/products', label: 'Products' },
-    { to: '/quiz', label: 'Find Your Match' },
   ]
 
   return (
@@ -29,19 +28,9 @@ export default function SiteNav() {
               {l.label}
             </Link>
           ))}
-          <Link
-            to="/quiz"
-            className="sn-mobile-cta"
-            onClick={() => setMobileOpen(false)}
-          >
-            Take the Quiz
-          </Link>
         </nav>
 
         <div className="sn-right">
-          <Link to="/quiz" className="sn-cta">
-            Take the Quiz →
-          </Link>
           <button
             type="button"
             className="sn-burger"

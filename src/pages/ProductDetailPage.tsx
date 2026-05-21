@@ -5,6 +5,7 @@ import { getProductContent } from '../data/productContent'
 import type { CheckoutState } from '../lib/uprails'
 import SiteNav from '../components/SiteNav'
 import SiteFooter from '../components/SiteFooter'
+import { TrustpilotStrip } from '../components/TrustpilotBadge'
 
 const CATEGORY_IMAGES: Record<string, string> = {
   'Weight management': '/images/weight-management-hero.png',
@@ -263,9 +264,10 @@ export default function ProductDetailPage() {
         </div>
       </section>
 
-      {/* SOCIAL PROOF — immediately after hero */}
+      {/* TRUSTPILOT + SOCIAL PROOF — immediately after hero */}
       <section className="pdp-social-proof">
         <div className="st-container">
+          <TrustpilotStrip />
           <div className="pdp-sp-row">
             {reviews.slice(0, 3).map((r, i) => (
               <div key={i} className="pdp-sp-card">
@@ -277,6 +279,21 @@ export default function ProductDetailPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* DOSAGE CALCULATOR — high up for quick access */}
+      <section className="section">
+        <div className="st-container">
+          <div className="section-head">
+            <span className="overline">Protocol Builder</span>
+            <h2 className="h2">Dosage Calculator</h2>
+            <p className="section-sub">Get a personalised recommendation in seconds.</p>
+          </div>
+          <DosageCalculator doses={product.doses} />
+          <div className="st-center" style={{ marginTop: '2rem' }}>
+            <BuyButton product={product} selectedDose={selectedDose} className="btn btn--glow btn--lg" />
           </div>
         </div>
       </section>
@@ -367,21 +384,6 @@ export default function ProductDetailPage() {
                 <p>{item}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* DOSAGE CALCULATOR */}
-      <section className="section">
-        <div className="st-container">
-          <div className="section-head">
-            <span className="overline">Protocol Builder</span>
-            <h2 className="h2">Dosage Calculator</h2>
-            <p className="section-sub">Get a personalised recommendation in seconds.</p>
-          </div>
-          <DosageCalculator doses={product.doses} />
-          <div className="st-center" style={{ marginTop: '2rem' }}>
-            <BuyButton product={product} selectedDose={selectedDose} className="btn btn--glow btn--lg" />
           </div>
         </div>
       </section>
