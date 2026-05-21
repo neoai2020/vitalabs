@@ -242,9 +242,10 @@ function DosageCalculator({ doses, compound }: { doses: { label: string; mg: str
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>()
   const product = id ? getPeptideById(id) : undefined
+  const [selectedDose, setSelectedDose] = useState(0)
+
   if (!product) return <Navigate to="/products" replace />
 
-  const [selectedDose, setSelectedDose] = useState(0)
   const reviews = PRODUCT_REVIEWS[product.id] || DEFAULT_REVIEWS
   const avgRating = (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
   const content = getProductContent(product.id)
