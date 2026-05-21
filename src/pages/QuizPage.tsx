@@ -89,7 +89,7 @@ export default function QuizPage() {
 
   const goBack = () => {
     if (stepIdx > 0) setStepIdx((i) => i - 1)
-    else navigate('/')
+    else navigate('/quiz')
   }
 
   if (isAnalyzing) {

@@ -102,7 +102,7 @@ export default function UpsellPage() {
       <div className="tsl-empty">
         <h1>Complete the quiz first</h1>
         <p>Your personalised results page is built from your answers.</p>
-        <Link className="r-cta-btn" to="/">Take the Quiz →</Link>
+        <Link className="r-cta-btn" to="/quiz">Take the Quiz →</Link>
       </div>
     )
   }
@@ -372,7 +372,7 @@ export default function UpsellPage() {
             Peptiva Ltd. All products manufactured in our UK-regulated laboratory. Sold for research use only.
             Full documentation included with every order. Comply with UK law.
           </p>
-          <p className="r-footer-copy">© {new Date().getFullYear()} Peptiva · <Link to="/">Home</Link> · <Link to="/">Retake Quiz</Link></p>
+          <p className="r-footer-copy">© {new Date().getFullYear()} Peptiva · <Link to="/">Home</Link> · <Link to="/quiz">Retake Quiz</Link></p>
         </div>
       </footer>
     </div>

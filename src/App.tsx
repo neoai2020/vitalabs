@@ -1,4 +1,12 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import LandingPage from './pages/LandingPage'
+import ProductsPage from './pages/ProductsPage'
+import ProductDetailPage from './pages/ProductDetailPage'
+import TermsPage from './pages/TermsPage'
+import PrivacyPage from './pages/PrivacyPage'
+import RefundPolicyPage from './pages/RefundPolicyPage'
+import DisclaimerPage from './pages/DisclaimerPage'
+import ShippingPage from './pages/ShippingPage'
 import HomePage from './pages/HomePage'
 import QuizPage from './pages/QuizPage'
 import CapturePage from './pages/CapturePage'
@@ -58,16 +66,31 @@ export default function App() {
   const hideThemeToggle =
     pathname === '/' ||
     pathname.startsWith('/quiz') ||
-    ['/capture', '/results', '/upsell', '/tsl', '/checkout', '/order-complete'].includes(pathname) ||
+    pathname.startsWith('/products') ||
+    ['/capture', '/results', '/upsell', '/tsl', '/checkout', '/order-complete', '/terms', '/privacy', '/refund-policy', '/disclaimer', '/shipping'].includes(pathname) ||
     pathname.startsWith('/members')
   const showToggle = !hideThemeToggle
 
   return (
     <AuthProvider>
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        {/* Main site */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/products" element={<ProductsPage />} />
+        <Route path="/products/:id" element={<ProductDetailPage />} />
+
+        {/* Legal / Compliance */}
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/refund-policy" element={<RefundPolicyPage />} />
+        <Route path="/disclaimer" element={<DisclaimerPage />} />
+        <Route path="/shipping" element={<ShippingPage />} />
+
+        {/* Quiz funnel (moved to /quiz subfolder) */}
+        <Route path="/quiz" element={<HomePage />} />
         <Route path="/quiz/:gender" element={<QuizPage />} />
-        <Route path="/quiz" element={<Navigate to="/" replace />} />
+
+        {/* Funnel continuation */}
         <Route path="/capture" element={<CapturePage />} />
         <Route path="/results" element={<ResultsPage />} />
         <Route path="/upsell" element={<UpsellPage />} />
@@ -75,7 +98,10 @@ export default function App() {
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/test-payment" element={<TestPaymentPage />} />
         <Route path="/order-complete" element={<OrderCompletePage />} />
+
+        {/* Members area */}
         <Route path="/members/*" element={<MembersRoutes />} />
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       {showToggle && <ThemeToggle />}

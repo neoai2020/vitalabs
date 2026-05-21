@@ -60,7 +60,7 @@ function CountdownTimer({ completedAt }: { completedAt: number | null }) {
   }, [calcRemaining])
 
   if (!completedAt || remaining <= 0) {
-    return <span className="tsl-timer tsl-timer--expired">Quiz rate expired — <Link to="/">retake quiz</Link></span>
+    return <span className="tsl-timer tsl-timer--expired">Quiz rate expired — <Link to="/quiz">retake quiz</Link></span>
   }
 
   const h = Math.floor(remaining / 3_600_000)
@@ -449,7 +449,7 @@ export default function TSLPage() {
       <div className="tsl tsl--results tsl-empty">
         <h1>Complete the quiz first</h1>
         <p>Your personalised results page is built from your answers.</p>
-        <Link className="tsl-cta tsl-cta--primary" to="/">Take the quiz</Link>
+        <Link className="tsl-cta tsl-cta--primary" to="/quiz">Take the quiz</Link>
       </div>
     )
   }
@@ -644,7 +644,7 @@ export default function TSLPage() {
           <p className="tsl-foot-meta">
             &copy; {new Date().getFullYear()} Peptiva &middot;{' '}
             <Link to="/">Home</Link> &middot;{' '}
-            <Link to="/">Retake quiz</Link>
+            <Link to="/quiz">Retake quiz</Link>
           </p>
         </div>
       </footer>

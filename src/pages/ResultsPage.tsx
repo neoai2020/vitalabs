@@ -217,7 +217,7 @@ export default function ResultsPage() {
       <div className="fp-empty">
         <h1>Complete the quiz first</h1>
         <p>Your personalised results page is built from your answers.</p>
-        <Link className="fp-btn" to="/">Take the Quiz</Link>
+        <Link className="fp-btn" to="/quiz">Take the Quiz</Link>
       </div>
     )
   }
@@ -682,7 +682,7 @@ export default function ResultsPage() {
           </div>
           <div className="fp-footer-links">
             <Link to="/">Home</Link>
-            <Link to="/">Retake Quiz</Link>
+            <Link to="/quiz">Retake Quiz</Link>
             <a href="#plans">Plans</a>
             <a href="#faq">FAQ</a>
           </div>
