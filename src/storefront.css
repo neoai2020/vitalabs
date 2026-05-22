@@ -1244,6 +1244,15 @@
   font-weight: 700 !important;
   border-radius: 12px !important;
   text-align: center;
+  background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+}
+.cart-checkout-btn:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #0284c7 100%) !important;
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
 }
 
 .cart-clear-btn {
