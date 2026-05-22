@@ -296,7 +296,8 @@ export const PEPTIDES: Peptide[] = [
     tagline: 'Extended half-life GHRH analog for sustained growth hormone support.',
     description:
       'CJC-1295 is a growth hormone-releasing hormone analog with an extended half-life, studied for sustained effects on growth hormone secretion patterns. Its prolonged action makes it suitable for research into consistent GH elevation without frequent dosing.',
-    image: null,
+    image:
+      'https://admin.apexpharma.io/uploads/products/15/Image_1765185772166_5e2c3b2b80cd.jpg',
     catalogUrl: PRODUCTS_BASE,
     tags: ['growth-hormone', 'ghrh', 'sustained', 'secretion'],
     doses: [
@@ -311,7 +312,8 @@ export const PEPTIDES: Peptide[] = [
     tagline: 'GH secretion support with metabolic influence.',
     description:
       'GHRP-6 is a growth hormone-releasing peptide studied for its effects on GH secretion and potential metabolic influences in research models. It stimulates the pituitary gland to release growth hormone, making it a valuable tool for GH-related research.',
-    image: null,
+    image:
+      'https://admin.apexpharma.io/uploads/products/14/Image_1765185747363_5b17ee11a816.jpg',
     catalogUrl: PRODUCTS_BASE,
     tags: ['growth-hormone', 'ghrp', 'pituitary', 'metabolic'],
     doses: [
@@ -360,7 +362,8 @@ export const PEPTIDES: Peptide[] = [
     tagline: 'Melanocortin receptor research — pigmentation and physiological response.',
     description:
       'Melanotan II is a synthetic analog of alpha-melanocyte stimulating hormone, researched for its effects on melanocortin receptors and various physiological responses including skin pigmentation pathways.',
-    image: null,
+    image:
+      'https://admin.apexpharma.io/uploads/products/19/Klikmots-c_618d197e22cf.jpg',
     catalogUrl: PRODUCTS_BASE,
     tags: ['melanocortin', 'pigmentation', 'msh', 'receptor'],
     doses: [

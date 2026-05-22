@@ -86,12 +86,14 @@ export default function ProductsPage() {
           <div className="st-products">
             {filtered.map((p) => (
               <Link key={p.id} to={`/products/${p.id}`} className="st-prod-card">
-                {p.image && (
-                  <div className="st-prod-img-wrap">
+                <div className="st-prod-img-wrap">
+                  {p.image ? (
                     <img src={p.image} alt={p.compound} className="st-prod-img" />
-                    <span className="st-prod-badge">{p.category}</span>
-                  </div>
-                )}
+                  ) : (
+                    <div className="st-prod-img st-prod-img--placeholder" />
+                  )}
+                  <span className="st-prod-badge">{p.category}</span>
+                </div>
                 <div className="st-prod-body">
                   <h3 className="st-prod-name">{p.compound}</h3>
                   <p className="st-prod-tag">{p.tagline}</p>
