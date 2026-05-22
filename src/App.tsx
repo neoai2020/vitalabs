@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { CartProvider } from './lib/cart'
+import CartDrawer from './components/CartDrawer'
 import LandingPage from './pages/LandingPage'
 import ProductsPage from './pages/ProductsPage'
 import ProductDetailPage from './pages/ProductDetailPage'
@@ -80,7 +82,9 @@ export default function App() {
 
   return (
     <AuthProvider>
+      <CartProvider>
       <ScrollToTop />
+      <CartDrawer />
       <Routes>
         {/* Main site */}
         <Route path="/" element={<LandingPage />} />
@@ -113,6 +117,7 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       {showToggle && <ThemeToggle />}
+      </CartProvider>
     </AuthProvider>
   )
 }

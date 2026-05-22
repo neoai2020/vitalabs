@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect } from 'react'
-import { useParams, Link, Navigate, useNavigate } from 'react-router-dom'
+import { useParams, Link, Navigate } from 'react-router-dom'
 import { PEPTIDES, getPeptideById } from '../data/peptides'
 import { getProductContent } from '../data/productContent'
-import type { CheckoutState } from '../lib/uprails'
+import { useCart } from '../lib/cart'
 import SiteNav from '../components/SiteNav'
 import SiteFooter from '../components/SiteFooter'
 import { TrustpilotStrip } from '../components/TrustpilotBadge'
@@ -49,30 +49,25 @@ const DEFAULT_REVIEWS = [
   { name: 'Dan W.', rating: 4, text: 'Good product, does what it says. Certificate of analysis included, shipped next day.', date: '3 weeks ago', result: 'Positive' },
 ]
 
-function BuyButton({ product, selectedDose, className }: { product: { sku: string; compound: string; image: string | null; doses: { label: string; price: number }[] }; selectedDose: number; className?: string }) {
-  const navigate = useNavigate()
+function AddToCartButton({ product, selectedDose, className }: { product: { id: string; sku: string; compound: string; image: string | null; doses: { label: string; mg: string; price: number }[] }; selectedDose: number; className?: string }) {
+  const { addItem } = useCart()
   const dose = product.doses[selectedDose]
 
-  const handleBuy = () => {
-    const checkoutState: CheckoutState = {
-      items: [{
-        sku: product.sku,
-        compound: `${product.compound} — ${dose.label}`,
-        image: product.image,
-        price: dose.price,
-        displayPrice: `£${dose.price.toFixed(2)}`,
-      }],
-      amount: Math.round(dose.price * 100),
-      quantity: 1,
-      description: `${product.compound} (${dose.label})`,
-      displayPrice: `£${dose.price.toFixed(2)}`,
-    }
-    navigate('/checkout', { state: checkoutState })
+  const handleAdd = () => {
+    addItem({
+      id: product.id,
+      sku: product.sku,
+      compound: product.compound,
+      doseLabel: dose.label,
+      mg: dose.mg,
+      image: product.image,
+      price: dose.price,
+    })
   }
 
   return (
-    <button type="button" onClick={handleBuy} className={className || 'btn btn--glow btn--lg'}>
-      Buy Now — £{dose.price.toFixed(2)}
+    <button type="button" onClick={handleAdd} className={className || 'btn btn--glow btn--lg'}>
+      Add to Cart — £{dose.price.toFixed(2)}
     </button>
   )
 }
@@ -260,7 +255,7 @@ export default function ProductDetailPage() {
             </div>
 
             <div className="pdp-hero-btns">
-              <BuyButton product={product} selectedDose={selectedDose} />
+              <AddToCartButton product={product} selectedDose={selectedDose} />
             </div>
 
             <div className="pdp-hero-trust">
@@ -309,7 +304,7 @@ export default function ProductDetailPage() {
           </div>
           <DosageCalculator doses={product.doses} compound={product.compound} />
           <div className="st-center" style={{ marginTop: '2rem' }}>
-            <BuyButton product={product} selectedDose={selectedDose} className="btn btn--glow btn--lg" />
+            <AddToCartButton product={product} selectedDose={selectedDose} className="btn btn--glow btn--lg" />
           </div>
         </div>
       </section>
@@ -323,7 +318,7 @@ export default function ProductDetailPage() {
               <h2 className="h2">How {product.sku} Works</h2>
               <p className="pdp-mech-desc">{content.howItWorks}</p>
               <div style={{ marginTop: '1.5rem' }}>
-                <BuyButton product={product} selectedDose={selectedDose} className="btn btn--glow" />
+                <AddToCartButton product={product} selectedDose={selectedDose} className="btn btn--glow" />
               </div>
             </div>
             <div className="pdp-mech-img-wrap">
@@ -350,7 +345,7 @@ export default function ProductDetailPage() {
             ))}
           </div>
           <div className="st-center" style={{ marginTop: '2.5rem' }}>
-            <BuyButton product={product} selectedDose={selectedDose} className="btn btn--glow btn--lg" />
+            <AddToCartButton product={product} selectedDose={selectedDose} className="btn btn--glow btn--lg" />
           </div>
         </div>
       </section>
@@ -380,7 +375,7 @@ export default function ProductDetailPage() {
             ))}
           </div>
           <div className="st-center" style={{ marginTop: '2.5rem' }}>
-            <BuyButton product={product} selectedDose={selectedDose} className="btn btn--glow btn--lg" />
+            <AddToCartButton product={product} selectedDose={selectedDose} className="btn btn--glow btn--lg" />
             <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: 'var(--gray-400)' }}>Free UK shipping · Protocol guide included</p>
           </div>
         </div>
@@ -432,7 +427,7 @@ export default function ProductDetailPage() {
             ))}
           </div>
           <div className="st-center" style={{ marginTop: '2.5rem' }}>
-            <BuyButton product={product} selectedDose={selectedDose} className="btn btn--glow btn--lg" />
+            <AddToCartButton product={product} selectedDose={selectedDose} className="btn btn--glow btn--lg" />
           </div>
         </div>
       </section>
@@ -470,7 +465,7 @@ export default function ProductDetailPage() {
           <h2 className="h2">Ready to Start Your Protocol?</h2>
           <p className="section-sub" style={{ marginBottom: '1.5rem' }}>Order now and receive your product with a complete dosing guide within 24 hours.</p>
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <BuyButton product={product} selectedDose={selectedDose} />
+            <AddToCartButton product={product} selectedDose={selectedDose} />
           </div>
         </div>
       </section>

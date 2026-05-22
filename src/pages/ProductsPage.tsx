@@ -9,11 +9,15 @@ const CATEGORY_FILTERS = [
   { label: 'Weight Management', slug: 'weight-management' },
   { label: 'Strength & Recovery', slug: 'strength-recovery' },
   { label: 'Cellular Repair & Anti-Aging', slug: 'cellular-repair' },
+  { label: 'Growth Hormone Research', slug: 'growth-hormone' },
+  { label: 'Melanocortin Research', slug: 'melanocortin' },
 ]
 
 function categoryToSlug(category: string): string {
   if (category.toLowerCase().includes('weight')) return 'weight-management'
   if (category.toLowerCase().includes('strength')) return 'strength-recovery'
+  if (category.toLowerCase().includes('growth')) return 'growth-hormone'
+  if (category.toLowerCase().includes('melanocortin')) return 'melanocortin'
   return 'cellular-repair'
 }
 

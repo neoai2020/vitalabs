@@ -26,6 +26,20 @@ const CATEGORIES = [
     stat: 'Visible results within 4 weeks',
     img: '/images/cellular-repair-hero.png',
   },
+  {
+    title: 'Growth Hormone Research',
+    description: 'GHRH analogues and secretagogues researched for their effects on natural GH secretion, recovery, body composition, and anti-aging.',
+    slug: 'growth-hormone',
+    stat: 'Natural GH optimisation',
+    img: '/images/cellular-repair-hero.png',
+  },
+  {
+    title: 'Melanocortin Research',
+    description: 'MSH analogs studied for their effects on melanocortin receptors and physiological pigmentation responses.',
+    slug: 'melanocortin',
+    stat: 'Receptor-targeted research',
+    img: '/images/cellular-repair-hero.png',
+  },
 ]
 
 const STATS = [
@@ -126,7 +140,7 @@ export default function LandingPage() {
         <div className="st-container">
           <div className="section-head">
             <span className="overline">Our Solutions</span>
-            <h2 className="h2">Three Pillars of Health Optimisation</h2>
+            <h2 className="h2">Five Pillars of Health Optimisation</h2>
             <p className="section-sub">
               Each category contains rigorously tested compounds targeting specific biological pathways. 
               Select a category to explore.

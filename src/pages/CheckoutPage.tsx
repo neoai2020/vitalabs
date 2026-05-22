@@ -7,6 +7,7 @@ import {
   UPRAILS_APPEARANCE,
   type CheckoutState,
 } from '../lib/uprails'
+import { useCart } from '../lib/cart'
 
 type Status = 'idle' | 'loading' | 'ready' | 'submitting' | 'succeeded' | 'failed'
 
@@ -27,6 +28,7 @@ function useCountdown(startMinutes: number) {
 export default function CheckoutPage() {
   const { state } = useLocation() as { state: CheckoutState | null }
   const navigate = useNavigate()
+  const { clearCart } = useCart()
 
   useEffect(() => {
     const prev = document.documentElement.getAttribute('data-theme')
@@ -206,6 +208,7 @@ export default function CheckoutPage() {
       const paymentStatus = result?.status
       if (paymentStatus === 'succeeded' || paymentStatus === 'processing') {
         setStatus('succeeded')
+        clearCart()
         window.location.href = `${window.location.origin}${returnPath}`
       } else if (paymentStatus === 'failed' || paymentStatus === 'cancelled') {
         setErrorMsg('Payment was declined. Please check your card details or try a different card.')

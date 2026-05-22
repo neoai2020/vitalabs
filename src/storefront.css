@@ -1002,3 +1002,149 @@
   background: rgba(10, 27, 75, 0.02);
 }
 
+/* ─── CART ─── */
+.sn-cart {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--navy);
+  padding: 0.3rem;
+  transition: color 0.15s;
+}
+.sn-cart:hover { color: var(--blue); }
+.sn-cart-badge {
+  position: absolute;
+  top: -4px; right: -6px;
+  background: var(--blue);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.cart-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 9998;
+  animation: fadeIn 0.2s;
+}
+
+.cart-drawer {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: 420px; max-width: 90vw;
+  background: #fff;
+  z-index: 9999;
+  display: flex; flex-direction: column;
+  box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+  animation: slideInRight 0.25s ease-out;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.cart-drawer-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--gray-200);
+}
+.cart-drawer-header h3 {
+  font-family: var(--font-display);
+  font-size: 1.2rem; font-weight: 700; color: var(--navy);
+  margin: 0;
+}
+.cart-drawer-close {
+  background: none; border: none; cursor: pointer; color: var(--gray-500);
+  padding: 0.25rem;
+}
+.cart-drawer-close:hover { color: var(--navy); }
+
+.cart-drawer-empty {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 1.5rem;
+  padding: 2rem;
+}
+.cart-drawer-empty p { color: var(--gray-500); font-size: 1.1rem; }
+
+.cart-drawer-items {
+  flex: 1; overflow-y: auto; padding: 1rem 1.5rem;
+}
+
+.cart-item {
+  display: grid;
+  grid-template-columns: 60px 1fr auto;
+  gap: 1rem;
+  align-items: start;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--gray-100);
+}
+.cart-item:last-child { border-bottom: none; }
+
+.cart-item-img {
+  width: 60px; height: 60px;
+  object-fit: cover; border-radius: 8px;
+  background: var(--gray-50);
+}
+
+.cart-item-info h4 {
+  font-size: 0.9rem; font-weight: 600; color: var(--navy);
+  margin: 0 0 0.2rem;
+}
+.cart-item-dose { font-size: 0.8rem; color: var(--blue); margin: 0 0 0.2rem; font-weight: 600; }
+.cart-item-price { font-size: 0.85rem; color: var(--gray-500); margin: 0; }
+
+.cart-item-actions {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;
+}
+
+.cart-item-qty {
+  display: flex; align-items: center; gap: 0;
+  border: 1px solid var(--gray-200); border-radius: 6px; overflow: hidden;
+}
+.cart-item-qty button {
+  width: 28px; height: 28px;
+  background: var(--gray-50); border: none; cursor: pointer;
+  font-size: 1rem; font-weight: 600; color: var(--gray-600);
+  display: flex; align-items: center; justify-content: center;
+}
+.cart-item-qty button:hover { background: var(--gray-100); }
+.cart-item-qty span {
+  width: 30px; text-align: center; font-size: 0.9rem; font-weight: 600; color: var(--navy);
+}
+
+.cart-item-remove {
+  background: none; border: none; cursor: pointer;
+  font-size: 0.75rem; color: var(--gray-400); text-decoration: underline;
+}
+.cart-item-remove:hover { color: #e11d48; }
+
+.cart-drawer-footer {
+  border-top: 1px solid var(--gray-200);
+  padding: 1.25rem 1.5rem;
+}
+
+.cart-drawer-total {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 1rem;
+}
+.cart-drawer-total span { font-size: 1rem; color: var(--gray-600); }
+.cart-drawer-total strong { font-size: 1.4rem; color: var(--navy); font-family: var(--font-display); }
+
+.cart-checkout-btn { width: 100%; }
+
+.cart-clear-btn {
+  width: 100%; margin-top: 0.75rem;
+  background: none; border: none; cursor: pointer;
+  font-size: 0.85rem; color: var(--gray-400); text-decoration: underline;
+}
+.cart-clear-btn:hover { color: var(--gray-600); }
+
