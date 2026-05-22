@@ -1255,13 +1255,33 @@
   box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
 }
 
-.cart-clear-btn {
+.cart-continue-btn {
   width: 100%;
   margin-top: 12px;
+  display: block;
+  font-size: 16px;
+  padding: 14px 24px;
+  font-weight: 700;
+  border-radius: 12px;
+  text-align: center;
+  background: #ffffff;
+  color: #0a1b4b;
+  border: 2px solid #e5e7eb;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.cart-continue-btn:hover {
+  border-color: #2563eb;
+  background: #f8fafc;
+}
+
+.cart-clear-btn {
+  width: 100%;
+  margin-top: 10px;
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   color: #9ca3af;
   padding: 8px;
   text-align: center;

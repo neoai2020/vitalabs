@@ -84,8 +84,11 @@ export default function CartDrawer() {
                 <span>Total</span>
                 <strong>£{totalPrice.toFixed(2)}</strong>
               </div>
-              <button type="button" className="btn btn--glow btn--lg cart-checkout-btn" onClick={handleCheckout}>
+              <button type="button" className="cart-checkout-btn" onClick={handleCheckout}>
                 Proceed to Checkout
+              </button>
+              <button type="button" className="cart-continue-btn" onClick={closeCart}>
+                Continue Shopping
               </button>
               <button type="button" className="cart-clear-btn" onClick={clearCart}>Clear Cart</button>
             </div>
