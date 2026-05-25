@@ -25,7 +25,7 @@ export const PEPTIDES: Peptide[] = [
   {
     id: '17',
     sku: 'RETAKLIK',
-    compound: 'Retatrutide (triple agonist)',
+    compound: 'Retatrutide',
     category: 'Weight management',
     tagline: 'Triple-pathway metabolic support — appetite, energy, and glucose in one.',
     description:
@@ -43,7 +43,7 @@ export const PEPTIDES: Peptide[] = [
   {
     id: '21',
     sku: 'RETATRUTIDE 2.0',
-    compound: 'Retatrutide 2.0 (enhanced formulation)',
+    compound: 'Retatrutide 2.0',
     category: 'Weight management',
     tagline: 'Next-generation retatrutide — enhanced bioavailability for maximum impact.',
     description:
@@ -59,7 +59,7 @@ export const PEPTIDES: Peptide[] = [
   {
     id: '2',
     sku: 'KLIKJARO',
-    compound: 'Tirzepatide (dual agonist)',
+    compound: 'Tirzepatide',
     category: 'Weight management',
     tagline: 'Dual GLP-1 + GIP signalling — strong, structured appetite control.',
     description:
@@ -77,7 +77,7 @@ export const PEPTIDES: Peptide[] = [
   {
     id: '18',
     sku: 'KLIKTIDE',
-    compound: 'Cagrilintide (amylin analogue)',
+    compound: 'Cagrilintide',
     category: 'Weight management',
     tagline: 'Satiety-first support — feel genuinely full after eating.',
     description:
@@ -93,7 +93,7 @@ export const PEPTIDES: Peptide[] = [
   {
     id: '3',
     sku: 'KLIKZEMPIC',
-    compound: 'Semaglutide (GLP-1 agonist)',
+    compound: 'Semaglutide',
     category: 'Weight management',
     tagline: 'GLP-1 agonist for appetite regulation and glycemic balance.',
     description:
@@ -143,7 +143,7 @@ export const PEPTIDES: Peptide[] = [
   {
     id: '10',
     sku: 'KLIK500',
-    compound: 'TB-500 (Thymosin Beta-4 fragment)',
+    compound: 'TB-500',
     category: 'Strength & recovery',
     tagline: 'Cellular migration & repair — bounce back faster from training.',
     description:
@@ -159,7 +159,7 @@ export const PEPTIDES: Peptide[] = [
   {
     id: '9',
     sku: 'KLIK-TB157',
-    compound: 'BPC-157 + TB-500 (10mg)',
+    compound: 'BPC-157 + TB-500',
     category: 'Strength & recovery',
     tagline: 'Combined repair peptides — synergistic healing in a single pen.',
     description:
@@ -175,7 +175,7 @@ export const PEPTIDES: Peptide[] = [
   {
     id: '20',
     sku: 'WOLVERINE',
-    compound: 'BPC-157 + TB-500 (40mg)',
+    compound: 'Wolverine',
     category: 'Strength & recovery',
     tagline: 'High-dose synergistic repair stack — maximum recovery support.',
     description:
@@ -191,7 +191,7 @@ export const PEPTIDES: Peptide[] = [
   {
     id: '11',
     sku: 'KLIK51MQ',
-    compound: '5-Amino-1MQ (NNMT inhibitor)',
+    compound: '5-Amino-1MQ',
     category: 'Strength & recovery',
     tagline: 'Increase energy expenditure and support fat reduction at the cellular level.',
     description:
@@ -225,7 +225,7 @@ export const PEPTIDES: Peptide[] = [
   {
     id: '4',
     sku: 'KLIK-GHK',
-    compound: 'GHK-Cu (copper peptide)',
+    compound: 'GHK-Cu',
     category: 'Cellular repair & anti-aging',
     tagline: 'Copper peptide classic for skin firmness and visible renewal.',
     description:
@@ -241,7 +241,7 @@ export const PEPTIDES: Peptide[] = [
   {
     id: '5',
     sku: 'KLIKCAR',
-    compound: 'AICAR (AMPK activator)',
+    compound: 'AICAR',
     category: 'Cellular repair & anti-aging',
     tagline: 'Activate your cellular energy switch for endurance and fat metabolism.',
     description:
@@ -257,7 +257,7 @@ export const PEPTIDES: Peptide[] = [
   {
     id: '19',
     sku: 'KLIKMOTS-C',
-    compound: 'MOTS-C (mitochondrial peptide)',
+    compound: 'MOTS-C',
     category: 'Cellular repair & anti-aging',
     tagline: 'Mitochondrial peptide for real, sustained cellular energy.',
     description:
@@ -273,7 +273,7 @@ export const PEPTIDES: Peptide[] = [
   {
     id: '7',
     sku: 'KLIKNAD+',
-    compound: 'NAD+ (500mg pen)',
+    compound: 'NAD+',
     category: 'Cellular repair & anti-aging',
     tagline: 'Coenzyme support for energy systems, DNA repair, and aging.',
     description:
@@ -291,7 +291,7 @@ export const PEPTIDES: Peptide[] = [
   {
     id: '12',
     sku: 'KLIKCJC-1295',
-    compound: 'CJC-1295 (GHRH analogue)',
+    compound: 'CJC-1295',
     category: 'Growth hormone research',
     tagline: 'Extended half-life GHRH analog for sustained growth hormone support.',
     description:
@@ -307,7 +307,7 @@ export const PEPTIDES: Peptide[] = [
   {
     id: '13',
     sku: 'KLIKGHRP-6',
-    compound: 'GHRP-6 (growth hormone releasing peptide)',
+    compound: 'GHRP-6',
     category: 'Growth hormone research',
     tagline: 'GH secretion support with metabolic influence.',
     description:
@@ -323,7 +323,7 @@ export const PEPTIDES: Peptide[] = [
   {
     id: '14',
     sku: 'KLIKPAM',
-    compound: 'Ipamorelin (selective GH secretagogue)',
+    compound: 'Ipamorelin',
     category: 'Growth hormone research',
     tagline: 'Selective GH release without cortisol or prolactin interference.',
     description:
@@ -339,7 +339,7 @@ export const PEPTIDES: Peptide[] = [
   {
     id: '15',
     sku: 'KLIKSERM',
-    compound: 'Sermorelin (GHRH analog)',
+    compound: 'Sermorelin',
     category: 'Growth hormone research',
     tagline: 'Natural GH secretion support via pituitary stimulation.',
     description:
