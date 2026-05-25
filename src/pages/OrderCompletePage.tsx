@@ -2,6 +2,12 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
+declare global {
+  interface Window {
+    fbq: (...args: unknown[]) => void
+  }
+}
+
 interface OrderInfo {
   description?: string
   displayPrice?: string
@@ -31,6 +37,15 @@ export default function OrderCompletePage() {
       if (stored) {
         const parsed = JSON.parse(stored) as OrderInfo
         setOrder(parsed)
+
+        // Fire Facebook Purchase pixel with order value
+        if (parsed.amount && typeof window.fbq === 'function') {
+          const valueInPounds = parsed.amount / 100
+          window.fbq('track', 'Purchase', {
+            value: valueInPounds,
+            currency: 'GBP',
+          })
+        }
 
         if (!webhookSent.current && parsed.customerEmail) {
           webhookSent.current = true
