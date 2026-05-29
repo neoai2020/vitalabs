@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { CartProvider } from './lib/cart'
 import CartDrawer from './components/CartDrawer'
+import WhatsAppWidget from './components/WhatsAppWidget'
 import LandingPage from './pages/LandingPage'
 import ProductsPage from './pages/ProductsPage'
 import ProductDetailPage from './pages/ProductDetailPage'
@@ -117,6 +118,7 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       {showToggle && <ThemeToggle />}
+      <WhatsAppWidget />
       </CartProvider>
     </AuthProvider>
   )
