@@ -49,6 +49,21 @@ const DEFAULT_REVIEWS = [
   { name: 'Dan W.', rating: 4, text: 'Good product, does what it says. Certificate of analysis included, shipped next day.', date: '3 weeks ago', result: 'Positive' },
 ]
 
+function DescriptionToggle({ description }: { description: string }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="pdp-desc-toggle">
+      <button type="button" className="pdp-desc-toggle-btn" onClick={() => setOpen(!open)}>
+        <span>Description</span>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ transform: open ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}>
+          <path d="M4 6l4 4 4-4" />
+        </svg>
+      </button>
+      {open && <p className="pdp-desc-toggle-text">{description}</p>}
+    </div>
+  )
+}
+
 function AddToCartButton({ product, selectedDose, className }: { product: { id: string; sku: string; compound: string; image: string | null; doses: { label: string; mg: string; price: number }[] }; selectedDose: number; className?: string }) {
   const { addItem } = useCart()
   const dose = product.doses[selectedDose]
@@ -236,7 +251,7 @@ export default function ProductDetailPage() {
               {product.image && <img src={product.image} alt={product.compound} className="pdp-hero-img" />}
             </div>
 
-            <p className="pdp-hero-desc">{product.description}</p>
+            <DescriptionToggle description={product.description} />
 
             {product.doses.length > 1 && (
               <div className="pdp-hero-doses">
