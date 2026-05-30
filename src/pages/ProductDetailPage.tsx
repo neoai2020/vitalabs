@@ -251,7 +251,11 @@ export default function ProductDetailPage() {
               {product.image && <img src={product.image} alt={product.compound} className="pdp-hero-img" />}
             </div>
 
-            <DescriptionToggle description={product.description} />
+            {/* Mobile/tablet: collapsible description. Desktop (>1024px): always expanded. */}
+            <div className="pdp-desc-mobile-only">
+              <DescriptionToggle description={product.description} />
+            </div>
+            <p className="pdp-hero-desc pdp-desc-desktop-only">{product.description}</p>
 
             {product.doses.length > 1 && (
               <div className="pdp-hero-doses">

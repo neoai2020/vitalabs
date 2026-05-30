@@ -651,6 +651,12 @@
 .pdp-hero-desc { font-size: 1.1rem; color: var(--gray-600); line-height: 1.75; margin-bottom: 1.5rem; }
 
 .pdp-desc-toggle { margin-bottom: 1.5rem; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; }
+.pdp-desc-desktop-only { display: block; }
+.pdp-desc-mobile-only { display: none; }
+@media (max-width: 1024px) {
+  .pdp-desc-desktop-only { display: none; }
+  .pdp-desc-mobile-only { display: block; }
+}
 .pdp-desc-toggle-btn {
   display: flex; align-items: center; justify-content: space-between;
   width: 100%; padding: 14px 18px;

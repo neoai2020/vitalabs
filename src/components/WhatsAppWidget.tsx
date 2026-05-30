@@ -3,15 +3,15 @@ import { getPeptideById } from '../data/peptides'
 
 const PHONE = '447440153510'
 
-// Routes that render a sticky bottom CTA (mobile pay/buy bar).
-// The floating WhatsApp button would overlap and obstruct those CTAs,
-// so we hide the widget on those routes.
-const ROUTES_WITH_STICKY_CTA = ['/checkout', '/tsl', '/results']
+// Routes where the WhatsApp widget is hidden. Currently checkout only —
+// the sticky mobile pay bar there overlaps the floating button and we
+// want zero distractions during payment.
+const HIDDEN_ROUTES = ['/checkout']
 
 export default function WhatsAppWidget() {
   const { pathname } = useLocation()
 
-  if (ROUTES_WITH_STICKY_CTA.includes(pathname)) return null
+  if (HIDDEN_ROUTES.includes(pathname)) return null
 
   let message = 'I need some help'
 
