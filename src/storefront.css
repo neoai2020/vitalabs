@@ -888,9 +888,11 @@
   .pdp-hero-trust { flex-direction: column; gap: 0.5rem; }
   .pdp-price-big { font-size: 2rem; }
   .benefits-grid { grid-template-columns: 1fr; }
-  .timeline-item { grid-template-columns: auto 30px 1fr; }
+  .timeline-item { display: flex; gap: 12px; min-height: auto; }
   .timeline-left { display: none; }
-  .timeline-right::before { content: attr(data-week); display: block; font-family: var(--font-display); font-weight: 700; color: var(--blue); margin-bottom: 0.3rem; font-size: 0.9rem; }
+  .timeline-mid { display: none; }
+  .timeline-right { padding-left: 0; padding-bottom: 1.5rem; border-left: 3px solid var(--blue-soft); padding-left: 16px; }
+  .timeline-right::before { content: attr(data-week); display: block; font-family: var(--font-display); font-weight: 700; color: var(--blue); margin-bottom: 0.4rem; font-size: 0.95rem; }
   .calc { padding: 1.5rem; }
   .calc-opts { grid-template-columns: 1fr; }
   .cat-info { padding: 1.5rem; }
