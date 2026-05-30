@@ -28,7 +28,7 @@ export default function SignupPage() {
         <div className="m-auth-brand">
           <span className="m-auth-logo">⬡</span>
           <h1>Create your account</h1>
-          <p>Join the Peptiva members area</p>
+          <p>Join the Vita Labs members area</p>
         </div>
         <form className="m-auth-form" onSubmit={handleSubmit}>
           {error && <div className="m-auth-error">{error}</div>}

@@ -12,7 +12,7 @@ export default function RefundPolicyPage() {
 
           <section>
             <h2>1. Our Guarantee</h2>
-            <p>At Peptiva, we stand behind the quality of our products. If you're not completely satisfied with your purchase, we offer a straightforward refund process within the eligibility period outlined below.</p>
+            <p>At Vita Labs, we stand behind the quality of our products. If you're not completely satisfied with your purchase, we offer a straightforward refund process within the eligibility period outlined below.</p>
           </section>
 
           <section>
@@ -40,7 +40,7 @@ export default function RefundPolicyPage() {
             <h2>4. How to Request a Refund</h2>
             <p>To initiate a return or refund:</p>
             <ol>
-              <li>Email <a href="mailto:support@peptivalabs.io">support@peptivalabs.io</a> with your order number and reason for return</li>
+              <li>Email <a href="mailto:support@vitalabs.io">support@vitalabs.io</a> with your order number and reason for return</li>
               <li>Our team will respond within 2 business days with return instructions</li>
               <li>Ship the item back to the address provided (return shipping is at your expense unless the item is defective)</li>
               <li>Once we receive and inspect the returned item, we'll process your refund</li>
@@ -69,7 +69,7 @@ export default function RefundPolicyPage() {
 
           <section>
             <h2>8. Contact</h2>
-            <p>For any questions regarding returns or refunds, please contact our support team at <a href="mailto:support@peptivalabs.io">support@peptivalabs.io</a>.</p>
+            <p>For any questions regarding returns or refunds, please contact our support team at <a href="mailto:support@vitalabs.io">support@vitalabs.io</a>.</p>
           </section>
         </div>
       </main>

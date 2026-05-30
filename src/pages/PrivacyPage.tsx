@@ -12,7 +12,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2>1. Introduction</h2>
-            <p>Peptiva ("we", "our", "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your personal information when you visit our website and purchase our products.</p>
+            <p>Vita Labs ("we", "our", "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your personal information when you visit our website and purchase our products.</p>
           </section>
 
           <section>
@@ -105,7 +105,7 @@ export default function PrivacyPage() {
               <li><strong>Objection:</strong> Object to processing based on legitimate interest</li>
               <li><strong>Withdraw consent:</strong> Revoke previously given consent at any time</li>
             </ul>
-            <p>To exercise any of these rights, contact us at <a href="mailto:support@peptivalabs.io">support@peptivalabs.io</a>.</p>
+            <p>To exercise any of these rights, contact us at <a href="mailto:support@vitalabs.io">support@vitalabs.io</a>.</p>
           </section>
 
           <section>
@@ -131,7 +131,7 @@ export default function PrivacyPage() {
           <section>
             <h2>13. Contact Us</h2>
             <p>For privacy-related enquiries:</p>
-            <p>Email: <a href="mailto:support@peptivalabs.io">support@peptivalabs.io</a></p>
+            <p>Email: <a href="mailto:support@vitalabs.io">support@vitalabs.io</a></p>
             <p>You also have the right to lodge a complaint with the Information Commissioner's Office (ICO) at <a href="https://ico.org.uk" target="_blank" rel="noopener noreferrer">ico.org.uk</a>.</p>
           </section>
         </div>

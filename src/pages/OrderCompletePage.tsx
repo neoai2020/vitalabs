@@ -33,7 +33,7 @@ export default function OrderCompletePage() {
   useEffect(() => {
     window.scrollTo(0, 0)
     try {
-      const stored = sessionStorage.getItem('peptiva-last-order')
+      const stored = sessionStorage.getItem('vitalabs-last-order')
       if (stored) {
         const parsed = JSON.parse(stored) as OrderInfo
         setOrder(parsed)
@@ -67,7 +67,7 @@ export default function OrderCompletePage() {
   return (
     <div className="oc-page">
       <header className="oc-header">
-        <Link to="/" className="oc-logo">Peptiva</Link>
+        <Link to="/" className="oc-logo">Vita Labs</Link>
       </header>
 
       <main className="oc-main">
@@ -166,13 +166,13 @@ export default function OrderCompletePage() {
             <span>📦 Free tracked shipping</span>
           </div>
 
-          <Link to="/" className="oc-btn">Return to Peptiva</Link>
+          <Link to="/" className="oc-btn">Return to Vita Labs</Link>
         </div>
       </main>
 
       <footer className="oc-footer">
-        <p>Peptiva Ltd · UK-regulated laboratory · Sold for research use only</p>
-        <p>© {new Date().getFullYear()} Peptiva</p>
+        <p>Vita Labs Ltd · UK-regulated laboratory · Sold for research use only</p>
+        <p>© {new Date().getFullYear()} Vita Labs</p>
       </footer>
     </div>
   )

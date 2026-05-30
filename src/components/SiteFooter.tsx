@@ -6,7 +6,7 @@ export default function SiteFooter() {
       <div className="st-footer-inner">
         <div className="st-footer-grid">
           <div className="st-footer-col st-footer-brand">
-            <img src="/images/logo.png" alt="Peptiva Research" className="st-footer-logo" />
+            <img src="/images/logo.svg" alt="Vita Labs" className="st-footer-logo" />
             <p>The UK's leading peptide research platform. Personalised protocols backed by peer-reviewed science.</p>
           </div>
           <div className="st-footer-col">
@@ -26,11 +26,11 @@ export default function SiteFooter() {
           </div>
           <div className="st-footer-col">
             <h4>Support</h4>
-            <a href="mailto:support@peptivalabs.io">support@peptivalabs.io</a>
+            <a href="mailto:support@vitalabs.io">support@vitalabs.io</a>
           </div>
         </div>
         <div className="st-footer-bottom">
-          <p>&copy; {new Date().getFullYear()} Peptiva. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Vita Labs. All rights reserved.</p>
           <div className="st-footer-legal-links">
             <Link to="/terms">Terms</Link>
             <Link to="/privacy">Privacy</Link>

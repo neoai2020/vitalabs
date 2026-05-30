@@ -71,7 +71,7 @@ export default function ShippingPage() {
             <ol>
               <li>Check your tracking link for the latest status</li>
               <li>Allow an additional 2 business days for potential carrier delays</li>
-              <li>Contact us at <a href="mailto:support@peptivalabs.io">support@peptivalabs.io</a> with your order number</li>
+              <li>Contact us at <a href="mailto:support@vitalabs.io">support@vitalabs.io</a> with your order number</li>
             </ol>
             <p>We will investigate with the carrier and either reship or refund as appropriate.</p>
           </section>
@@ -88,7 +88,7 @@ export default function ShippingPage() {
 
           <section>
             <h2>8. Contact</h2>
-            <p>For shipping enquiries, contact <a href="mailto:support@peptivalabs.io">support@peptivalabs.io</a>.</p>
+            <p>For shipping enquiries, contact <a href="mailto:support@vitalabs.io">support@vitalabs.io</a>.</p>
           </section>
         </div>
       </main>

@@ -29,7 +29,7 @@ export default function MembersLayout() {
       <aside className={`m-sidebar ${mobileOpen ? 'm-sidebar--open' : ''}`}>
         <div className="m-sidebar-brand">
           <span className="m-sidebar-logo">⬡</span>
-          <span className="m-sidebar-name">Peptiva</span>
+          <span className="m-sidebar-name">Vita Labs</span>
         </div>
         <nav className="m-sidebar-nav">
           {NAV_ITEMS.map(item => (

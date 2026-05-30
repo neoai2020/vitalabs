@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 100" fill="none">
+  <!-- Atom mark -->
+  <g transform="translate(2 2)">
+    <circle cx="48" cy="48" r="44" fill="#FFFFFF" stroke="#143F66" stroke-width="5"/>
+    <g stroke="#143F66" stroke-width="3" fill="none" stroke-linecap="round">
+      <ellipse cx="48" cy="48" rx="32" ry="12.5"/>
+      <ellipse cx="48" cy="48" rx="32" ry="12.5" transform="rotate(60 48 48)"/>
+      <ellipse cx="48" cy="48" rx="32" ry="12.5" transform="rotate(120 48 48)"/>
+    </g>
+    <g fill="#143F66">
+      <circle cx="48" cy="48" r="4.3"/>
+      <circle cx="80" cy="48" r="2.9"/>
+      <circle cx="16" cy="48" r="2.9"/>
+      <circle cx="64" cy="75.71" r="2.9"/>
+      <circle cx="32" cy="20.29" r="2.9"/>
+      <circle cx="32" cy="75.71" r="2.9"/>
+      <circle cx="64" cy="20.29" r="2.9"/>
+    </g>
+  </g>
+
+  <!-- Divider -->
+  <line x1="112" y1="14" x2="112" y2="86" stroke="#5E89A4" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Wordmark -->
+  <text x="128" y="60"
+        font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+        font-size="44" font-weight="700" letter-spacing="2"
+        fill="#143F66">VITA</text>
+  <text x="130" y="84"
+        font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+        font-size="16" font-weight="500" letter-spacing="6"
+        fill="#5E89A4">L A B S</text>
+</svg>

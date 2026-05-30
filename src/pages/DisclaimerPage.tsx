@@ -48,7 +48,7 @@ export default function DisclaimerPage() {
 
           <section>
             <h2>8. Assumption of Risk</h2>
-            <p>By purchasing and using any products from this Site, you acknowledge and accept all risks associated with such use. Peptiva, its owners, employees, and affiliates shall not be held liable for any adverse effects, injuries, or damages arising from the use or misuse of our products.</p>
+            <p>By purchasing and using any products from this Site, you acknowledge and accept all risks associated with such use. Vita Labs, its owners, employees, and affiliates shall not be held liable for any adverse effects, injuries, or damages arising from the use or misuse of our products.</p>
           </section>
 
           <section>
@@ -58,7 +58,7 @@ export default function DisclaimerPage() {
 
           <section>
             <h2>10. Contact</h2>
-            <p>If you have questions about this disclaimer or our products, contact us at <a href="mailto:support@peptivalabs.io">support@peptivalabs.io</a>.</p>
+            <p>If you have questions about this disclaimer or our products, contact us at <a href="mailto:support@vitalabs.io">support@vitalabs.io</a>.</p>
           </section>
         </div>
       </main>

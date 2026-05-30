@@ -36,7 +36,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null)
 
-const STORAGE_KEY = 'peptiva-member'
+const STORAGE_KEY = 'vitalabs-member'
 
 const DEFAULT_USER: User = {
   id: 'u1',

@@ -74,7 +74,7 @@ const REVIEWS = [
   {
     name: 'Emma K.',
     rating: 5,
-    text: 'Lost 9kg in the first month on Tirzepatide. Appetite just vanishes naturally — it doesn\'t feel forced at all. Peptiva matched me perfectly.',
+    text: 'Lost 9kg in the first month on Tirzepatide. Appetite just vanishes naturally — it doesn\'t feel forced at all. Vita Labs matched me perfectly.',
     product: 'Tirzepatide 20mg',
     result: '-9kg in 4 weeks',
   },
@@ -112,7 +112,7 @@ export default function LandingPage() {
               <p className="hero-note">Pharmaceutical-grade · Free UK shipping · Protocol guide included</p>
             </div>
             <div className="hero-visual">
-              <img src="/images/hero-main.png" alt="Peptiva Research" className="hero-img" />
+              <img src="/images/hero-main.png" alt="Vita Labs" className="hero-img" />
             </div>
           </div>
         </div>

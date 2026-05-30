@@ -43,7 +43,7 @@ export default function SupportPage() {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<'chat' | 'knowledge' | 'contact'>('chat')
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: '1', sender: 'expert', text: `Hey ${user?.firstName}! I'm your dedicated Peptiva support specialist. How can I help you today? You can ask me about your protocol, dosing, side effects, or anything else.`, time: 'Just now' },
+    { id: '1', sender: 'expert', text: `Hey ${user?.firstName}! I'm your dedicated Vita Labs support specialist. How can I help you today? You can ask me about your protocol, dosing, side effects, or anything else.`, time: 'Just now' },
   ])
   const [input, setInput] = useState('')
   const [typing, setTyping] = useState(false)
@@ -190,7 +190,7 @@ export default function SupportPage() {
               <span className="m-contact-icon">📧</span>
               <h4>Email Support</h4>
               <p>Send a detailed question. We respond within 24 hours, usually much faster.</p>
-              <a href="mailto:support@peptivalabs.io" className="m-btn-outline">support@peptivalabs.io</a>
+              <a href="mailto:support@vitalabs.io" className="m-btn-outline">support@vitalabs.io</a>
             </div>
             <div className="m-contact-card">
               <span className="m-contact-icon">📞</span>

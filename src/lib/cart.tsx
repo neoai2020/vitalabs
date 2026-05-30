@@ -26,7 +26,7 @@ interface CartContextValue {
 
 const CartContext = createContext<CartContextValue | null>(null)
 
-const STORAGE_KEY = 'peptiva_cart'
+const STORAGE_KEY = 'vitalabs_cart'
 
 function loadCart(): CartItem[] {
   try {

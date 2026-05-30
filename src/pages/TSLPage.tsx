@@ -398,7 +398,7 @@ function FAQ({ isBeginner }: { isBeginner: boolean }) {
     },
     {
       q: 'What\'s included with my order?',
-      a: 'Your matched product, a personalised dosing protocol from a practitioner, batch certificate with QR verification, Peptiva Concierge access, and free tracked UK shipping in discreet packaging.',
+      a: 'Your matched product, a personalised dosing protocol from a practitioner, batch certificate with QR verification, Vita Labs Concierge access, and free tracked UK shipping in discreet packaging.',
     },
   ]
   const [open, setOpen] = useState<number | null>(null)
@@ -484,7 +484,7 @@ export default function TSLPage() {
       {/* ── STICKY HEADER ── */}
       <header className="tsl-head">
         <div className="tsl-head-inner">
-          <Link to="/" className="tsl-logo">Peptiva</Link>
+          <Link to="/" className="tsl-logo">Vita Labs</Link>
           <nav className="tsl-head-nav" aria-label="Page sections">
             <a href="#match-chart">Results</a>
             <a href="#offer">Protocol</a>
@@ -635,14 +635,14 @@ export default function TSLPage() {
       <footer className="tsl-foot">
         <div className="tsl-wrap">
           <p>
-            Peptiva Ltd. Products manufactured in our UK-regulated laboratory.
+            Vita Labs Ltd. Products manufactured in our UK-regulated laboratory.
             99.3%+ verified purity. Third-party lab tested. Practitioner-reviewed protocols.
           </p>
           <p className="tsl-foot-disclaimer">
             All products are sold strictly for research purposes only. Not intended for human consumption. By purchasing, you confirm that you understand and accept this.
           </p>
           <p className="tsl-foot-meta">
-            &copy; {new Date().getFullYear()} Peptiva &middot;{' '}
+            &copy; {new Date().getFullYear()} Vita Labs &middot;{' '}
             <Link to="/">Home</Link> &middot;{' '}
             <Link to="/quiz">Retake quiz</Link>
           </p>

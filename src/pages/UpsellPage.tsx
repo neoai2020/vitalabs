@@ -25,20 +25,20 @@ function getPrice(id: string) {
 
 function UpsellCountdown() {
   const [left, setLeft] = useState(() => {
-    const stored = sessionStorage.getItem('peptiva-upsell-timer')
+    const stored = sessionStorage.getItem('vitalabs-upsell-timer')
     if (stored) {
       const diff = parseInt(stored, 10) - Date.now()
       return diff > 0 ? diff : 0
     }
     const end = Date.now() + 10 * 60 * 1000
-    sessionStorage.setItem('peptiva-upsell-timer', String(end))
+    sessionStorage.setItem('vitalabs-upsell-timer', String(end))
     return 10 * 60 * 1000
   })
 
   useEffect(() => {
     if (left <= 0) return
     const t = setInterval(() => {
-      const stored = sessionStorage.getItem('peptiva-upsell-timer')
+      const stored = sessionStorage.getItem('vitalabs-upsell-timer')
       if (!stored) { setLeft(0); return }
       const diff = parseInt(stored, 10) - Date.now()
       setLeft(diff > 0 ? diff : 0)
@@ -369,10 +369,10 @@ export default function UpsellPage() {
       <footer className="r-footer">
         <div className="r-wrap">
           <p>
-            Peptiva Ltd. All products manufactured in our UK-regulated laboratory. Sold for research use only.
+            Vita Labs Ltd. All products manufactured in our UK-regulated laboratory. Sold for research use only.
             Full documentation included with every order. Comply with UK law.
           </p>
-          <p className="r-footer-copy">© {new Date().getFullYear()} Peptiva · <Link to="/">Home</Link> · <Link to="/quiz">Retake Quiz</Link></p>
+          <p className="r-footer-copy">© {new Date().getFullYear()} Vita Labs · <Link to="/">Home</Link> · <Link to="/quiz">Retake Quiz</Link></p>
         </div>
       </footer>
     </div>

@@ -16,7 +16,7 @@ export default function SiteNav() {
     <header className="sn">
       <div className="sn-inner">
         <Link to="/" className="sn-logo">
-          <img src="/images/logo.png" alt="Peptiva Research" className="sn-logo-img" />
+          <img src="/images/logo.svg" alt="Vita Labs" className="sn-logo-img" />
         </Link>
 
         <nav className={`sn-links ${mobileOpen ? 'sn-links--open' : ''}`}>

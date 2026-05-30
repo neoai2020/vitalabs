@@ -13,7 +13,7 @@ export default function TermsPage() {
 
           <section>
             <h2>1. Acceptance of Terms</h2>
-            <p>By accessing or using the Peptiva website ("Site") and purchasing any products offered, you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, do not use the Site or purchase products.</p>
+            <p>By accessing or using the Vita Labs website ("Site") and purchasing any products offered, you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, do not use the Site or purchase products.</p>
           </section>
 
           <section>
@@ -46,7 +46,7 @@ export default function TermsPage() {
 
           <section>
             <h2>7. Intellectual Property</h2>
-            <p>All content on this Site — including text, graphics, logos, images, product descriptions, and software — is the property of Peptiva or its licensors and is protected by copyright, trademark, and other intellectual property laws. You may not reproduce, distribute, or create derivative works without prior written consent.</p>
+            <p>All content on this Site — including text, graphics, logos, images, product descriptions, and software — is the property of Vita Labs or its licensors and is protected by copyright, trademark, and other intellectual property laws. You may not reproduce, distribute, or create derivative works without prior written consent.</p>
           </section>
 
           <section>
@@ -63,7 +63,7 @@ export default function TermsPage() {
 
           <section>
             <h2>9. Limitation of Liability</h2>
-            <p>To the maximum extent permitted by law, Peptiva and its directors, employees, and agents shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the Site or products, including but not limited to loss of profits, data, or goodwill.</p>
+            <p>To the maximum extent permitted by law, Vita Labs and its directors, employees, and agents shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the Site or products, including but not limited to loss of profits, data, or goodwill.</p>
             <p>Our total liability shall not exceed the amount paid by you for the specific product giving rise to the claim.</p>
           </section>
 
@@ -74,7 +74,7 @@ export default function TermsPage() {
 
           <section>
             <h2>11. Indemnification</h2>
-            <p>You agree to indemnify and hold harmless Peptiva and its affiliates from any claims, damages, losses, or expenses (including legal fees) arising from your use of the Site, violation of these Terms, or infringement of any third-party rights.</p>
+            <p>You agree to indemnify and hold harmless Vita Labs and its affiliates from any claims, damages, losses, or expenses (including legal fees) arising from your use of the Site, violation of these Terms, or infringement of any third-party rights.</p>
           </section>
 
           <section>
@@ -89,7 +89,7 @@ export default function TermsPage() {
 
           <section>
             <h2>14. Contact</h2>
-            <p>If you have any questions about these Terms, please contact us at <a href="mailto:support@peptivalabs.io">support@peptivalabs.io</a>.</p>
+            <p>If you have any questions about these Terms, please contact us at <a href="mailto:support@vitalabs.io">support@vitalabs.io</a>.</p>
           </section>
         </div>
       </main>

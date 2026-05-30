@@ -296,7 +296,7 @@ export default function ResultsPage() {
       {/* ── HEADER ── */}
       <header className="fp-header">
         <div className="fp-container fp-header-inner">
-          <Link to="/" className="fp-logo">Peptiva</Link>
+          <Link to="/" className="fp-logo">Vita Labs</Link>
           <nav className="fp-nav">
             <a href="#plans">Plans</a>
             <a href="#reviews">Reviews</a>
@@ -507,7 +507,7 @@ export default function ResultsPage() {
             {[
               { text: "I was sceptical — another quiz, another product. But this actually matched what I needed. Saw real changes in 2 weeks. The practitioner check-in sealed it for me.", name: "James T.", loc: "Manchester", stars: 5 },
               { text: "Down a full clothing size in 6 weeks. My energy is through the roof. Wish I'd found this sooner instead of wasting money on supplements that didn't work.", name: "Sarah L.", loc: "London", stars: 5 },
-              { text: "Completely new to peptides. Peptiva made it simple — clear quiz, clear match, clear instructions. Feeling great after just 3 weeks.", name: "Emily R.", loc: "Bristol", stars: 5 },
+              { text: "Completely new to peptides. Vita Labs made it simple — clear quiz, clear match, clear instructions. Feeling great after just 3 weeks.", name: "Emily R.", loc: "Bristol", stars: 5 },
               { text: "My knee had been killing me for 2 years. The match was spot on — I'm back to training 4 days a week. Life-changing.", name: "Chris W.", loc: "Leeds", stars: 5 },
             ].map((r, i) => (
               <div key={i} className="fp-review-card">
@@ -587,17 +587,17 @@ export default function ResultsPage() {
       {/* ── COMPARISON ── */}
       <section className="fp-compare">
         <div className="fp-container">
-          <h2 className="fp-section-title">Why Peptiva vs. the alternatives?</h2>
+          <h2 className="fp-section-title">Why Vita Labs vs. the alternatives?</h2>
           <p className="fp-section-sub">
             {isBeginner
-              ? 'We\'re not like random online sellers. Here\'s what makes Peptiva different — and safer.'
+              ? 'We\'re not like random online sellers. Here\'s what makes Vita Labs different — and safer.'
               : 'Same category, different standard of evidence and support.'
             }
           </p>
           <div className="fp-compare-table">
             <div className="fp-compare-row fp-compare-header">
               <span></span>
-              <span className="fp-compare-us">Peptiva</span>
+              <span className="fp-compare-us">Vita Labs</span>
               <span>Generic Suppliers</span>
               <span>Private Clinics</span>
             </div>
@@ -631,10 +631,10 @@ export default function ResultsPage() {
               <FaqItem q="I'm completely new to this. Is it safe?" a="Absolutely. Every product is manufactured in a UK-regulated laboratory and tested by an independent third-party lab. A real practitioner reviews your quiz profile and guides your dosing — included free. And if you're not happy, our 30-day quality guarantee means zero risk." />
             )}
             <FaqItem q="What exactly are peptides?" a="Peptides are short chains of amino acids — the same building blocks your body already uses. They act as signalling molecules, telling your cells to perform specific functions like burn fat, repair tissue, or boost collagen. Think of them as precise instructions your body already understands." />
-            <FaqItem q="What's included with my order?" a="Your matched product, personalised dosing guide from a practitioner, batch certificate with QR verification, Peptiva Concierge access (practitioner support), and free tracked UK shipping in discreet packaging." />
+            <FaqItem q="What's included with my order?" a="Your matched product, personalised dosing guide from a practitioner, batch certificate with QR verification, Vita Labs Concierge access (practitioner support), and free tracked UK shipping in discreet packaging." />
             <FaqItem q="How fast will I see results?" a="Most customers notice changes within 2–4 weeks. 92% of quiz-matched customers report measurable results within 30 days. Your practitioner will check in to make sure you're on track." />
             <FaqItem q="What if it doesn't work for me?" a="We offer a 30-day quality guarantee. If your product doesn't meet specification or you're not satisfied with the quality, we make it right — no questions asked. You can also retake the quiz anytime." />
-            <FaqItem q="Is this legal in the UK?" a="Yes. All Peptiva products are manufactured in our UK-regulated laboratory. We comply fully with UK regulations and include full documentation with every order." />
+            <FaqItem q="Is this legal in the UK?" a="Yes. All Vita Labs products are manufactured in our UK-regulated laboratory. We comply fully with UK regulations and include full documentation with every order." />
           </div>
         </div>
       </section>
@@ -677,7 +677,7 @@ export default function ResultsPage() {
       <footer className="fp-footer">
         <div className="fp-container fp-footer-inner">
           <div className="fp-footer-brand">
-            <span className="fp-footer-logo">Peptiva</span>
+            <span className="fp-footer-logo">Vita Labs</span>
             <p>All products manufactured in our UK-regulated laboratory. 99.3%+ verified purity. Third-party lab tested. Practitioner-reviewed protocols.</p>
           </div>
           <div className="fp-footer-links">
@@ -690,7 +690,7 @@ export default function ResultsPage() {
             All products are sold strictly for research purposes only. Not intended for human consumption. By purchasing, you confirm that you understand and accept this.
           </div>
           <div className="fp-footer-copy">
-            © {new Date().getFullYear()} Peptiva Ltd. All rights reserved.
+            © {new Date().getFullYear()} Vita Labs Ltd. All rights reserved.
           </div>
         </div>
       </footer>

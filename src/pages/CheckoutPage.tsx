@@ -165,7 +165,7 @@ export default function CheckoutPage() {
 
     const returnPath = state?.returnPath || '/order-complete'
 
-    sessionStorage.setItem('peptiva-last-order', JSON.stringify({
+    sessionStorage.setItem('vitalabs-last-order', JSON.stringify({
       description: state?.description,
       displayPrice: state?.displayPrice,
       amount: state?.amount,
@@ -250,7 +250,7 @@ export default function CheckoutPage() {
       {/* Secure header */}
       <header className="ck-header">
         <div className="ck-header-inner">
-          <Link to="/" className="ck-logo"><img src="/images/logo.png" alt="Peptiva Research" className="ck-logo-img" /></Link>
+          <Link to="/" className="ck-logo"><img src="/images/logo.svg" alt="Vita Labs" className="ck-logo-img" /></Link>
           <div className="ck-header-right">
             <svg className="ck-lock-icon" viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
               <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
@@ -592,7 +592,7 @@ export default function CheckoutPage() {
             <div className="ck-guarantee-box">
               <div className="ck-guarantee-header">
                 <svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20"><path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5C17.944 5.678 18 6.379 18 7.1c0 5.523-3.626 9.132-8 11.9-4.374-2.768-8-6.377-8-11.9 0-.721.056-1.422.166-2.1z" clipRule="evenodd" /></svg>
-                <strong>Peptiva Guarantee</strong>
+                <strong>Vita Labs Guarantee</strong>
               </div>
               <p>
                 We offer a full refund or replacement within 30 days from the date of purchase, no questions asked. Every batch is independently tested with 99.3%+ purity verification.
@@ -602,7 +602,7 @@ export default function CheckoutPage() {
             {/* Need help */}
             <div className="ck-help-box">
               <strong>Need Help?</strong>
-              <p>Email us at <a href="mailto:support@peptivalabs.io">support@peptivalabs.io</a></p>
+              <p>Email us at <a href="mailto:support@vitalabs.io">support@vitalabs.io</a></p>
             </div>
           </div>
         </div>
@@ -629,8 +629,8 @@ export default function CheckoutPage() {
       </div>
 
       <footer className="ck-footer">
-        <p>Peptiva Ltd · UK-regulated laboratory · Sold for research use only</p>
-        <p>© {new Date().getFullYear()} Peptiva · All rights reserved</p>
+        <p>Vita Labs Ltd · UK-regulated laboratory · Sold for research use only</p>
+        <p>© {new Date().getFullYear()} Vita Labs · All rights reserved</p>
       </footer>
     </div>
   )

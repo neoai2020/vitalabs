@@ -54,7 +54,7 @@ export default function HomePage() {
       <main className="funnel-main">
         {phase === 'pillar' && (
           <>
-            <p className="funnel-eyebrow">Peptiva · Personalised Matching</p>
+            <p className="funnel-eyebrow">Vita Labs · Personalised Matching</p>
             <h1 className="funnel-h1">What Is Your Primary Goal?</h1>
             <p className="funnel-lead">
               On the next page, you will take a <strong>short quiz to see if you qualify.</strong>

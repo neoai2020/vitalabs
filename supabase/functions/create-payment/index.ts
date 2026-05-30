@@ -51,7 +51,7 @@ serve(async (req: Request) => {
       currency: body.currency || 'GBP',
       profile_id: profileId,
       confirm: false,
-      description: body.description || 'Peptiva order',
+      description: body.description || 'Vita Labs order',
       ...(body.email && { email: body.email }),
       ...(body.customer_id && { customer_id: body.customer_id }),
       ...(body.metadata && { metadata: body.metadata }),

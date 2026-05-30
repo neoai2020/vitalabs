@@ -113,7 +113,7 @@ export default function CapturePage() {
 
           <p className="cap-legal">
             🔒 We'll never spam you. Your data stays private.
-            <br />By continuing you agree to receive your results and occasional updates from Peptiva.
+            <br />By continuing you agree to receive your results and occasional updates from Vita Labs.
           </p>
         </form>
 

@@ -1,7 +1,7 @@
 import type { PrimaryGoal, QuizAnswers } from '../types/quiz'
 import { defaultQuizAnswers } from '../types/quiz'
 
-const KEY = 'peptiva-quiz-v3'
+const KEY = 'vitalabs-quiz-v3'
 
 /** Migrate any raw parsed object (from v1/v2/v3) into the current schema. */
 function migrateFromRaw(parsed: Record<string, unknown>): Partial<QuizAnswers> {
@@ -43,20 +43,20 @@ export function loadQuiz(): QuizAnswers {
       const migrated = migrateFromRaw(parsed)
       return { ...defaultQuizAnswers(), ...migrated }
     }
-    const rawV2 = sessionStorage.getItem('peptiva-quiz-v2')
+    const rawV2 = sessionStorage.getItem('vitalabs-quiz-v2')
     if (rawV2) {
       const parsed = JSON.parse(rawV2) as Record<string, unknown>
       const migrated = migrateFromRaw(parsed)
-      sessionStorage.removeItem('peptiva-quiz-v2')
+      sessionStorage.removeItem('vitalabs-quiz-v2')
       const merged = { ...defaultQuizAnswers(), ...migrated }
       sessionStorage.setItem(KEY, JSON.stringify(merged))
       return merged
     }
-    const rawV1 = sessionStorage.getItem('peptiva-quiz-v1')
+    const rawV1 = sessionStorage.getItem('vitalabs-quiz-v1')
     if (rawV1) {
       const parsed = JSON.parse(rawV1) as Record<string, unknown>
       const migrated = migrateFromRaw(parsed)
-      sessionStorage.removeItem('peptiva-quiz-v1')
+      sessionStorage.removeItem('vitalabs-quiz-v1')
       const merged = { ...defaultQuizAnswers(), ...migrated }
       sessionStorage.setItem(KEY, JSON.stringify(merged))
       return merged
@@ -71,7 +71,7 @@ export function saveQuiz(answers: QuizAnswers): void {
   sessionStorage.setItem(KEY, JSON.stringify(answers))
 }
 
-const TS_KEY = 'peptiva-quiz-completed-at'
+const TS_KEY = 'vitalabs-quiz-completed-at'
 
 export function markQuizCompleted(): void {
   if (!sessionStorage.getItem(TS_KEY)) {
@@ -86,6 +86,6 @@ export function getQuizCompletedAt(): number | null {
 
 export function clearQuiz(): void {
   sessionStorage.removeItem(KEY)
-  sessionStorage.removeItem('peptiva-quiz-v2')
-  sessionStorage.removeItem('peptiva-quiz-v1')
+  sessionStorage.removeItem('vitalabs-quiz-v2')
+  sessionStorage.removeItem('vitalabs-quiz-v1')
 }
