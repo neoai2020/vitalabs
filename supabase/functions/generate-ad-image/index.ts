@@ -28,8 +28,11 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { handleOptions, jsonResponse } from '../_shared/cors.ts'
 import { generateAdCopy } from '../_shared/adCopy.ts'
 
+/* Image generation requires the v1beta endpoint — `responseModalities`
+ * is a beta-only generationConfig field and v1 rejects the request as
+ * "Unknown name responseModalities" with HTTP 400. */
 const GEMINI_MODEL = 'gemini-2.5-flash-image'
-const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1/models/${GEMINI_MODEL}:generateContent`
+const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`
 
 type Brand = 'vitalabs' | 'peptiva'
 type AspectRatio = '1:1' | '9:16' | '16:9' | '4:5'

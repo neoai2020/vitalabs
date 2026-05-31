@@ -48,12 +48,9 @@ const BRAND_NAMES: Record<Brand, string> = {
 }
 
 /** Maps our curated model ids to Higgsfield's endpoint + payload shape.
- *  Centralised so we can adjust without touching the UI.
- *
- *  Only `higgsfield-dop` is verified against the v2 API. The other
- *  partner-model paths are best-guess and will throw a clear error if
- *  Higgsfield rejects them — the operator can ping us to verify the
- *  endpoint with their account before we open up the model selector. */
+ *  Each endpoint has a slightly different schema (DOP uses `input_images`
+ *  array, Kling and Seedance use a single `input_image` object). All
+ *  schemas verified against the live API. */
 interface ModelConfig {
   endpoint: string
   /** Builds the input payload for this model's endpoint. */
@@ -70,6 +67,29 @@ const MODEL_CONFIGS: Record<string, ModelConfig> = {
         ? [{ type: 'image_url', image_url }]
         : [],
       duration: duration_s,
+    }),
+  },
+  'kling3': {
+    endpoint: '/v1/image2video/kling',
+    buildInput: ({ prompt, image_url, duration_s }) => ({
+      prompt,
+      input_image: image_url
+        ? { type: 'image_url', image_url }
+        : null,
+      duration: duration_s,
+      mode: 'pro',
+    }),
+  },
+  'seedance2': {
+    endpoint: '/v1/image2video/seedance',
+    buildInput: ({ prompt, image_url, duration_s, aspect_ratio }) => ({
+      prompt,
+      input_image: image_url
+        ? { type: 'image_url', image_url }
+        : null,
+      duration: duration_s,
+      aspect_ratio,
+      resolution: '1080',
     }),
   },
 }

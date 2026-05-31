@@ -70,22 +70,42 @@ export const IMAGE_MODELS: ImageModel[] = [
   },
 ]
 
-/* Only `higgsfield-dop` is verified against Higgsfield's v2 API
- * (`/v1/image2video/dop`). Other partner models are listed for
- * roadmap visibility but disabled in the picker until we verify their
- * endpoints against the operator's account. */
+/* Three Higgsfield image-to-video models are verified live and wired
+ * to their actual API schemas:
+ *   - higgsfield-dop  → /v1/image2video/dop      (camera moves)
+ *   - kling3          → /v1/image2video/kling    (detailed close-ups)
+ *   - seedance2       → /v1/image2video/seedance (energetic motion)
+ *
+ * Veo 3, Sora 2, and Wan 2.6 are advertised on higgsfield.ai/apps but
+ * not exposed via the public API yet (all paths return 404). Keeping
+ * them in the registry as roadmap entries so the moment Higgsfield
+ * opens them up we just flip comingSoon and ship the endpoint config. */
 export const VIDEO_MODELS: VideoModel[] = [
   {
     id: 'higgsfield-dop',
     label: 'Higgsfield DOP',
-    description: 'Director-of-photography model. Image-to-video camera moves on the product photo. Verified live.',
+    description: 'Director-of-photography model. Cinematic camera moves on the product photo.',
+    durations_s: [5, 10],
+    aspect_ratios: ['9:16', '1:1', '16:9'],
+  },
+  {
+    id: 'kling3',
+    label: 'Kling 2.1 Pro',
+    description: 'Detailed close-ups, reliable product transformation. Image-to-video.',
+    durations_s: [5, 10],
+    aspect_ratios: ['9:16', '1:1', '16:9'],
+  },
+  {
+    id: 'seedance2',
+    label: 'Seedance Pro',
+    description: 'Energetic motion, good for transformation reels. Image-to-video.',
     durations_s: [5, 10],
     aspect_ratios: ['9:16', '1:1', '16:9'],
   },
   {
     id: 'veo3',
     label: 'Veo 3',
-    description: 'Google\'s flagship for cinematic motion and natural human performances.',
+    description: 'Google\'s flagship — not yet exposed via Higgsfield\'s public API.',
     durations_s: [8, 16],
     aspect_ratios: ['9:16', '1:1', '16:9'],
     comingSoon: true,
@@ -93,31 +113,15 @@ export const VIDEO_MODELS: VideoModel[] = [
   {
     id: 'sora2-video',
     label: 'Sora 2',
-    description: 'Strong creative control, good for surreal / lifestyle ads.',
+    description: 'OpenAI\'s creative video model — not yet exposed via Higgsfield\'s public API.',
     durations_s: [10, 20],
     aspect_ratios: ['9:16', '1:1', '16:9'],
     comingSoon: true,
   },
   {
-    id: 'kling3',
-    label: 'Kling 3.0',
-    description: 'Detailed product close-ups; reliable for unboxing-style shots.',
-    durations_s: [5, 10],
-    aspect_ratios: ['9:16', '1:1', '16:9'],
-    comingSoon: true,
-  },
-  {
-    id: 'seedance2',
-    label: 'Seedance 2.0',
-    description: 'Energetic motion, good for hyper-cuts and transformation ads.',
-    durations_s: [6, 12],
-    aspect_ratios: ['9:16', '1:1'],
-    comingSoon: true,
-  },
-  {
     id: 'wan2-6',
     label: 'Wan 2.6',
-    description: 'Realistic human talking-heads; the workhorse for UGC.',
+    description: 'Talking-head UGC model — not yet exposed via Higgsfield\'s public API.',
     durations_s: [8, 16],
     aspect_ratios: ['9:16', '1:1'],
     comingSoon: true,
