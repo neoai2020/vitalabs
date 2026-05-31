@@ -143,8 +143,11 @@ serve(async (req: Request) => {
 
   const duration = Math.max(5, Math.min(20, Math.round(body.duration_s)))
 
+  // Higgsfield's actual v2 API expects the model inputs wrapped in
+  // `params`, not `input` as the npm SDK readme implies. Verified
+  // against /v1/image2video/dop returning 200 with a request_id.
   const submission = {
-    input: modelConfig.buildInput({
+    params: modelConfig.buildInput({
       prompt: filledPrompt,
       image_url: product.image_url,
       duration_s: duration,
