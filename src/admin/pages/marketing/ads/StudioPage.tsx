@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { PageHeader } from '../../../components/PageHeader'
 import { Card, CardBody, CardFooter, CardHeader } from '../../../components/ui/Card'
@@ -46,7 +46,19 @@ interface CreativeRow {
   product_id: string | null
 }
 
+interface JobRow {
+  id: string
+  kind: 'generate_image' | 'generate_video' | 'publish_draft'
+  status: 'queued' | 'running' | 'done' | 'failed'
+  external_id: string | null
+  params: Record<string, unknown>
+  error: string | null
+  created_at: string
+}
+
 export default function StudioPage() {
+  const { brand } = useAdminBrand()
+  const queryClient = useQueryClient()
   const { data: products = [], isLoading: productsLoading } = useBrandList<ProductRow>({
     table: 'products',
     select: 'id,compound,tagline,image_url,status',
@@ -56,11 +68,39 @@ export default function StudioPage() {
     table: 'ad_creatives',
     orderBy: { column: 'created_at', ascending: false },
   })
+  const { data: jobs = [] } = useBrandList<JobRow>({
+    table: 'ad_jobs',
+    orderBy: { column: 'created_at', ascending: false },
+  })
 
   const activeProducts = useMemo(
     () => products.filter(p => p.status !== 'archived'),
     [products],
   )
+  const runningVideoJobs = useMemo(
+    () => jobs.filter(j => j.kind === 'generate_video' && j.status === 'running'),
+    [jobs],
+  )
+
+  /* Auto-poll Higgsfield while there's at least one running video job.
+   * Each tick re-invalidates the jobs + creatives queries so the UI
+   * surfaces completions without a manual refresh. */
+  useEffect(() => {
+    if (runningVideoJobs.length === 0) return
+    const tick = async () => {
+      try {
+        await supabase.functions.invoke('poll-ad-jobs', { body: { brand } })
+      } catch (err) {
+        console.warn('[Studio] poll tick failed', err)
+      } finally {
+        queryClient.invalidateQueries({ queryKey: ['ad_jobs', brand] })
+        queryClient.invalidateQueries({ queryKey: ['ad_creatives', brand] })
+      }
+    }
+    void tick()
+    const t = setInterval(tick, 10000)
+    return () => clearInterval(t)
+  }, [runningVideoJobs.length, brand, queryClient])
 
   return (
     <>
@@ -73,9 +113,43 @@ export default function StudioPage() {
 
       <div className="grid gap-6 lg:grid-cols-[1fr,420px]">
         <StudioForm products={activeProducts} productsLoading={productsLoading} />
-        <CreativeLibrary creatives={creatives} loading={creativesLoading} products={activeProducts} />
+        <div className="flex flex-col gap-6">
+          {runningVideoJobs.length > 0 ? (
+            <RunningJobsPanel jobs={runningVideoJobs} products={activeProducts} />
+          ) : null}
+          <CreativeLibrary creatives={creatives} loading={creativesLoading} products={activeProducts} />
+        </div>
       </div>
     </>
+  )
+}
+
+function RunningJobsPanel({ jobs, products }: { jobs: JobRow[]; products: ProductRow[] }) {
+  const byId = useMemo(() => new Map(products.map(p => [p.id, p])), [products])
+  return (
+    <Card>
+      <CardHeader title={`${jobs.length} video job${jobs.length === 1 ? '' : 's'} running`} description="Polling every 10s. Completed videos appear in the library." />
+      <CardBody className="flex flex-col gap-2">
+        {jobs.map(j => {
+          const params = j.params as { product_id?: string; model_id?: string; preset?: string | null }
+          const product = params.product_id ? byId.get(params.product_id) : null
+          const ageS = Math.round((Date.now() - new Date(j.created_at).getTime()) / 1000)
+          return (
+            <div key={j.id} className="flex items-center gap-3 rounded-lg border border-[var(--color-admin-border)] bg-[var(--color-admin-bg-soft)] p-3">
+              <div className="h-8 w-8 shrink-0 animate-pulse rounded-full bg-[var(--color-admin-primary)]/30" />
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-medium text-[var(--color-admin-text-strong)]">
+                  {product?.compound ?? '—'} · {params.model_id ?? 'model'}
+                </div>
+                <div className="text-xs text-[var(--color-admin-muted)]">
+                  {params.preset ? `${params.preset} · ` : ''}generating for {ageS}s
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </CardBody>
+    </Card>
   )
 }
 
@@ -146,7 +220,6 @@ function StudioForm({ products, productsLoading }: FormProps) {
         if (!res?.ok) throw new Error(res?.error ?? 'Generation failed')
         const made = res.creatives?.length ?? 0
         setGenerationNote(`Generated ${made} variant${made === 1 ? '' : 's'}${res.errors?.length ? ` · ${res.errors.length} failed` : ''}.`)
-        // Refresh the library
         queryClient.invalidateQueries({ queryKey: ['ad_creatives', brand] })
       } catch (err) {
         setGenerationError(err instanceof Error ? err.message : 'Generation failed')
@@ -156,14 +229,34 @@ function StudioForm({ products, productsLoading }: FormProps) {
       return
     }
 
-    // Video — Phase 3
-    setGenerationError('Video generation ships in Phase 3 (Higgsfield wiring). Image is live now.')
+    // Video path — submit to Higgsfield, poll-ad-jobs picks it up async.
+    if (!videoPrompt.trim()) { setGenerationError('Prompt is required.'); return }
+    setGenerating(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-ad-video', {
+        body: {
+          brand,
+          product_id: productId,
+          model_id: videoModelId,
+          preset: presetId || undefined,
+          prompt: videoPrompt,
+          aspect_ratio: aspect,
+          duration_s: duration,
+        },
+      })
+      if (error) throw new Error(error.message)
+      const res = data as { ok?: boolean; error?: string; job_id?: string }
+      if (!res?.ok) throw new Error(res?.error ?? 'Submission failed')
+      setGenerationNote(`Job submitted. We'll keep polling — video usually takes 30-120 seconds.`)
+      queryClient.invalidateQueries({ queryKey: ['ad_jobs', brand] })
+    } catch (err) {
+      setGenerationError(err instanceof Error ? err.message : 'Generation failed')
+    } finally {
+      setGenerating(false)
+    }
   }
 
-  const disabledNote =
-    tab === 'video'
-      ? 'Video generation ships in Phase 3.'
-      : null
+  const disabledNote = null
 
   return (
     <div className="flex flex-col gap-6">
@@ -269,7 +362,7 @@ function StudioForm({ products, productsLoading }: FormProps) {
           </div>
           <Button
             onClick={() => void generate()}
-            disabled={generating || !productId || tab === 'video'}
+            disabled={generating || !productId}
           >
             {generating ? 'Generating…' : 'Generate'}
           </Button>
