@@ -594,49 +594,204 @@ function CreativeLibrary({ creatives, loading, products }: LibraryProps) {
     () => new Map(products.map(p => [p.id, p])),
     [products],
   )
+  const [preview, setPreview] = useState<CreativeRow | null>(null)
+  const previewProduct = preview?.product_id ? productById.get(preview.product_id) ?? null : null
 
   return (
-    <Card>
-      <CardHeader title="Library" description={creatives.length ? `${creatives.length} creatives saved` : 'Your generated creatives land here'} />
-      <CardBody className="flex flex-col gap-3">
-        {loading ? (
-          <div className="text-sm text-[var(--color-admin-muted)]">Loading…</div>
-        ) : creatives.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-[var(--color-admin-border)] p-6 text-center text-sm text-[var(--color-admin-muted)]">
-            No creatives yet. Generate one with the form on the left.
-          </div>
-        ) : (
-          creatives.slice(0, 20).map(c => {
-            const product = c.product_id ? productById.get(c.product_id) : null
-            const copy = c.metadata?.ad_copy ?? null
-            return (
-              <div key={c.id} className="flex flex-col gap-2 rounded-lg border border-[var(--color-admin-border)] bg-[var(--color-admin-bg-soft)] p-2">
-                <div className="flex gap-3">
-                  <div className="h-20 w-20 shrink-0 overflow-hidden rounded-md bg-[var(--color-admin-surface)]">
-                    {c.kind === 'image' ? (
-                      <img src={c.public_url} alt="" className="h-full w-full object-cover" />
-                    ) : c.thumbnail_url ? (
-                      <img src={c.thumbnail_url} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="grid h-full w-full place-items-center text-[10px] text-[var(--color-admin-muted)]">VIDEO</div>
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-baseline justify-between gap-2">
-                      <div className="truncate text-sm font-medium text-[var(--color-admin-text-strong)]">{product?.compound ?? '—'}</div>
-                      <span className="shrink-0 text-[10px] uppercase tracking-wider text-[var(--color-admin-muted)]">{c.kind} · {c.aspect_ratio}</span>
+    <>
+      <Card>
+        <CardHeader title="Library" description={creatives.length ? `${creatives.length} creatives saved · click to preview` : 'Your generated creatives land here'} />
+        <CardBody className="flex flex-col gap-3">
+          {loading ? (
+            <div className="text-sm text-[var(--color-admin-muted)]">Loading…</div>
+          ) : creatives.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-[var(--color-admin-border)] p-6 text-center text-sm text-[var(--color-admin-muted)]">
+              No creatives yet. Generate one with the form on the left.
+            </div>
+          ) : (
+            creatives.slice(0, 20).map(c => {
+              const product = c.product_id ? productById.get(c.product_id) : null
+              const copy = c.metadata?.ad_copy ?? null
+              return (
+                <div key={c.id} className="flex flex-col gap-2 rounded-lg border border-[var(--color-admin-border)] bg-[var(--color-admin-bg-soft)] p-2 transition-colors hover:border-[var(--color-admin-border-strong)]">
+                  <button
+                    type="button"
+                    onClick={() => setPreview(c)}
+                    className="flex gap-3 text-left"
+                    title="Click to preview"
+                  >
+                    <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md bg-[var(--color-admin-surface)]">
+                      {c.kind === 'image' ? (
+                        <img src={c.public_url} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <>
+                          {/* Use the first frame of the video as the thumb when
+                              the provider didn't upload a separate one. */}
+                          {c.thumbnail_url ? (
+                            <img src={c.thumbnail_url} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <video
+                              src={c.public_url}
+                              className="h-full w-full object-cover"
+                              muted
+                              playsInline
+                              preload="metadata"
+                            />
+                          )}
+                          <div className="absolute inset-0 grid place-items-center bg-black/30">
+                            <div className="grid h-7 w-7 place-items-center rounded-full bg-white/90 text-[var(--color-admin-text-strong)] shadow-sm">
+                              <PlayIcon />
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
-                    <div className="mt-0.5 text-xs text-[var(--color-admin-muted)]">{c.generator}</div>
-                    {c.prompt ? <div className="mt-1 line-clamp-2 text-xs text-[var(--color-admin-muted)]">{c.prompt}</div> : null}
-                  </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <div className="truncate text-sm font-medium text-[var(--color-admin-text-strong)]">{product?.compound ?? '—'}</div>
+                        <span className="shrink-0 text-[10px] uppercase tracking-wider text-[var(--color-admin-muted)]">{c.kind} · {c.aspect_ratio}</span>
+                      </div>
+                      <div className="mt-0.5 text-xs text-[var(--color-admin-muted)]">{c.generator}</div>
+                      {c.prompt ? <div className="mt-1 line-clamp-2 text-xs text-[var(--color-admin-muted)]">{c.prompt}</div> : null}
+                    </div>
+                  </button>
+                  {copy ? <AdCopyPanel copy={copy} /> : null}
                 </div>
-                {copy ? <AdCopyPanel copy={copy} /> : null}
-              </div>
-            )
-          })
-        )}
-      </CardBody>
-    </Card>
+              )
+            })
+          )}
+        </CardBody>
+      </Card>
+
+      {preview ? (
+        <CreativePreviewModal
+          creative={preview}
+          product={previewProduct}
+          onClose={() => setPreview(null)}
+        />
+      ) : null}
+    </>
+  )
+}
+
+function PlayIcon() {
+  return (
+    <svg viewBox="0 0 12 12" className="h-3.5 w-3.5 fill-current" aria-hidden>
+      <path d="M3 2.2v7.6c0 .35.39.56.69.37l6-3.8a.44.44 0 0 0 0-.74l-6-3.8A.44.44 0 0 0 3 2.2Z" />
+    </svg>
+  )
+}
+
+/* Full-screen preview overlay. Renders a <video controls autoplay> for
+ * video creatives so the operator can scrub before deciding to use it,
+ * and a full-size image for image creatives. Click the backdrop or hit
+ * Esc to close. */
+function CreativePreviewModal({
+  creative,
+  product,
+  onClose,
+}: {
+  creative: CreativeRow
+  product: ProductRow | null
+  onClose: () => void
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+    }
+  }, [onClose])
+
+  const aspectClass =
+    creative.aspect_ratio === '9:16' ? 'aspect-[9/16] max-h-[80vh] max-w-[min(90vw,calc(80vh*9/16))]'
+    : creative.aspect_ratio === '16:9' ? 'aspect-video max-h-[80vh] w-full max-w-4xl'
+    : creative.aspect_ratio === '4:5' ? 'aspect-[4/5] max-h-[80vh] max-w-[min(90vw,calc(80vh*4/5))]'
+    : 'aspect-square max-h-[80vh] max-w-[min(90vw,80vh)]'
+
+  return (
+    <div
+      className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-4 backdrop-blur-sm"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        className="flex max-h-[92vh] w-full max-w-5xl flex-col gap-3 rounded-xl bg-[var(--color-admin-surface)] p-4 shadow-2xl"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="truncate text-sm font-semibold text-[var(--color-admin-text-strong)]">
+              {product?.compound ?? 'Creative'}
+            </div>
+            <div className="mt-0.5 text-xs text-[var(--color-admin-muted)]">
+              {creative.kind} · {creative.aspect_ratio} · {creative.generator}
+            </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <a
+              href={creative.public_url}
+              download
+              className="rounded-md border border-[var(--color-admin-border-strong)] bg-[var(--color-admin-bg-soft)] px-2.5 py-1 text-xs font-medium text-[var(--color-admin-text-strong)] hover:border-[var(--color-admin-border-emphasis)]"
+              onClick={e => e.stopPropagation()}
+            >
+              Download
+            </a>
+            <a
+              href={creative.public_url}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-md border border-[var(--color-admin-border-strong)] bg-[var(--color-admin-bg-soft)] px-2.5 py-1 text-xs font-medium text-[var(--color-admin-text-strong)] hover:border-[var(--color-admin-border-emphasis)]"
+              onClick={e => e.stopPropagation()}
+            >
+              Open
+            </a>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-md border border-[var(--color-admin-border-strong)] bg-[var(--color-admin-bg-soft)] px-2.5 py-1 text-xs font-medium text-[var(--color-admin-text-strong)] hover:border-[var(--color-admin-border-emphasis)]"
+              aria-label="Close preview"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+
+        <div className="grid place-items-center overflow-auto rounded-lg bg-black/40">
+          <div className={aspectClass}>
+            {creative.kind === 'video' ? (
+              <video
+                src={creative.public_url}
+                controls
+                autoPlay
+                playsInline
+                className="h-full w-full rounded-md bg-black object-contain"
+              />
+            ) : (
+              <img
+                src={creative.public_url}
+                alt={product?.compound ?? ''}
+                className="h-full w-full rounded-md object-contain"
+              />
+            )}
+          </div>
+        </div>
+
+        {creative.prompt ? (
+          <details className="rounded-md border border-[var(--color-admin-border)] bg-[var(--color-admin-bg-soft)] p-2.5">
+            <summary className="cursor-pointer text-[11px] uppercase tracking-wider text-[var(--color-admin-muted)]">
+              Prompt
+            </summary>
+            <pre className="mt-1.5 whitespace-pre-wrap text-xs text-[var(--color-admin-text)]">{creative.prompt}</pre>
+          </details>
+        ) : null}
+      </div>
+    </div>
   )
 }
 
