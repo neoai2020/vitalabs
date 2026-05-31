@@ -63,6 +63,8 @@ export async function redeemPromoCode(
   }
 }
 
+import type { UpsellTemplateId } from './upsellTemplates'
+
 export interface UpsellOffer {
   id: string
   product_id: string
@@ -73,6 +75,9 @@ export interface UpsellOffer {
   cta: string | null
   active: boolean
   sort_order: number
+  template: UpsellTemplateId
+  months: number
+  addon_product_id: string | null
 }
 
 export async function fetchActiveUpsellOffer(): Promise<UpsellOffer | null> {

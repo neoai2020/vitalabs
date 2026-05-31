@@ -6,6 +6,7 @@ import { benefitHeadline, benefitSubline, durationLabel, energyLabel, getExperie
 import { loadQuiz } from '../lib/quizStorage'
 import { defaultQuizAnswers } from '../types/quiz'
 import { getCompoundCopy } from '../lib/compoundCopy'
+import { fetchActiveUpsellOffer } from '../lib/marketing'
 
 const PILLAR_CATEGORY: Record<string, string> = {
   weight_management: 'Weight management',
@@ -211,6 +212,18 @@ export default function ResultsPage() {
   const answers = useMemo(() => loadQuiz(), [])
   const valid = answers.goal && answers.researchAck
   const rec = useMemo(() => valid ? recommendPeptides(answers) : null, [answers, valid])
+  const [hasActiveUpsell, setHasActiveUpsell] = useState<boolean | null>(null)
+
+  // Prefetch the upsell offer in the background so the CTA can route
+  // directly to /upsell or /checkout without a flash of the wrong page.
+  // Falsy result (no offer / fetch error) means: skip the upsell step.
+  useEffect(() => {
+    let cancelled = false
+    void fetchActiveUpsellOffer().then(o => {
+      if (!cancelled) setHasActiveUpsell(Boolean(o))
+    })
+    return () => { cancelled = true }
+  }, [])
 
   if (!valid || !rec) {
     return (
@@ -269,16 +282,21 @@ export default function ResultsPage() {
         displayPrice: `£${s.discountedPrice.toFixed(2)}`,
       })),
     ]
-    navigate('/checkout', {
-      state: {
-        items,
-        amount: Math.round(total * 100),
-        quantity: items.length,
-        description: items.length > 1 ? `${primary.sku} + Stack (${items.length} items)` : `${primary.sku} — 1 Month Supply`,
-        displayPrice: `£${total.toFixed(2)}`,
-        returnPath: '/order-complete',
-      },
-    })
+    const checkoutState = {
+      items,
+      amount: Math.round(total * 100),
+      quantity: items.length,
+      description: items.length > 1 ? `${primary.sku} + Stack (${items.length} items)` : `${primary.sku} — 1 Month Supply`,
+      displayPrice: `£${total.toFixed(2)}`,
+      returnPath: '/order-complete',
+    }
+    // Detour through /upsell only when the admin has an active offer for
+    // the current brand. Default funnel is results → checkout.
+    if (hasActiveUpsell) {
+      navigate('/upsell', { state: checkoutState })
+    } else {
+      navigate('/checkout', { state: checkoutState })
+    }
   }
 
   const headline = benefitHeadline(merged)
