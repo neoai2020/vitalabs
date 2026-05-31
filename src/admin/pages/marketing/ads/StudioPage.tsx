@@ -1,10 +1,13 @@
 import { useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { PageHeader } from '../../../components/PageHeader'
 import { Card, CardBody, CardFooter, CardHeader } from '../../../components/ui/Card'
 import { Button } from '../../../components/ui/Button'
 import { Input } from '../../../components/ui/Input'
 import { Label } from '../../../components/ui/Label'
 import { useBrandList } from '../../../hooks/useBrandQuery'
+import { useAdminBrand } from '../../../context/AdminBrandContext'
+import { supabase } from '../../../../lib/supabase'
 import { AdsTabBar } from './AdsTabBar'
 import {
   ASPECT_RATIOS,
@@ -82,6 +85,8 @@ interface FormProps {
 }
 
 function StudioForm({ products, productsLoading }: FormProps) {
+  const { brand } = useAdminBrand()
+  const queryClient = useQueryClient()
   const [tab, setTab] = useState<CreativeKind>('image')
   const [productId, setProductId] = useState<string>('')
   const [aspect, setAspect] = useState<AspectRatio>('1:1')
@@ -97,6 +102,11 @@ function StudioForm({ products, productsLoading }: FormProps) {
   const [duration, setDuration] = useState(8)
   const [videoPrompt, setVideoPrompt] = useState('')
 
+  // Generation lifecycle (image only for now; video added in Phase 3).
+  const [generating, setGenerating] = useState(false)
+  const [generationError, setGenerationError] = useState<string | null>(null)
+  const [generationNote, setGenerationNote] = useState<string | null>(null)
+
   const product = products.find(p => p.id === productId) ?? null
 
   /* When operator picks a preset, mirror its suggested model + prefill
@@ -110,14 +120,53 @@ function StudioForm({ products, productsLoading }: FormProps) {
     }
   }
 
+  const generate = async () => {
+    setGenerationError(null)
+    setGenerationNote(null)
+    if (!productId) { setGenerationError('Pick a product first.'); return }
+
+    if (tab === 'image') {
+      const hook = IMAGE_HOOKS.find(h => h.id === hookId)
+      if (!hook) { setGenerationError('Unknown hook'); return }
+      setGenerating(true)
+      try {
+        const { data, error } = await supabase.functions.invoke('generate-ad-image', {
+          body: {
+            brand,
+            product_id: productId,
+            hook_id: hookId,
+            aspect_ratio: aspect,
+            custom_prompt: customPrompt || undefined,
+            variants_n: variantsN,
+            prompt_template: hook.prompt_template,
+          },
+        })
+        if (error) throw new Error(error.message)
+        const res = data as { ok?: boolean; creatives?: unknown[]; errors?: string[]; error?: string }
+        if (!res?.ok) throw new Error(res?.error ?? 'Generation failed')
+        const made = res.creatives?.length ?? 0
+        setGenerationNote(`Generated ${made} variant${made === 1 ? '' : 's'}${res.errors?.length ? ` · ${res.errors.length} failed` : ''}.`)
+        // Refresh the library
+        queryClient.invalidateQueries({ queryKey: ['ad_creatives', brand] })
+      } catch (err) {
+        setGenerationError(err instanceof Error ? err.message : 'Generation failed')
+      } finally {
+        setGenerating(false)
+      }
+      return
+    }
+
+    // Video — Phase 3
+    setGenerationError('Video generation ships in Phase 3 (Higgsfield wiring). Image is live now.')
+  }
+
   const disabledNote =
-    tab === 'image'
-      ? 'Generation goes live once the Gemini Nano Banana Edge Function ships (Phase 2).'
-      : 'Generation goes live once the Higgsfield Edge Function ships (Phase 3).'
+    tab === 'video'
+      ? 'Video generation ships in Phase 3.'
+      : null
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Tabs */}
       <Card>
         <CardHeader title="New creative" description="Pick a product, choose the format, and we'll do the rest." />
         <CardBody className="grid gap-5">
@@ -207,8 +256,23 @@ function StudioForm({ products, productsLoading }: FormProps) {
           )}
         </CardBody>
         <CardFooter>
-          <span className="text-xs text-[var(--color-admin-muted)]">{disabledNote}</span>
-          <Button disabled>Generate</Button>
+          <div className="mr-auto text-xs">
+            {generationError ? (
+              <span className="text-[var(--color-admin-danger)]">{generationError}</span>
+            ) : generationNote ? (
+              <span className="text-[var(--color-admin-success)]">{generationNote}</span>
+            ) : disabledNote ? (
+              <span className="text-[var(--color-admin-muted)]">{disabledNote}</span>
+            ) : tab === 'image' ? (
+              <span className="text-[var(--color-admin-muted)]">{variantsN} variant{variantsN === 1 ? '' : 's'} · ~5-15 seconds</span>
+            ) : null}
+          </div>
+          <Button
+            onClick={() => void generate()}
+            disabled={generating || !productId || tab === 'video'}
+          >
+            {generating ? 'Generating…' : 'Generate'}
+          </Button>
         </CardFooter>
       </Card>
     </div>
