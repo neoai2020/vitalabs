@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { fireCapiEvent, newEventId } from '../lib/tracking/capi'
+import { trackEvent } from '../lib/analytics'
 
 interface OrderInfo {
   description?: string
@@ -32,6 +33,15 @@ export default function OrderCompletePage() {
       if (stored) {
         const parsed = JSON.parse(stored) as OrderInfo
         setOrder(parsed)
+
+        // First-party analytics: completed checkout. Powers conversion
+        // rate + abandonment charts on the admin dashboard.
+        trackEvent('checkout_completed', {
+          props: {
+            amount_pence: parsed.amount,
+            sku_count: parsed.items?.length ?? 0,
+          },
+        })
 
         // Fire Facebook Purchase event on BOTH browser pixel and server-side
         // Conversions API using the same event_id so Meta dedupes. CAPI is a

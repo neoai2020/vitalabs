@@ -21,8 +21,8 @@ export function AdminLayout() {
   return (
     <AdminBrandProvider>
       <AdminConfigGate>
-      <div className="admin-root flex min-h-screen flex-col bg-[var(--color-admin-bg)]">
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-[var(--color-admin-border)] bg-[var(--color-admin-bg)]/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-[var(--color-admin-bg)]/70">
+      <div className="admin-root flex min-h-screen flex-col">
+        <header className="admin-header sticky top-0 z-30 flex h-14 items-center justify-between px-4">
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -36,11 +36,14 @@ export function AdminLayout() {
                 <line x1="3" y1="18" x2="21" y2="18" />
               </svg>
             </button>
-            <div className="flex items-center gap-2">
-              <div className="grid h-7 w-7 place-items-center rounded-md bg-[var(--color-admin-primary)] text-xs font-semibold text-white shadow-[0_1px_0_0_rgba(255,255,255,0.15)_inset]">
+            <div className="flex items-center gap-2.5">
+              <div className="admin-brand-badge grid h-7 w-7 place-items-center rounded-md text-[11px] font-semibold text-white">
                 VL
               </div>
-              <span className="text-sm font-semibold tracking-tight text-[var(--color-admin-text-strong)]">Admin</span>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-sm font-semibold tracking-tight text-[var(--color-admin-text-strong)]">Vita Labs</span>
+                <span className="text-[10px] uppercase tracking-[0.18em] text-[var(--color-admin-subtle)]">Console</span>
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -54,9 +57,9 @@ export function AdminLayout() {
 
         <div className="flex flex-1">
           <aside
-            className={`fixed inset-y-14 left-0 z-20 w-64 transform border-r border-[var(--color-admin-border)] bg-[var(--color-admin-bg-soft)] transition-transform lg:static lg:inset-y-0 lg:translate-x-0 ${navOpen ? 'translate-x-0' : '-translate-x-full'}`}
+            className={`admin-sidebar fixed inset-y-14 left-0 z-20 w-60 transform transition-transform lg:static lg:inset-y-0 lg:translate-x-0 ${navOpen ? 'translate-x-0' : '-translate-x-full'}`}
           >
-            <div className="h-full overflow-y-auto">
+            <div className="h-full overflow-y-auto pb-8">
               <AdminNav />
             </div>
           </aside>

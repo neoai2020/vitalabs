@@ -9,6 +9,7 @@ import {
 } from '../lib/uprails'
 import { useCart } from '../lib/cart'
 import { redeemPromoCode } from '../lib/marketing'
+import { trackEvent } from '../lib/analytics'
 
 type Status = 'idle' | 'loading' | 'ready' | 'submitting' | 'succeeded' | 'failed'
 
@@ -113,6 +114,19 @@ export default function CheckoutPage() {
       if (prev) document.documentElement.setAttribute('data-theme', prev)
     }
   }, [])
+
+  // Fire checkout_started exactly once per checkout view (skip if the
+  // user landed here without a cart — those visits aren't real intent).
+  useEffect(() => {
+    if (!state || !state.amount) return
+    trackEvent('checkout_started', {
+      props: {
+        amount_pence: state.amount,
+        quantity: state.quantity,
+        description: state.description,
+      },
+    })
+  }, [state])
 
   const [status, setStatus] = useState<Status>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)

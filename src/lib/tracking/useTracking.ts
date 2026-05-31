@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useConfig } from '../config/ConfigProvider'
+import { trackPageView } from '../analytics'
 import {
   loadGoogleTag,
   loadMetaPixel,
@@ -42,6 +43,10 @@ export function useTracking() {
   // SPA route-change PageView (skipped on first render since the loaders
   // above already fired the initial PageView).
   useEffect(() => {
+    // First-party page_view always fires — it powers the admin dashboard
+    // even when the third-party pixels are disabled.
+    trackPageView(pathname)
+
     if (loading) return
     const { tracking } = config
     if (tracking.meta.enabled) trackMetaPageView()

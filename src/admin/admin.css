@@ -4,28 +4,35 @@
  * src/storefront.css is not affected. Admin components use Tailwind
  * utilities; the rest of the app is untouched.
  *
- * Palette: full dark, Linear/Cursor-inspired. Two surface levels
- * (bg + surface) and two border weights for hierarchy without
- * harsh contrasts. Indigo accent works across both brands.
+ * Palette: dark, futuristic. Deep-space background, layered surfaces,
+ * cyan + violet accent gradient, soft indigo glow. Numbers use the
+ * "JetBrains Mono"-style monospace stack for a precise, terminal feel.
  */
 @import "tailwindcss/theme" layer(theme);
 @import "tailwindcss/utilities" layer(utilities);
 
 @theme {
-  --color-admin-bg: #08090b;
-  --color-admin-bg-soft: #0c0d10;
-  --color-admin-surface: #131317;
-  --color-admin-surface-elevated: #1b1b21;
-  --color-admin-surface-hover: #1f1f26;
-  --color-admin-border: #1f1f25;
-  --color-admin-border-strong: #2a2a32;
-  --color-admin-text: #ececee;
+  --color-admin-bg: #06070a;
+  --color-admin-bg-soft: #0a0b10;
+  --color-admin-surface: #0f1015;
+  --color-admin-surface-elevated: #15161d;
+  --color-admin-surface-hover: #1a1b23;
+  --color-admin-border: #1d1e27;
+  --color-admin-border-strong: #2a2b36;
+  --color-admin-text: #e8e9ec;
   --color-admin-text-strong: #ffffff;
-  --color-admin-muted: #82828b;
-  --color-admin-subtle: #5e5e67;
+  --color-admin-muted: #7e7f8a;
+  --color-admin-subtle: #5a5b66;
+
+  /* Indigo stays the canonical primary; cyan + violet are the
+     futuristic accent pair used in gradients, chart strokes, and glows. */
   --color-admin-primary: #6366f1;
   --color-admin-primary-hover: #818cf8;
   --color-admin-primary-soft: rgba(99, 102, 241, 0.12);
+  --color-admin-accent-cyan: #22d3ee;
+  --color-admin-accent-violet: #a78bfa;
+  --color-admin-accent-glow: rgba(99, 102, 241, 0.35);
+
   --color-admin-danger: #f87171;
   --color-admin-danger-soft: rgba(248, 113, 113, 0.12);
   --color-admin-success: #34d399;
@@ -44,6 +51,14 @@
   background: var(--color-admin-bg);
   min-height: 100vh;
   color-scheme: dark;
+
+  /* Subtle aurora wash behind the whole admin shell — a slow, almost-
+     invisible cyan/violet glow that hints at the futuristic palette
+     without distracting from content. */
+  background-image:
+    radial-gradient(1200px 600px at 10% -10%, rgba(34, 211, 238, 0.05), transparent 60%),
+    radial-gradient(900px 500px at 90% 110%, rgba(167, 139, 250, 0.05), transparent 60%);
+  background-attachment: fixed;
 }
 
 .admin-root *,
@@ -59,8 +74,6 @@
   font-family: inherit;
 }
 
-/* Inputs render with the platform's dark colour scheme so autofill, date
-   pickers etc. don't flash white. */
 .admin-root input,
 .admin-root textarea,
 .admin-root select {
@@ -76,15 +89,14 @@
   background: transparent;
 }
 .admin-root *::-webkit-scrollbar-thumb {
-  background: #2a2a32;
+  background: #25262f;
   border-radius: 6px;
   border: 2px solid var(--color-admin-bg);
 }
 .admin-root *::-webkit-scrollbar-thumb:hover {
-  background: #3a3a44;
+  background: #34353f;
 }
 
-/* Soft focus ring for any element that opts in via .admin-focus */
 .admin-root .admin-focus:focus-visible {
   outline: 2px solid var(--color-admin-primary);
   outline-offset: 2px;
@@ -97,4 +109,257 @@
   overflow: hidden;
   background: #ffffff;
   box-shadow: 0 0 0 1px var(--color-admin-border-strong), 0 20px 40px -20px rgba(0, 0, 0, 0.6);
+}
+
+/* ── FUTURISTIC PRIMITIVES ────────────────────────────────────────── */
+
+/* Sidebar shell — a slim accented strip on the right edge so the rail
+   visually separates from the main canvas without a hard line. */
+.admin-sidebar {
+  background: linear-gradient(180deg, var(--color-admin-bg-soft) 0%, var(--color-admin-bg) 100%);
+  position: relative;
+}
+.admin-sidebar::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 1px;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    var(--color-admin-border) 12%,
+    var(--color-admin-border-strong) 50%,
+    var(--color-admin-border) 88%,
+    transparent 100%);
+  pointer-events: none;
+}
+
+/* Brand block at top of sidebar. The shimmer is a single-pass animation
+   on mount so it feels alive without continuously animating. */
+.admin-brand-mark {
+  position: relative;
+  background:
+    radial-gradient(120px 60px at 20% 10%, rgba(99, 102, 241, 0.25), transparent 60%),
+    linear-gradient(135deg, rgba(34, 211, 238, 0.10), rgba(167, 139, 250, 0.10));
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 0 1px rgba(99, 102, 241, 0.08),
+    0 8px 24px -16px rgba(34, 211, 238, 0.5);
+  overflow: hidden;
+}
+.admin-brand-mark::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.08) 50%, transparent 70%);
+  transform: translateX(-100%);
+  animation: admin-shimmer 2.8s ease-in-out 0.4s 1 forwards;
+}
+@keyframes admin-shimmer {
+  to { transform: translateX(100%); }
+}
+
+/* Nav group title with a hairline gradient underline. */
+.admin-nav-group-title {
+  position: relative;
+  padding-bottom: 6px;
+}
+.admin-nav-group-title::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+    var(--color-admin-border-strong) 0%,
+    transparent 100%);
+}
+
+/* Nav item — the active state gets a gradient bg, a glowing left
+   accent bar, and an inset highlight. Inactive items stay quiet. */
+.admin-nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  margin: 1px 0;
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: var(--color-admin-muted);
+  transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+}
+.admin-nav-item:hover {
+  background: var(--color-admin-surface-hover);
+  color: var(--color-admin-text);
+}
+.admin-nav-item-icon {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--color-admin-subtle);
+  transition: color 160ms ease;
+}
+.admin-nav-item:hover .admin-nav-item-icon {
+  color: var(--color-admin-text);
+}
+.admin-nav-item--active {
+  background: linear-gradient(90deg,
+    rgba(99, 102, 241, 0.18) 0%,
+    rgba(99, 102, 241, 0.05) 60%,
+    transparent 100%);
+  color: var(--color-admin-text-strong);
+  font-weight: 500;
+  box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.18);
+}
+.admin-nav-item--active .admin-nav-item-icon {
+  color: var(--color-admin-accent-cyan);
+  filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.6));
+}
+.admin-nav-item--active::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  border-radius: 1px;
+  background: linear-gradient(180deg, var(--color-admin-accent-cyan), var(--color-admin-accent-violet));
+  box-shadow: 0 0 8px rgba(34, 211, 238, 0.6);
+}
+
+/* Header polish — frosted-glass top bar with a hairline accent on the
+   bottom edge. */
+.admin-header {
+  background: rgba(6, 7, 10, 0.7);
+  backdrop-filter: blur(10px) saturate(180%);
+  -webkit-backdrop-filter: blur(10px) saturate(180%);
+  border-bottom: 1px solid var(--color-admin-border);
+  position: relative;
+}
+.admin-header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--color-admin-border-strong) 25%,
+    rgba(99, 102, 241, 0.4) 50%,
+    var(--color-admin-border-strong) 75%,
+    transparent 100%);
+  opacity: 0.6;
+}
+
+/* Brand badge in header — small chip with gradient bg. */
+.admin-brand-badge {
+  background: linear-gradient(135deg, var(--color-admin-primary) 0%, #4338ca 100%);
+  box-shadow:
+    0 0 0 1px rgba(99, 102, 241, 0.35),
+    0 0 12px -2px rgba(99, 102, 241, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+/* ── KPI / CHART PRIMITIVES ──────────────────────────────────────── */
+
+.admin-kpi {
+  position: relative;
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, var(--color-admin-surface) 0%, var(--color-admin-bg-soft) 100%);
+  border: 1px solid var(--color-admin-border);
+  overflow: hidden;
+  transition: border-color 200ms ease, transform 200ms ease;
+}
+.admin-kpi::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg,
+    rgba(34, 211, 238, 0.06) 0%,
+    transparent 35%,
+    transparent 65%,
+    rgba(167, 139, 250, 0.06) 100%);
+  opacity: 0.6;
+  transition: opacity 200ms ease;
+}
+.admin-kpi::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.18), transparent 40%, transparent 60%, rgba(167, 139, 250, 0.18));
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.admin-kpi:hover {
+  border-color: var(--color-admin-border-strong);
+  transform: translateY(-1px);
+}
+.admin-kpi:hover::after {
+  opacity: 1;
+}
+.admin-kpi-value {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-feature-settings: 'tnum', 'zero';
+  letter-spacing: -0.02em;
+  color: var(--color-admin-text-strong);
+}
+
+.admin-chart-grid {
+  stroke: var(--color-admin-border);
+  stroke-dasharray: 2 4;
+  stroke-width: 1;
+  opacity: 0.6;
+}
+
+.admin-chart-axis-label {
+  fill: var(--color-admin-subtle);
+  font-size: 10px;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.admin-chart-line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 4px rgba(99, 102, 241, 0.45));
+}
+
+.admin-chart-dot {
+  filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.7));
+}
+
+.admin-tab {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  color: var(--color-admin-muted);
+  background: transparent;
+  border: 1px solid var(--color-admin-border);
+  transition: all 160ms ease;
+}
+.admin-tab:hover {
+  color: var(--color-admin-text);
+  border-color: var(--color-admin-border-strong);
+}
+.admin-tab--active {
+  color: var(--color-admin-text-strong);
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.12), rgba(167, 139, 250, 0.12));
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 0 12px -4px rgba(99, 102, 241, 0.5);
 }
