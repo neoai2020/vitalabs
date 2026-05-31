@@ -153,6 +153,14 @@ const Icon = {
       <path d="M11.5 5.5c1 .5 1.5 1.3 1.5 2.5s-.5 2-1.5 2.5" />
     </svg>
   ),
+  Wand: (
+    <svg viewBox="0 0 16 16" width="16" height="16" {...stroke}>
+      <path d="M3 13l8-8" />
+      <path d="M10 4l2 2" />
+      <path d="M13 8l.6 1.4L15 10l-1.4.6L13 12l-.6-1.4L11 10l1.4-.6L13 8z" />
+      <path d="M4 3l.4 1L5.5 4.5 4.4 5l-.4 1-.4-1L2.5 4.5 3.6 4 4 3z" />
+    </svg>
+  ),
 }
 
 const NAV: NavGroup[] = [
@@ -199,6 +207,7 @@ const NAV: NavGroup[] = [
       { to: '/admin/marketing/promo-codes', label: 'Promo codes', icon: Icon.Tag },
       { to: '/admin/marketing/upsell-offers', label: 'Upsell offers', icon: Icon.Sparkle },
       { to: '/admin/marketing/banners', label: 'Banners', icon: Icon.Megaphone },
+      { to: '/admin/marketing/ads', label: 'Ad Studio', icon: Icon.Wand },
     ],
   },
 ]
