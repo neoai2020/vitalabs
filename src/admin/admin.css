@@ -1,64 +1,94 @@
 /*
- * Admin-only Tailwind. We intentionally skip Tailwind's preflight (base
- * reset) so the public site's custom CSS in src/index.css and
- * src/storefront.css is not affected. Admin components use Tailwind
- * utilities; the rest of the app is untouched.
+ * Admin design system — warm light, restrained, Fortune-500 inspired.
  *
- * Palette: dark, futuristic. Deep-space background, layered surfaces,
- * cyan + violet accent gradient, soft indigo glow. Numbers use the
- * "JetBrains Mono"-style monospace stack for a precise, terminal feel.
+ * The previous iteration leaned into a "cosmic dashboard" vibe (cyan/violet
+ * gradients, glow, aurora wash). It read as AI slop. This rewrite trades all
+ * of that for the language of Stripe Dashboard / Linear / Vercel: a warm
+ * off-white canvas, ink-black text, a single muted teal accent used only for
+ * state, hairline borders, generous spacing, tabular-figure mono numbers,
+ * and three signature micro-animations (nav indicator slide, KPI count-up,
+ * chart draw-in). Premium comes from precision, not decoration.
+ *
+ * Scope: admin shell only. No Tailwind preflight, so the public site is
+ * untouched.
  */
 @import "tailwindcss/theme" layer(theme);
 @import "tailwindcss/utilities" layer(utilities);
 
 @theme {
-  --color-admin-bg: #06070a;
-  --color-admin-bg-soft: #0a0b10;
-  --color-admin-surface: #0f1015;
-  --color-admin-surface-elevated: #15161d;
-  --color-admin-surface-hover: #1a1b23;
-  --color-admin-border: #1d1e27;
-  --color-admin-border-strong: #2a2b36;
-  --color-admin-text: #e8e9ec;
-  --color-admin-text-strong: #ffffff;
-  --color-admin-muted: #7e7f8a;
-  --color-admin-subtle: #5a5b66;
+  /* ── SURFACES ────────────────────────────────────────────────────
+     Warm off-white canvas (#FAFAF7) with pure white panels. The tiny
+     warmth keeps the UI from looking sterile or laboratory-cold. */
+  --color-admin-bg:                #fafaf7;
+  --color-admin-bg-soft:           #f3f3ee;
+  --color-admin-surface:           #ffffff;
+  --color-admin-surface-elevated:  #ffffff;
+  --color-admin-surface-hover:     #f5f5f1;
+  --color-admin-surface-sunken:    #f7f7f3;
 
-  /* Indigo stays the canonical primary; cyan + violet are the
-     futuristic accent pair used in gradients, chart strokes, and glows. */
-  --color-admin-primary: #6366f1;
-  --color-admin-primary-hover: #818cf8;
-  --color-admin-primary-soft: rgba(99, 102, 241, 0.12);
-  --color-admin-accent-cyan: #22d3ee;
-  --color-admin-accent-violet: #a78bfa;
-  --color-admin-accent-glow: rgba(99, 102, 241, 0.35);
+  /* Hairline borders — closer to oklch(0.93 0.003 75) than to a hard
+     gray. Strong border for inputs/buttons sits one notch darker. */
+  --color-admin-border:            #ebebe5;
+  --color-admin-border-strong:     #d9d9d2;
+  --color-admin-border-emphasis:   #b8b8b0;
 
-  --color-admin-danger: #f87171;
-  --color-admin-danger-soft: rgba(248, 113, 113, 0.12);
-  --color-admin-success: #34d399;
-  --color-admin-success-soft: rgba(52, 211, 153, 0.12);
-  --color-admin-warning: #fbbf24;
-  --color-admin-warning-soft: rgba(251, 191, 36, 0.12);
+  /* Ink hierarchy. Body deliberately not pure black — keeps text easy on
+     the eyes on a warm canvas. */
+  --color-admin-text-strong:       #0c0f12;
+  --color-admin-text:              #2a2f36;
+  --color-admin-muted:             #6a727d;
+  --color-admin-subtle:            #9aa1ab;
+
+  /* The one accent. Muted sage-teal, used only for: primary actions,
+     focus rings, active nav, chart strokes, links. Never decorative. */
+  --color-admin-primary:           #0e7c66;
+  --color-admin-primary-hover:     #0a6552;
+  --color-admin-primary-soft:      #e6f4f0;
+  --color-admin-primary-ring:      rgba(14, 124, 102, 0.18);
+
+  /* Status tones. Restrained — each is a single fg + soft bg pair. */
+  --color-admin-success:           #0e7c66;
+  --color-admin-success-soft:      #e6f4f0;
+  --color-admin-warning:           #92581a;
+  --color-admin-warning-soft:      #fbf3e3;
+  --color-admin-danger:            #b42318;
+  --color-admin-danger-soft:       #fdecec;
+  --color-admin-info:              #1d4f91;
+  --color-admin-info-soft:         #eaf1fa;
+
+  /* Legacy aliases kept so we don't have to touch every page in one go.
+     New code should use the names above. */
+  --color-admin-accent-cyan:       #0e7c66;
+  --color-admin-accent-violet:     #0e7c66;
+  --color-admin-accent-glow:       rgba(14, 124, 102, 0.18);
+
+  /* Type scale (used via inline values, kept here as reference) */
+  --admin-radius-sm: 4px;
+  --admin-radius:    6px;
+  --admin-radius-md: 8px;
+  --admin-radius-lg: 12px;
+
+  /* Motion */
+  --admin-ease:        cubic-bezier(0.32, 0.72, 0, 1);
+  --admin-ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --admin-dur-fast:    120ms;
+  --admin-dur:         200ms;
+  --admin-dur-slow:    320ms;
 }
 
-/* Scoped reset for the admin shell only */
+/* ── ROOT ──────────────────────────────────────────────────────── */
+
 .admin-root {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  font-family: 'Geist', 'Inter', system-ui, -apple-system, sans-serif;
+  font-feature-settings: 'ss01', 'cv11';
+  font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: var(--color-admin-text);
   background: var(--color-admin-bg);
   min-height: 100vh;
-  color-scheme: dark;
-
-  /* Subtle aurora wash behind the whole admin shell — a slow, almost-
-     invisible cyan/violet glow that hints at the futuristic palette
-     without distracting from content. */
-  background-image:
-    radial-gradient(1200px 600px at 10% -10%, rgba(34, 211, 238, 0.05), transparent 60%),
-    radial-gradient(900px 500px at 90% 110%, rgba(167, 139, 250, 0.05), transparent 60%);
-  background-attachment: fixed;
+  color-scheme: light;
+  letter-spacing: -0.005em;
 }
 
 .admin-root *,
@@ -72,15 +102,23 @@
 .admin-root textarea,
 .admin-root select {
   font-family: inherit;
+  font-variant-numeric: inherit;
 }
 
 .admin-root input,
 .admin-root textarea,
 .admin-root select {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
-/* Subtle scrollbars that fit the dark UI */
+.admin-root code,
+.admin-root kbd,
+.admin-root pre {
+  font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-feature-settings: 'tnum', 'zero', 'ss03';
+}
+
+/* Refined scrollbars */
 .admin-root *::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -89,110 +127,90 @@
   background: transparent;
 }
 .admin-root *::-webkit-scrollbar-thumb {
-  background: #25262f;
+  background: #d6d6cf;
   border-radius: 6px;
   border: 2px solid var(--color-admin-bg);
 }
 .admin-root *::-webkit-scrollbar-thumb:hover {
-  background: #34353f;
+  background: #bdbdb6;
 }
 
-.admin-root .admin-focus:focus-visible {
+/* Selection — soft accent, not bright */
+.admin-root ::selection {
+  background: var(--color-admin-primary-soft);
+  color: var(--color-admin-text-strong);
+}
+
+/* Accessible focus everywhere — 2px accent ring with offset */
+.admin-root :where(button, a, [role="button"], input, textarea, select):focus-visible {
   outline: 2px solid var(--color-admin-primary);
   outline-offset: 2px;
+  border-radius: var(--admin-radius);
 }
 
-/* Live preview chrome — used in marketing pages */
+/* Preview chrome — used by marketing pages */
 .admin-preview-frame {
   position: relative;
   border-radius: 12px;
   overflow: hidden;
   background: #ffffff;
-  box-shadow: 0 0 0 1px var(--color-admin-border-strong), 0 20px 40px -20px rgba(0, 0, 0, 0.6);
-}
-
-/* ── FUTURISTIC PRIMITIVES ────────────────────────────────────────── */
-
-/* Sidebar shell — a slim accented strip on the right edge so the rail
-   visually separates from the main canvas without a hard line. */
-.admin-sidebar {
-  background: linear-gradient(180deg, var(--color-admin-bg-soft) 0%, var(--color-admin-bg) 100%);
-  position: relative;
-}
-.admin-sidebar::after {
-  content: '';
-  position: absolute;
-  inset: 0 0 0 auto;
-  width: 1px;
-  background: linear-gradient(180deg,
-    transparent 0%,
-    var(--color-admin-border) 12%,
-    var(--color-admin-border-strong) 50%,
-    var(--color-admin-border) 88%,
-    transparent 100%);
-  pointer-events: none;
-}
-
-/* Brand block at top of sidebar. The shimmer is a single-pass animation
-   on mount so it feels alive without continuously animating. */
-.admin-brand-mark {
-  position: relative;
-  background:
-    radial-gradient(120px 60px at 20% 10%, rgba(99, 102, 241, 0.25), transparent 60%),
-    linear-gradient(135deg, rgba(34, 211, 238, 0.10), rgba(167, 139, 250, 0.10));
-  border: 1px solid rgba(99, 102, 241, 0.25);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.04),
-    0 0 0 1px rgba(99, 102, 241, 0.08),
-    0 8px 24px -16px rgba(34, 211, 238, 0.5);
-  overflow: hidden;
-}
-.admin-brand-mark::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.08) 50%, transparent 70%);
-  transform: translateX(-100%);
-  animation: admin-shimmer 2.8s ease-in-out 0.4s 1 forwards;
-}
-@keyframes admin-shimmer {
-  to { transform: translateX(100%); }
+    0 0 0 1px var(--color-admin-border),
+    0 1px 2px rgba(15, 18, 22, 0.04),
+    0 12px 32px -16px rgba(15, 18, 22, 0.10);
 }
 
-/* Nav group title with a hairline gradient underline. */
+/* ── SHELL ─────────────────────────────────────────────────────── */
+
+.admin-header {
+  background: rgba(250, 250, 247, 0.85);
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  border-bottom: 1px solid var(--color-admin-border);
+}
+
+.admin-sidebar {
+  background: var(--color-admin-bg);
+  border-right: 1px solid var(--color-admin-border);
+}
+
+/* Brand wordmark — minimal, no shimmer, no glow */
+.admin-brand-badge {
+  background: var(--color-admin-text-strong);
+  color: var(--color-admin-bg);
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  letter-spacing: 0;
+  border-radius: 6px;
+}
+
+/* ── NAV ───────────────────────────────────────────────────────── */
+
 .admin-nav-group-title {
-  position: relative;
-  padding-bottom: 6px;
-}
-.admin-nav-group-title::after {
-  content: '';
-  position: absolute;
-  left: 12px;
-  right: 12px;
-  bottom: 0;
-  height: 1px;
-  background: linear-gradient(90deg,
-    var(--color-admin-border-strong) 0%,
-    transparent 100%);
+  color: var(--color-admin-subtle);
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 0 12px 6px;
 }
 
-/* Nav item — the active state gets a gradient bg, a glowing left
-   accent bar, and an inset highlight. Inactive items stay quiet. */
 .admin-nav-item {
   position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 12px;
-  margin: 1px 0;
-  border-radius: 8px;
+  padding: 7px 12px;
+  margin: 1px 6px;
+  border-radius: 6px;
   font-size: 13.5px;
-  color: var(--color-admin-muted);
-  transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+  color: var(--color-admin-text);
+  transition:
+    color var(--admin-dur-fast) var(--admin-ease),
+    background-color var(--admin-dur-fast) var(--admin-ease);
 }
 .admin-nav-item:hover {
   background: var(--color-admin-surface-hover);
-  color: var(--color-admin-text);
+  color: var(--color-admin-text-strong);
 }
 .admin-nav-item-icon {
   display: grid;
@@ -200,166 +218,287 @@
   width: 16px;
   height: 16px;
   flex-shrink: 0;
-  color: var(--color-admin-subtle);
-  transition: color 160ms ease;
+  color: var(--color-admin-muted);
+  transition: color var(--admin-dur-fast) var(--admin-ease);
 }
 .admin-nav-item:hover .admin-nav-item-icon {
-  color: var(--color-admin-text);
+  color: var(--color-admin-text-strong);
 }
 .admin-nav-item--active {
-  background: linear-gradient(90deg,
-    rgba(99, 102, 241, 0.18) 0%,
-    rgba(99, 102, 241, 0.05) 60%,
-    transparent 100%);
+  background: var(--color-admin-surface);
   color: var(--color-admin-text-strong);
   font-weight: 500;
-  box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.18);
+  box-shadow:
+    inset 0 0 0 1px var(--color-admin-border),
+    0 1px 2px rgba(15, 18, 22, 0.04);
 }
 .admin-nav-item--active .admin-nav-item-icon {
-  color: var(--color-admin-accent-cyan);
-  filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.6));
-}
-.admin-nav-item--active::before {
-  content: '';
-  position: absolute;
-  left: -1px;
-  top: 6px;
-  bottom: 6px;
-  width: 2px;
-  border-radius: 1px;
-  background: linear-gradient(180deg, var(--color-admin-accent-cyan), var(--color-admin-accent-violet));
-  box-shadow: 0 0 8px rgba(34, 211, 238, 0.6);
+  color: var(--color-admin-primary);
 }
 
-/* Header polish — frosted-glass top bar with a hairline accent on the
-   bottom edge. */
-.admin-header {
-  background: rgba(6, 7, 10, 0.7);
-  backdrop-filter: blur(10px) saturate(180%);
-  -webkit-backdrop-filter: blur(10px) saturate(180%);
-  border-bottom: 1px solid var(--color-admin-border);
-  position: relative;
+/* ── BUTTONS ───────────────────────────────────────────────────── */
+
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: var(--admin-radius);
+  font-weight: 500;
+  font-size: 13.5px;
+  letter-spacing: -0.005em;
+  line-height: 1;
+  transition:
+    background-color var(--admin-dur-fast) var(--admin-ease),
+    border-color var(--admin-dur-fast) var(--admin-ease),
+    color var(--admin-dur-fast) var(--admin-ease),
+    transform var(--admin-dur-fast) var(--admin-ease);
+  cursor: pointer;
+  white-space: nowrap;
 }
-.admin-header::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: 1px;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    var(--color-admin-border-strong) 25%,
-    rgba(99, 102, 241, 0.4) 50%,
-    var(--color-admin-border-strong) 75%,
-    transparent 100%);
-  opacity: 0.6;
+.admin-btn:active:not(:disabled) { transform: scale(0.985); }
+.admin-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.admin-btn--primary {
+  background: var(--color-admin-text-strong);
+  color: #ffffff;
+  border: 1px solid var(--color-admin-text-strong);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.admin-btn--primary:hover:not(:disabled) {
+  background: #1d242c;
+  border-color: #1d242c;
 }
 
-/* Brand badge in header — small chip with gradient bg. */
-.admin-brand-badge {
-  background: linear-gradient(135deg, var(--color-admin-primary) 0%, #4338ca 100%);
+.admin-btn--secondary {
+  background: var(--color-admin-surface);
+  color: var(--color-admin-text);
+  border: 1px solid var(--color-admin-border-strong);
+  box-shadow: 0 1px 2px rgba(15, 18, 22, 0.04);
+}
+.admin-btn--secondary:hover:not(:disabled) {
+  background: var(--color-admin-surface-hover);
+  border-color: var(--color-admin-border-emphasis);
+  color: var(--color-admin-text-strong);
+}
+
+.admin-btn--danger {
+  background: var(--color-admin-danger);
+  color: #ffffff;
+  border: 1px solid var(--color-admin-danger);
+}
+.admin-btn--danger:hover:not(:disabled) { background: #971c10; border-color: #971c10; }
+
+.admin-btn--ghost {
+  background: transparent;
+  color: var(--color-admin-text);
+  border: 1px solid transparent;
+}
+.admin-btn--ghost:hover:not(:disabled) {
+  background: var(--color-admin-surface-hover);
+  color: var(--color-admin-text-strong);
+}
+
+/* ── INPUTS ────────────────────────────────────────────────────── */
+
+.admin-field {
+  width: 100%;
+  background: var(--color-admin-surface);
+  color: var(--color-admin-text-strong);
+  border: 1px solid var(--color-admin-border-strong);
+  border-radius: var(--admin-radius);
+  padding: 0 12px;
+  font-size: 13.5px;
+  line-height: 1.4;
+  transition:
+    border-color var(--admin-dur-fast) var(--admin-ease),
+    box-shadow var(--admin-dur-fast) var(--admin-ease);
+  box-shadow: 0 1px 2px rgba(15, 18, 22, 0.03);
+}
+.admin-field::placeholder { color: var(--color-admin-subtle); }
+.admin-field:hover:not(:disabled):not(:focus) { border-color: var(--color-admin-border-emphasis); }
+.admin-field:focus {
+  outline: none;
+  border-color: var(--color-admin-primary);
   box-shadow:
-    0 0 0 1px rgba(99, 102, 241, 0.35),
-    0 0 12px -2px rgba(99, 102, 241, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    0 0 0 3px var(--color-admin-primary-ring),
+    0 1px 2px rgba(15, 18, 22, 0.03);
+}
+.admin-field:disabled { background: var(--color-admin-bg-soft); opacity: 0.7; cursor: not-allowed; }
+
+/* ── CARDS ─────────────────────────────────────────────────────── */
+
+.admin-card {
+  background: var(--color-admin-surface);
+  border: 1px solid var(--color-admin-border);
+  border-radius: var(--admin-radius-md);
+  box-shadow: 0 1px 2px rgba(15, 18, 22, 0.03);
+  transition:
+    border-color var(--admin-dur) var(--admin-ease),
+    box-shadow var(--admin-dur) var(--admin-ease);
+}
+.admin-card:hover {
+  border-color: var(--color-admin-border-strong);
+  box-shadow: 0 1px 2px rgba(15, 18, 22, 0.04), 0 8px 24px -16px rgba(15, 18, 22, 0.08);
 }
 
-/* ── KPI / CHART PRIMITIVES ──────────────────────────────────────── */
+/* ── KPI ───────────────────────────────────────────────────────── */
 
 .admin-kpi {
   position: relative;
-  border-radius: 14px;
-  background:
-    linear-gradient(180deg, var(--color-admin-surface) 0%, var(--color-admin-bg-soft) 100%);
+  background: var(--color-admin-surface);
   border: 1px solid var(--color-admin-border);
+  border-radius: var(--admin-radius-md);
+  padding: 18px 20px 16px;
+  box-shadow: 0 1px 2px rgba(15, 18, 22, 0.03);
+  transition:
+    border-color var(--admin-dur) var(--admin-ease),
+    box-shadow var(--admin-dur) var(--admin-ease);
   overflow: hidden;
-  transition: border-color 200ms ease, transform 200ms ease;
-}
-.admin-kpi::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(135deg,
-    rgba(34, 211, 238, 0.06) 0%,
-    transparent 35%,
-    transparent 65%,
-    rgba(167, 139, 250, 0.06) 100%);
-  opacity: 0.6;
-  transition: opacity 200ms ease;
-}
-.admin-kpi::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, rgba(34, 211, 238, 0.18), transparent 40%, transparent 60%, rgba(167, 139, 250, 0.18));
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-          mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 200ms ease;
 }
 .admin-kpi:hover {
   border-color: var(--color-admin-border-strong);
-  transform: translateY(-1px);
-}
-.admin-kpi:hover::after {
-  opacity: 1;
+  box-shadow: 0 1px 2px rgba(15, 18, 22, 0.04), 0 8px 24px -16px rgba(15, 18, 22, 0.10);
 }
 .admin-kpi-value {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   font-feature-settings: 'tnum', 'zero';
-  letter-spacing: -0.02em;
+  letter-spacing: -0.04em;
   color: var(--color-admin-text-strong);
+  font-variant-numeric: tabular-nums;
 }
+
+/* ── CHARTS ────────────────────────────────────────────────────── */
 
 .admin-chart-grid {
   stroke: var(--color-admin-border);
-  stroke-dasharray: 2 4;
   stroke-width: 1;
-  opacity: 0.6;
+  opacity: 1;
 }
-
 .admin-chart-axis-label {
   fill: var(--color-admin-subtle);
   font-size: 10px;
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
 }
-
 .admin-chart-line {
   fill: none;
-  stroke-width: 2;
+  stroke-width: 1.5;
   stroke-linecap: round;
   stroke-linejoin: round;
-  filter: drop-shadow(0 0 4px rgba(99, 102, 241, 0.45));
+}
+.admin-chart-dot { /* no glow — just the dot */ }
+
+/* Signature motion: line draw-in on mount */
+.admin-chart-line--draw {
+  stroke-dasharray: 800;
+  stroke-dashoffset: 800;
+  animation: admin-line-draw 700ms var(--admin-ease-out) forwards;
+}
+@keyframes admin-line-draw {
+  to { stroke-dashoffset: 0; }
 }
 
-.admin-chart-dot {
-  filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.7));
-}
+/* ── TABS / PILLS ──────────────────────────────────────────────── */
 
 .admin-tab {
-  font-size: 11px;
-  padding: 3px 10px;
+  font-size: 12px;
+  padding: 4px 10px;
   border-radius: 999px;
   color: var(--color-admin-muted);
   background: transparent;
-  border: 1px solid var(--color-admin-border);
-  transition: all 160ms ease;
+  border: 1px solid var(--color-admin-border-strong);
+  font-variant-numeric: tabular-nums;
+  transition:
+    color var(--admin-dur-fast) var(--admin-ease),
+    background-color var(--admin-dur-fast) var(--admin-ease),
+    border-color var(--admin-dur-fast) var(--admin-ease);
 }
 .admin-tab:hover {
-  color: var(--color-admin-text);
-  border-color: var(--color-admin-border-strong);
+  color: var(--color-admin-text-strong);
+  border-color: var(--color-admin-border-emphasis);
 }
 .admin-tab--active {
   color: var(--color-admin-text-strong);
-  background: linear-gradient(135deg, rgba(34, 211, 238, 0.12), rgba(167, 139, 250, 0.12));
-  border-color: rgba(99, 102, 241, 0.4);
-  box-shadow: 0 0 12px -4px rgba(99, 102, 241, 0.5);
+  background: var(--color-admin-surface);
+  border-color: var(--color-admin-text-strong);
+}
+
+/* Status dot — used inside .admin-pill */
+.admin-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+}
+.admin-pill::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.admin-pill--neutral  { color: var(--color-admin-muted);   background: var(--color-admin-bg-soft); }
+.admin-pill--success  { color: var(--color-admin-success); background: var(--color-admin-success-soft); }
+.admin-pill--warning  { color: var(--color-admin-warning); background: var(--color-admin-warning-soft); }
+.admin-pill--danger   { color: var(--color-admin-danger);  background: var(--color-admin-danger-soft); }
+.admin-pill--info     { color: var(--color-admin-info);    background: var(--color-admin-info-soft); }
+
+/* ── MOTION ────────────────────────────────────────────────────── */
+
+/* Page-enter — applied to <main>'s inner container on every route change.
+   Subtle: 4px up, fade in, 240ms. */
+.admin-page-enter {
+  animation: admin-page-in 240ms var(--admin-ease-out) both;
+}
+@keyframes admin-page-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Stagger reveal — used by dashboard KPI row. Each child sets its own
+   --admin-stagger to delay reveal by N*60ms. */
+.admin-stagger { animation: admin-fade-up 320ms var(--admin-ease-out) both; }
+.admin-stagger { animation-delay: calc(var(--admin-stagger, 0) * 60ms); }
+@keyframes admin-fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-page-enter,
+  .admin-stagger,
+  .admin-chart-line--draw {
+    animation: none !important;
+  }
+}
+
+/* ── UTILITIES ─────────────────────────────────────────────────── */
+
+.admin-mono {
+  font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-feature-settings: 'tnum', 'zero';
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-eyebrow {
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-admin-muted);
+}
+
+/* Hairline divider — for inside cards / panels */
+.admin-divider {
+  height: 1px;
+  background: var(--color-admin-border);
+  border: 0;
+  margin: 0;
 }

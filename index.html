@@ -14,6 +14,18 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap"
       rel="stylesheet"
     />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/geist@1.5.4/dist/fonts/geist-sans/style.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/geist@1.5.4/dist/fonts/geist-mono/style.min.css"
+      rel="stylesheet"
+    />
     <title>Vita Labs — Peptide Match Quiz (UK)</title>
     <script src="https://sdk.uprails.com/web/0.127.0/v1/HyperLoader.js"></script>
     <script>
@@ -21,6 +33,11 @@
         var t = localStorage.getItem('vitalabs-theme');
         if (t) document.documentElement.setAttribute('data-theme', t);
         else document.documentElement.setAttribute('data-theme', 'light');
+        // Prevent FOUC on admin: paint the warm-light canvas immediately if the
+        // current path is /admin/*. The admin shell takes over once React mounts.
+        if (location.pathname.indexOf('/admin') === 0) {
+          document.documentElement.style.background = '#fafaf7';
+        }
       })();
     </script>
     <!-- Tracking pixels are now loaded at runtime from site_config via
