@@ -1,26 +1,22 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { PageHeader } from '../../../components/PageHeader'
-import { Card, CardBody, CardFooter, CardHeader } from '../../../components/ui/Card'
+import { Card, CardBody, CardHeader } from '../../../components/ui/Card'
 import { Button } from '../../../components/ui/Button'
-import { Input } from '../../../components/ui/Input'
-import { Label } from '../../../components/ui/Label'
 import { useBrandList } from '../../../hooks/useBrandQuery'
 import { useAdminBrand } from '../../../context/AdminBrandContext'
 import { supabase } from '../../../../lib/supabase'
 import { AdsTabBar } from './AdsTabBar'
 import {
+  AD_TYPES,
   ASPECT_RATIOS,
-  IMAGE_HOOKS,
-  IMAGE_MODELS,
-  PRESETS,
-  VIDEO_MODELS,
-  findPreset,
+  findAdType,
+  friendlyAdTypeLabel,
+  type AdType,
+  type AdTypeId,
   type AspectRatio,
   type CreativeKind,
-  type ImageHookId,
-  type PresetId,
-  type VideoModelId,
+  type FormField,
 } from './creativeModels'
 
 interface ProductRow {
@@ -48,7 +44,8 @@ interface CreativeRow {
 }
 
 interface CreativeMetadata {
-  hook_id?: string
+  ad_type?: string
+  config?: Record<string, string | number | boolean | null>
   variant_index?: number
   ad_copy?: AdCopy | null
   [key: string]: unknown
@@ -78,14 +75,11 @@ interface JobRow {
  *  FunctionsHttpError with the generic "Edge Function returned a
  *  non-2xx status code" message and the actual Response object on
  *  `.context`. Pulling the JSON body off that Response gives us the
- *  real error (e.g. "GEMINI_API_KEY not configured", "higgsfield 401:
- *  Invalid credentials"). */
+ *  real error to display to the operator. */
 async function extractEdgeFnError(err: unknown): Promise<string> {
   const generic = err instanceof Error ? err.message : 'Edge Function failed'
   const ctx = (err as { context?: Response | { body?: unknown; error?: string } } | null)?.context
   if (!ctx) return generic
-  // FunctionsHttpError exposes the raw Response on .context. Cloning so
-  // we can still .text() it if .json() fails.
   if (ctx instanceof Response) {
     try {
       const body = await ctx.clone().json() as { error?: string; details?: unknown }
@@ -129,7 +123,7 @@ export default function StudioPage() {
     [jobs],
   )
 
-  /* Auto-poll Higgsfield while there's at least one running video job.
+  /* Auto-poll the video engine while there's at least one running job.
    * Each tick re-invalidates the jobs + creatives queries so the UI
    * surfaces completions without a manual refresh. */
   useEffect(() => {
@@ -154,12 +148,12 @@ export default function StudioPage() {
       <PageHeader
         eyebrow="Marketing"
         title="Ad Studio"
-        description="Generate product ads (images via Gemini Nano Banana, video via Higgsfield) and ship them to Facebook as paused drafts. You launch them from Ads Manager."
+        description="Choose a style, answer a few questions, and the studio crafts on-brand image and video ads ready to publish."
       />
       <AdsTabBar />
 
       <div className="grid gap-6 lg:grid-cols-[1fr,420px]">
-        <StudioForm products={activeProducts} productsLoading={productsLoading} />
+        <StudioWizard products={activeProducts} productsLoading={productsLoading} />
         <div className="flex flex-col gap-6">
           {runningVideoJobs.length > 0 ? (
             <RunningJobsPanel jobs={runningVideoJobs} products={activeProducts} />
@@ -175,21 +169,22 @@ function RunningJobsPanel({ jobs, products }: { jobs: JobRow[]; products: Produc
   const byId = useMemo(() => new Map(products.map(p => [p.id, p])), [products])
   return (
     <Card>
-      <CardHeader title={`${jobs.length} video job${jobs.length === 1 ? '' : 's'} running`} description="Polling every 10s. Completed videos appear in the library." />
+      <CardHeader title={`${jobs.length} video${jobs.length === 1 ? '' : 's'} crafting`} description="Usually ready in 30-120 seconds. The library refreshes automatically." />
       <CardBody className="flex flex-col gap-2">
         {jobs.map(j => {
-          const params = j.params as { product_id?: string; model_id?: string; preset?: string | null }
+          const params = j.params as { product_id?: string; ad_type?: string }
           const product = params.product_id ? byId.get(params.product_id) : null
           const ageS = Math.round((Date.now() - new Date(j.created_at).getTime()) / 1000)
+          const styleLabel = params.ad_type ? friendlyAdTypeLabel(params.ad_type) : 'Creative'
           return (
             <div key={j.id} className="flex items-center gap-3 rounded-lg border border-[var(--color-admin-border)] bg-[var(--color-admin-bg-soft)] p-3">
               <div className="h-8 w-8 shrink-0 animate-pulse rounded-full bg-[var(--color-admin-primary)]/30" />
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-medium text-[var(--color-admin-text-strong)]">
-                  {product?.compound ?? '—'} · {params.model_id ?? 'model'}
+                  {product?.compound ?? '—'} · {styleLabel}
                 </div>
                 <div className="text-xs text-[var(--color-admin-muted)]">
-                  {params.preset ? `${params.preset} · ` : ''}generating for {ageS}s
+                  crafting for {ageS}s
                 </div>
               </div>
             </div>
@@ -200,388 +195,686 @@ function RunningJobsPanel({ jobs, products }: { jobs: JobRow[]; products: Produc
   )
 }
 
-interface FormProps {
+/* ────────────────────────────────────────────────────────────────────────
+ * The Wizard.
+ *
+ * Five steps: Style → Product → Configure → Format → Generate.
+ * State lives on the wizard itself; each step is a focused subcomponent
+ * that only sees what it needs. Step transitions are gated on
+ * `canAdvance(step)` so the operator can't skip past required fields.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+type WizardStep = 1 | 2 | 3 | 4 | 5
+
+const STEP_LABELS: Record<WizardStep, string> = {
+  1: 'Style',
+  2: 'Product',
+  3: 'Details',
+  4: 'Format',
+  5: 'Craft',
+}
+
+interface WizardProps {
   products: ProductRow[]
   productsLoading: boolean
 }
 
-function StudioForm({ products, productsLoading }: FormProps) {
+function StudioWizard({ products, productsLoading }: WizardProps) {
   const { brand } = useAdminBrand()
   const queryClient = useQueryClient()
-  const [tab, setTab] = useState<CreativeKind>('image')
+
+  const [step, setStep] = useState<WizardStep>(1)
+  const [adTypeId, setAdTypeId] = useState<AdTypeId | null>(null)
   const [productId, setProductId] = useState<string>('')
+  const [config, setConfig] = useState<Record<string, string>>({})
   const [aspect, setAspect] = useState<AspectRatio>('1:1')
+  const [duration, setDuration] = useState<number>(5)
+  const [variants, setVariants] = useState<number>(2)
 
-  // Image
-  const [hookId, setHookId] = useState<ImageHookId>('lifestyle')
-  const [customPrompt, setCustomPrompt] = useState('')
-  const [variantsN, setVariantsN] = useState(4)
-
-  // Video — only higgsfield-dop is verified against the v2 API today.
-  // Other partner models are listed in VIDEO_MODELS for roadmap visibility
-  // but flagged comingSoon and filtered out of the picker.
-  const [presetId, setPresetId] = useState<PresetId | ''>('tv_spot')
-  const [videoModelId, setVideoModelId] = useState<VideoModelId>('higgsfield-dop')
-  const [duration, setDuration] = useState(5)
-  const [videoPrompt, setVideoPrompt] = useState('')
-
-  // Generation lifecycle (image only for now; video added in Phase 3).
   const [generating, setGenerating] = useState(false)
-  const [generationError, setGenerationError] = useState<string | null>(null)
-  const [generationNote, setGenerationNote] = useState<string | null>(null)
+  const [genError, setGenError] = useState<string | null>(null)
+  const [genNote, setGenNote] = useState<string | null>(null)
 
-  const product = products.find(p => p.id === productId) ?? null
+  const adType = adTypeId ? findAdType(adTypeId) : null
+  const product = useMemo(() => products.find(p => p.id === productId) ?? null, [products, productId])
 
-  /* When operator picks a preset, mirror its suggested model + prefill
-   * the prompt so they can edit instead of starting from a blank box.
-   * If the preset's suggested model isn't enabled yet (coming-soon),
-   * fall back to higgsfield-dop so the operator never lands on an
-   * unreachable model. */
-  const applyPreset = (id: PresetId) => {
-    setPresetId(id)
-    const preset = findPreset(id)
-    if (preset) {
-      const suggested = VIDEO_MODELS.find(m => m.id === preset.suggested_model)
-      setVideoModelId(suggested && !suggested.comingSoon ? preset.suggested_model : 'higgsfield-dop')
-      setVideoPrompt(preset.prompt_template)
+  const requiredFields = useMemo<FormField[]>(() => (adType?.fields ?? []).filter(f => f.required), [adType])
+  const missingRequired = useMemo(
+    () => requiredFields.filter(f => !String(config[f.id] ?? '').trim()),
+    [requiredFields, config],
+  )
+
+  const canAdvance = (s: WizardStep) => {
+    if (s === 1) return !!adTypeId
+    if (s === 2) return !!productId
+    if (s === 3) return missingRequired.length === 0
+    if (s === 4) return true
+    return true
+  }
+
+  const pickAdType = (id: AdTypeId) => {
+    setAdTypeId(id)
+    setConfig({})
+    setGenError(null)
+    setGenNote(null)
+    const type = findAdType(id)
+    if (type) {
+      setAspect(type.defaultAspect)
+      if (type.defaultDuration) setDuration(type.defaultDuration)
     }
   }
 
-  const generate = async () => {
-    setGenerationError(null)
-    setGenerationNote(null)
-    if (!productId) { setGenerationError('Pick a product first.'); return }
+  const reset = () => {
+    setStep(1)
+    setAdTypeId(null)
+    setProductId('')
+    setConfig({})
+    setAspect('1:1')
+    setDuration(5)
+    setVariants(2)
+    setGenError(null)
+    setGenNote(null)
+  }
 
-    if (tab === 'image') {
-      const hook = IMAGE_HOOKS.find(h => h.id === hookId)
-      if (!hook) { setGenerationError('Unknown hook'); return }
-      setGenerating(true)
-      try {
+  const generate = async () => {
+    if (!adType || !productId) return
+    setGenError(null)
+    setGenNote(null)
+    setGenerating(true)
+    try {
+      if (adType.kind === 'image') {
         const { data, error } = await supabase.functions.invoke('generate-ad-image', {
           body: {
             brand,
             product_id: productId,
-            hook_id: hookId,
+            ad_type: adType.id,
+            config,
             aspect_ratio: aspect,
-            custom_prompt: customPrompt || undefined,
-            variants_n: variantsN,
-            prompt_template: hook.prompt_template,
+            variants_n: variants,
           },
         })
         if (error) throw new Error(await extractEdgeFnError(error))
         const res = data as { ok?: boolean; creatives?: unknown[]; errors?: string[]; error?: string }
         if (!res?.ok) throw new Error(res?.error ?? 'Generation failed')
         const made = res.creatives?.length ?? 0
-        setGenerationNote(`Generated ${made} variant${made === 1 ? '' : 's'}${res.errors?.length ? ` · ${res.errors.length} failed` : ''}.`)
+        setGenNote(`Crafted ${made} variant${made === 1 ? '' : 's'}${res.errors?.length ? ` · ${res.errors.length} failed` : ''}. Check the library →`)
         queryClient.invalidateQueries({ queryKey: ['ad_creatives', brand] })
-      } catch (err) {
-        setGenerationError(err instanceof Error ? err.message : 'Generation failed')
-      } finally {
-        setGenerating(false)
+      } else {
+        const { data, error } = await supabase.functions.invoke('generate-ad-video', {
+          body: {
+            brand,
+            product_id: productId,
+            ad_type: adType.id,
+            config,
+            aspect_ratio: aspect,
+            duration_s: duration,
+          },
+        })
+        if (error) throw new Error(await extractEdgeFnError(error))
+        const res = data as { ok?: boolean; error?: string; job_id?: string }
+        if (!res?.ok) throw new Error(res?.error ?? 'Submission failed')
+        setGenNote('Video submitted. Usually ready in 30-120 seconds — watch the panel to the right.')
+        queryClient.invalidateQueries({ queryKey: ['ad_jobs', brand] })
       }
-      return
-    }
-
-    // Video path — submit to Higgsfield, poll-ad-jobs picks it up async.
-    if (!videoPrompt.trim()) { setGenerationError('Prompt is required.'); return }
-    setGenerating(true)
-    try {
-      const { data, error } = await supabase.functions.invoke('generate-ad-video', {
-        body: {
-          brand,
-          product_id: productId,
-          model_id: videoModelId,
-          preset: presetId || undefined,
-          prompt: videoPrompt,
-          aspect_ratio: aspect,
-          duration_s: duration,
-        },
-      })
-      if (error) throw new Error(await extractEdgeFnError(error))
-      const res = data as { ok?: boolean; error?: string; job_id?: string }
-      if (!res?.ok) throw new Error(res?.error ?? 'Submission failed')
-      setGenerationNote(`Job submitted. We'll keep polling — video usually takes 30-120 seconds.`)
-      queryClient.invalidateQueries({ queryKey: ['ad_jobs', brand] })
     } catch (err) {
-      setGenerationError(err instanceof Error ? err.message : 'Generation failed')
+      setGenError(err instanceof Error ? err.message : 'Generation failed')
     } finally {
       setGenerating(false)
     }
   }
 
-  const disabledNote = null
-
   return (
-    <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader title="New creative" description="Pick a product, choose the format, and we'll do the rest." />
-        <CardBody className="grid gap-5">
-          <div className="flex items-center gap-2">
-            {(['image', 'video'] as const).map(k => (
-              <button
-                key={k}
-                type="button"
-                onClick={() => setTab(k)}
-                className={`admin-tab${tab === k ? ' admin-tab--active' : ''}`}
-                style={{ fontSize: 13, padding: '6px 14px' }}
-              >
-                {k === 'image' ? 'Image ad' : 'Video / UGC ad'}
-              </button>
-            ))}
-          </div>
+    <Card>
+      <CardHeader
+        title="Create an ad"
+        description={
+          step === 1 ? 'Pick the style. Each one is tuned for a different scroll-stop moment.'
+          : step === 2 ? 'Which product?'
+          : step === 3 ? 'A few details so we can craft this exactly right.'
+          : step === 4 ? 'Where will this run?'
+          : 'Review and craft.'
+        }
+      />
 
-          {/* Product picker */}
-          <Label hint="Used as a visual reference for image gen and a content brief for video gen.">
-            Product
-            <select
-              value={productId}
-              onChange={e => setProductId(e.target.value)}
-              className="mt-1 h-10 w-full rounded-md border border-[var(--color-admin-border-strong)] bg-[var(--color-admin-surface)] px-3 text-sm text-[var(--color-admin-text)]"
+      <CardBody className="flex flex-col gap-5">
+        <StepIndicator current={step} />
+
+        {step === 1 && (
+          <StyleStep selected={adTypeId} onPick={pickAdType} />
+        )}
+
+        {step === 2 && (
+          <ProductStep
+            products={products}
+            loading={productsLoading}
+            selected={productId}
+            onPick={setProductId}
+          />
+        )}
+
+        {step === 3 && adType && (
+          <DetailsStep adType={adType} config={config} setConfig={setConfig} />
+        )}
+
+        {step === 4 && adType && (
+          <FormatStep
+            adType={adType}
+            aspect={aspect}
+            setAspect={setAspect}
+            duration={duration}
+            setDuration={setDuration}
+            variants={variants}
+            setVariants={setVariants}
+          />
+        )}
+
+        {step === 5 && adType && product && (
+          <ReviewStep
+            adType={adType}
+            product={product}
+            config={config}
+            aspect={aspect}
+            duration={duration}
+            variants={variants}
+            generating={generating}
+            genError={genError}
+            genNote={genNote}
+            onGenerate={() => void generate()}
+            onReset={reset}
+          />
+        )}
+
+        <div className="mt-2 flex items-center justify-between">
+          {step > 1 ? (
+            <button
+              type="button"
+              onClick={() => setStep((step - 1) as WizardStep)}
+              className="text-sm text-[var(--color-admin-muted)] underline-offset-2 hover:text-[var(--color-admin-text-strong)] hover:underline"
             >
-              <option value="">{productsLoading ? 'Loading products…' : 'Select a product…'}</option>
-              {products.map(p => (
-                <option key={p.id} value={p.id}>{p.compound}</option>
-              ))}
-            </select>
-          </Label>
+              ← Back
+            </button>
+          ) : <div />}
 
-          {product?.image_url ? (
-            <div className="flex items-center gap-3 rounded-lg border border-[var(--color-admin-border)] bg-[var(--color-admin-bg-soft)] p-3">
-              <img
-                src={product.image_url}
-                alt={product.compound}
-                className="h-16 w-16 rounded-md object-cover"
-              />
-              <div className="min-w-0">
-                <div className="text-sm font-medium text-[var(--color-admin-text-strong)]">{product.compound}</div>
-                {product.tagline ? (
-                  <div className="truncate text-xs text-[var(--color-admin-muted)]">{product.tagline}</div>
-                ) : null}
-              </div>
-            </div>
+          {step < 5 ? (
+            <Button
+              onClick={() => canAdvance(step) && setStep((step + 1) as WizardStep)}
+              disabled={!canAdvance(step)}
+              title={!canAdvance(step) && step === 3 ? `Fill in: ${missingRequired.map(f => f.label).join(', ')}` : undefined}
+            >
+              Next →
+            </Button>
           ) : null}
+        </div>
+      </CardBody>
+    </Card>
+  )
+}
 
-          {/* Aspect ratio */}
-          <Label hint="Different placements need different ratios. Reels = 9:16, feed = 1:1 or 4:5.">
-            Aspect ratio
-            <div className="mt-1 flex flex-wrap gap-2">
-              {ASPECT_RATIOS.map(ar => (
-                <button
-                  key={ar.id}
-                  type="button"
-                  onClick={() => setAspect(ar.id)}
-                  className={`admin-tab${aspect === ar.id ? ' admin-tab--active' : ''}`}
-                  style={{ fontSize: 12 }}
-                >
-                  {ar.label} · {ar.hint}
-                </button>
-              ))}
+function StepIndicator({ current }: { current: WizardStep }) {
+  const steps: WizardStep[] = [1, 2, 3, 4, 5]
+  return (
+    <div className="flex items-center gap-1.5">
+      {steps.map((s, idx) => {
+        const isActive = s === current
+        const isDone = s < current
+        return (
+          <div key={s} className="flex flex-1 items-center gap-1.5">
+            <div
+              className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold transition-all ${
+                isActive
+                  ? 'bg-[var(--color-admin-primary)] text-[var(--color-admin-on-primary)] shadow-sm ring-2 ring-[var(--color-admin-primary)]/30'
+                  : isDone
+                  ? 'bg-[var(--color-admin-success)] text-white'
+                  : 'bg-[var(--color-admin-bg-soft)] text-[var(--color-admin-muted)]'
+              }`}
+            >
+              {isDone ? '✓' : s}
             </div>
-          </Label>
-
-          {tab === 'image' ? (
-            <ImageForm
-              hookId={hookId}
-              setHookId={setHookId}
-              customPrompt={customPrompt}
-              setCustomPrompt={setCustomPrompt}
-              variantsN={variantsN}
-              setVariantsN={setVariantsN}
-            />
-          ) : (
-            <VideoForm
-              presetId={presetId}
-              applyPreset={applyPreset}
-              videoModelId={videoModelId}
-              setVideoModelId={setVideoModelId}
-              duration={duration}
-              setDuration={setDuration}
-              videoPrompt={videoPrompt}
-              setVideoPrompt={setVideoPrompt}
-            />
-          )}
-        </CardBody>
-        <CardFooter>
-          <div className="mr-auto text-xs">
-            {generationError ? (
-              <span className="text-[var(--color-admin-danger)]">{generationError}</span>
-            ) : generationNote ? (
-              <span className="text-[var(--color-admin-success)]">{generationNote}</span>
-            ) : disabledNote ? (
-              <span className="text-[var(--color-admin-muted)]">{disabledNote}</span>
-            ) : tab === 'image' ? (
-              <span className="text-[var(--color-admin-muted)]">{variantsN} variant{variantsN === 1 ? '' : 's'} · ~5-15 seconds</span>
+            <div className={`text-[11px] font-medium uppercase tracking-wider ${isActive ? 'text-[var(--color-admin-text-strong)]' : 'text-[var(--color-admin-muted)]'}`}>
+              {STEP_LABELS[s]}
+            </div>
+            {idx < steps.length - 1 ? (
+              <div className={`h-px flex-1 ${isDone ? 'bg-[var(--color-admin-success)]' : 'bg-[var(--color-admin-border)]'}`} />
             ) : null}
           </div>
-          <Button
-            onClick={() => void generate()}
-            disabled={generating || !productId}
-          >
-            {generating ? 'Generating…' : 'Generate'}
-          </Button>
-        </CardFooter>
-      </Card>
+        )
+      })}
     </div>
   )
 }
 
-interface ImageFormProps {
-  hookId: ImageHookId
-  setHookId: (id: ImageHookId) => void
-  customPrompt: string
-  setCustomPrompt: (s: string) => void
-  variantsN: number
-  setVariantsN: (n: number) => void
+function StyleStep({ selected, onPick }: { selected: AdTypeId | null; onPick: (id: AdTypeId) => void }) {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      {AD_TYPES.map(t => {
+        const isActive = selected === t.id
+        return (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => onPick(t.id)}
+            className={`group relative flex h-full flex-col items-start gap-2 rounded-xl border p-4 text-left transition-all ${
+              isActive
+                ? 'border-[var(--color-admin-primary)] bg-[var(--color-admin-primary)]/5 shadow-sm'
+                : 'border-[var(--color-admin-border)] hover:border-[var(--color-admin-border-strong)] hover:bg-[var(--color-admin-bg-soft)]'
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="grid h-10 w-10 place-items-center rounded-lg bg-[var(--color-admin-bg-soft)] text-xl">
+                {t.icon}
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-[var(--color-admin-text-strong)]">{t.label}</div>
+                <div className="text-[10px] uppercase tracking-wider text-[var(--color-admin-muted)]">{t.kind === 'video' ? 'Video' : 'Image'}</div>
+              </div>
+            </div>
+            <p className="text-xs leading-relaxed text-[var(--color-admin-muted)]">{t.blurb}</p>
+            {isActive ? (
+              <div className="absolute right-3 top-3 grid h-5 w-5 place-items-center rounded-full bg-[var(--color-admin-primary)] text-[10px] text-[var(--color-admin-on-primary)]">
+                ✓
+              </div>
+            ) : null}
+          </button>
+        )
+      })}
+    </div>
+  )
 }
 
-function ImageForm({ hookId, setHookId, customPrompt, setCustomPrompt, variantsN, setVariantsN }: ImageFormProps) {
+function ProductStep({
+  products,
+  loading,
+  selected,
+  onPick,
+}: {
+  products: ProductRow[]
+  loading: boolean
+  selected: string
+  onPick: (id: string) => void
+}) {
+  if (loading) return <div className="text-sm text-[var(--color-admin-muted)]">Loading products…</div>
+  if (products.length === 0) return <div className="text-sm text-[var(--color-admin-muted)]">No active products. Add one from the catalogue tab.</div>
+
   return (
-    <>
-      <Label>
-        Image model
-        <div className="mt-1 rounded-lg border border-[var(--color-admin-border)] bg-[var(--color-admin-bg-soft)] p-3">
-          <div className="flex items-baseline gap-2">
-            <span className="text-sm font-medium text-[var(--color-admin-text-strong)]">{IMAGE_MODELS[0].label}</span>
-            <span className="text-[10px] uppercase tracking-wider text-[var(--color-admin-primary)]">Default</span>
+    <div className="grid gap-2 sm:grid-cols-2">
+      {products.map(p => {
+        const isActive = selected === p.id
+        return (
+          <button
+            key={p.id}
+            type="button"
+            onClick={() => onPick(p.id)}
+            className={`flex items-center gap-3 rounded-lg border p-2.5 text-left transition-all ${
+              isActive
+                ? 'border-[var(--color-admin-primary)] bg-[var(--color-admin-primary)]/5 shadow-sm'
+                : 'border-[var(--color-admin-border)] hover:border-[var(--color-admin-border-strong)] hover:bg-[var(--color-admin-bg-soft)]'
+            }`}
+          >
+            <div className="h-12 w-12 shrink-0 overflow-hidden rounded-md bg-[var(--color-admin-bg-soft)]">
+              {p.image_url ? (
+                <img src={p.image_url} alt="" className="h-full w-full object-cover" />
+              ) : null}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-medium text-[var(--color-admin-text-strong)]">{p.compound}</div>
+              {p.tagline ? <div className="truncate text-xs text-[var(--color-admin-muted)]">{p.tagline}</div> : null}
+            </div>
+            {isActive ? (
+              <div className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[var(--color-admin-primary)] text-[10px] text-[var(--color-admin-on-primary)]">
+                ✓
+              </div>
+            ) : null}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function DetailsStep({
+  adType,
+  config,
+  setConfig,
+}: {
+  adType: AdType
+  config: Record<string, string>
+  setConfig: (c: Record<string, string>) => void
+}) {
+  const setField = (id: string, value: string) => setConfig({ ...config, [id]: value })
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="rounded-lg border border-[var(--color-admin-border)] bg-[var(--color-admin-bg-soft)] p-3">
+        <div className="flex items-center gap-2.5">
+          <div className="grid h-8 w-8 place-items-center rounded-md bg-[var(--color-admin-surface)] text-lg">{adType.icon}</div>
+          <div>
+            <div className="text-sm font-semibold text-[var(--color-admin-text-strong)]">{adType.label}</div>
+            <div className="text-xs text-[var(--color-admin-muted)]">{adType.description}</div>
           </div>
-          <p className="mt-1 text-xs leading-relaxed text-[var(--color-admin-muted)]">{IMAGE_MODELS[0].description}</p>
         </div>
-      </Label>
+      </div>
 
-      <Label hint="Each hook gets you a different angle. We'll generate N variants per hook.">
-        Creative hook
-        <div className="mt-1 grid gap-2 sm:grid-cols-2">
-          {IMAGE_HOOKS.map(h => (
-            <button
-              key={h.id}
-              type="button"
-              onClick={() => setHookId(h.id)}
-              className={`rounded-lg border p-3 text-left transition-all ${
-                hookId === h.id
-                  ? 'border-[var(--color-admin-primary)] bg-[var(--color-admin-primary)]/5'
-                  : 'border-[var(--color-admin-border)] hover:border-[var(--color-admin-border-strong)]'
-              }`}
-            >
-              <div className="text-sm font-medium text-[var(--color-admin-text-strong)]">{h.label}</div>
-              <div className="mt-1 text-xs text-[var(--color-admin-muted)]">{h.blurb}</div>
-            </button>
-          ))}
+      {adType.fields.map(field => (
+        <FieldRenderer
+          key={field.id}
+          field={field}
+          value={config[field.id] ?? ''}
+          onChange={v => setField(field.id, v)}
+        />
+      ))}
+    </div>
+  )
+}
+
+function FieldRenderer({
+  field,
+  value,
+  onChange,
+}: {
+  field: FormField
+  value: string
+  onChange: (v: string) => void
+}) {
+  if (field.type === 'textarea') {
+    return (
+      <label className="flex flex-col gap-1.5">
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-text-strong)]">
+            {field.label}{field.required ? <span className="ml-0.5 text-[var(--color-admin-primary)]">*</span> : null}
+          </span>
+          {field.hint ? <span className="text-[11px] text-[var(--color-admin-muted)]">{field.hint}</span> : null}
         </div>
-      </Label>
-
-      <Label hint="Optional. Adds your own twist on top of the hook template.">
-        Extra prompt details
         <textarea
-          value={customPrompt}
-          onChange={e => setCustomPrompt(e.target.value)}
+          value={value}
+          onChange={e => onChange(e.target.value)}
           rows={3}
-          className="mt-1 w-full rounded-md border border-[var(--color-admin-border-strong)] bg-[var(--color-admin-surface)] px-3 py-2 text-sm text-[var(--color-admin-text)]"
-          placeholder="e.g. lean into the sleep angle, soft pastel palette, no busy backgrounds"
+          placeholder={field.placeholder}
+          className="w-full rounded-md border border-[var(--color-admin-border-strong)] bg-[var(--color-admin-surface)] px-3 py-2 text-sm text-[var(--color-admin-text)]"
         />
-      </Label>
+      </label>
+    )
+  }
 
-      <Label hint="More variants = more options. 4 is a good default.">
-        Variants per generation
-        <Input
-          type="number"
-          min={1}
-          max={8}
-          value={variantsN}
-          onChange={e => setVariantsN(Math.max(1, Math.min(8, Number(e.target.value) || 1)))}
-        />
-      </Label>
-    </>
-  )
-}
+  // Chips layout for short option sets, select for longer ones.
+  if (field.layout === 'chips' && field.options) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-text-strong)]">
+            {field.label}{field.required ? <span className="ml-0.5 text-[var(--color-admin-primary)]">*</span> : null}
+          </span>
+          {field.hint ? <span className="text-[11px] text-[var(--color-admin-muted)]">{field.hint}</span> : null}
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {field.options.map(opt => {
+            const isActive = value === opt.id
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => onChange(opt.id)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
+                  isActive
+                    ? 'border-[var(--color-admin-primary)] bg-[var(--color-admin-primary)] text-[var(--color-admin-on-primary)] shadow-sm'
+                    : 'border-[var(--color-admin-border-strong)] bg-[var(--color-admin-surface)] text-[var(--color-admin-text)] hover:border-[var(--color-admin-border-emphasis)]'
+                }`}
+              >
+                {opt.label}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
 
-interface VideoFormProps {
-  presetId: PresetId | ''
-  applyPreset: (id: PresetId) => void
-  videoModelId: VideoModelId
-  setVideoModelId: (id: VideoModelId) => void
-  duration: number
-  setDuration: (n: number) => void
-  videoPrompt: string
-  setVideoPrompt: (s: string) => void
-}
-
-function VideoForm({ presetId, applyPreset, videoModelId, setVideoModelId, duration, setDuration, videoPrompt, setVideoPrompt }: VideoFormProps) {
+  // Default: select dropdown.
   return (
-    <>
-      <Label hint="Picking a preset auto-suggests the right video model and prefills the prompt.">
-        Marketing preset
-        <div className="mt-1 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {PRESETS.map(p => (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => applyPreset(p.id)}
-              className={`rounded-lg border p-3 text-left transition-all ${
-                presetId === p.id
-                  ? 'border-[var(--color-admin-primary)] bg-[var(--color-admin-primary)]/5'
-                  : 'border-[var(--color-admin-border)] hover:border-[var(--color-admin-border-strong)]'
-              }`}
-            >
-              <div className="text-sm font-medium text-[var(--color-admin-text-strong)]">{p.label}</div>
-              <div className="mt-1 text-xs text-[var(--color-admin-muted)]">{p.blurb}</div>
-            </button>
-          ))}
-        </div>
-      </Label>
-
-      <Label>
-        Video model
-        <select
-          value={videoModelId}
-          onChange={e => setVideoModelId(e.target.value as VideoModelId)}
-          className="mt-1 h-10 w-full rounded-md border border-[var(--color-admin-border-strong)] bg-[var(--color-admin-surface)] px-3 text-sm text-[var(--color-admin-text)]"
-        >
-          {VIDEO_MODELS.filter(m => !m.comingSoon).map(m => (
-            <option key={m.id} value={m.id}>{m.label}</option>
-          ))}
-          {VIDEO_MODELS.some(m => m.comingSoon) ? (
-            <optgroup label="Coming soon (verify endpoint with your account first)">
-              {VIDEO_MODELS.filter(m => m.comingSoon).map(m => (
-                <option key={m.id} value={m.id} disabled>{m.label}</option>
-              ))}
-            </optgroup>
-          ) : null}
-        </select>
-        <p className="mt-1 text-xs text-[var(--color-admin-muted)]">
-          {VIDEO_MODELS.find(m => m.id === videoModelId)?.description}
-        </p>
-      </Label>
-
-      <Label>
-        Duration
-        <div className="mt-1 flex flex-wrap gap-2">
-          {(VIDEO_MODELS.find(m => m.id === videoModelId)?.durations_s ?? [8]).map(d => (
-            <button
-              key={d}
-              type="button"
-              onClick={() => setDuration(d)}
-              className={`admin-tab${duration === d ? ' admin-tab--active' : ''}`}
-              style={{ fontSize: 12 }}
-            >
-              {d}s
-            </button>
-          ))}
-        </div>
-      </Label>
-
-      <Label hint="Token placeholders like {{product_name}} and {{primary_benefit}} get filled at generation time.">
-        Prompt
-        <textarea
-          value={videoPrompt}
-          onChange={e => setVideoPrompt(e.target.value)}
-          rows={5}
-          className="mt-1 w-full rounded-md border border-[var(--color-admin-border-strong)] bg-[var(--color-admin-surface)] px-3 py-2 text-sm font-mono text-[var(--color-admin-text)]"
-          placeholder="A 30-something person filming a vertical phone selfie at home, talking honestly about how {{product_name}}…"
-        />
-      </Label>
-    </>
+    <label className="flex flex-col gap-1.5">
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-text-strong)]">
+          {field.label}{field.required ? <span className="ml-0.5 text-[var(--color-admin-primary)]">*</span> : null}
+        </span>
+        {field.hint ? <span className="text-[11px] text-[var(--color-admin-muted)]">{field.hint}</span> : null}
+      </div>
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className="h-10 w-full rounded-md border border-[var(--color-admin-border-strong)] bg-[var(--color-admin-surface)] px-3 text-sm text-[var(--color-admin-text)]"
+      >
+        <option value="">Choose…</option>
+        {field.options?.map(opt => (
+          <option key={opt.id} value={opt.id}>{opt.label}</option>
+        ))}
+      </select>
+    </label>
   )
 }
+
+function FormatStep({
+  adType,
+  aspect,
+  setAspect,
+  duration,
+  setDuration,
+  variants,
+  setVariants,
+}: {
+  adType: AdType
+  aspect: AspectRatio
+  setAspect: (a: AspectRatio) => void
+  duration: number
+  setDuration: (d: number) => void
+  variants: number
+  setVariants: (n: number) => void
+}) {
+  const allowedAspects = adType.aspectAllowed ?? ASPECT_RATIOS.map(a => a.id)
+
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-1.5">
+        <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-text-strong)]">
+          Placement / aspect
+        </span>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {ASPECT_RATIOS.filter(a => allowedAspects.includes(a.id)).map(a => {
+            const isActive = aspect === a.id
+            return (
+              <button
+                key={a.id}
+                type="button"
+                onClick={() => setAspect(a.id)}
+                className={`flex flex-col items-center gap-1.5 rounded-lg border p-3 transition-all ${
+                  isActive
+                    ? 'border-[var(--color-admin-primary)] bg-[var(--color-admin-primary)]/5 shadow-sm'
+                    : 'border-[var(--color-admin-border)] hover:border-[var(--color-admin-border-strong)]'
+                }`}
+              >
+                <AspectIcon ratio={a.id} active={isActive} />
+                <div className="text-xs font-semibold text-[var(--color-admin-text-strong)]">{a.label}</div>
+                <div className="text-[10px] text-[var(--color-admin-muted)]">{a.hint}</div>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {adType.kind === 'video' && adType.durations_s ? (
+        <div className="flex flex-col gap-1.5">
+          <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-text-strong)]">
+            Duration
+          </span>
+          <div className="flex gap-2">
+            {adType.durations_s.map(d => {
+              const isActive = duration === d
+              return (
+                <button
+                  key={d}
+                  type="button"
+                  onClick={() => setDuration(d)}
+                  className={`flex-1 rounded-lg border p-3 text-sm font-semibold transition-all ${
+                    isActive
+                      ? 'border-[var(--color-admin-primary)] bg-[var(--color-admin-primary)]/5 text-[var(--color-admin-text-strong)] shadow-sm'
+                      : 'border-[var(--color-admin-border)] text-[var(--color-admin-muted)] hover:border-[var(--color-admin-border-strong)]'
+                  }`}
+                >
+                  {d}s
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      ) : null}
+
+      {adType.kind === 'image' ? (
+        <div className="flex flex-col gap-1.5">
+          <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-text-strong)]">
+            How many variants?
+          </span>
+          <div className="flex gap-2">
+            {[1, 2, 4].map(n => {
+              const isActive = variants === n
+              return (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setVariants(n)}
+                  className={`flex-1 rounded-lg border p-3 text-sm font-semibold transition-all ${
+                    isActive
+                      ? 'border-[var(--color-admin-primary)] bg-[var(--color-admin-primary)]/5 text-[var(--color-admin-text-strong)] shadow-sm'
+                      : 'border-[var(--color-admin-border)] text-[var(--color-admin-muted)] hover:border-[var(--color-admin-border-strong)]'
+                  }`}
+                >
+                  {n}
+                </button>
+              )
+            })}
+          </div>
+          <p className="text-[11px] text-[var(--color-admin-muted)]">More variants = more to pick from, but slower and more cost.</p>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+function AspectIcon({ ratio, active }: { ratio: AspectRatio; active: boolean }) {
+  const dims = ratio === '9:16' ? { w: 14, h: 22 }
+    : ratio === '4:5' ? { w: 18, h: 22 }
+    : ratio === '16:9' ? { w: 26, h: 14 }
+    : { w: 20, h: 20 }
+  return (
+    <div
+      className={`rounded-sm border ${active ? 'border-[var(--color-admin-primary)] bg-[var(--color-admin-primary)]/20' : 'border-[var(--color-admin-border-strong)] bg-[var(--color-admin-bg-soft)]'}`}
+      style={{ width: dims.w, height: dims.h }}
+    />
+  )
+}
+
+function ReviewStep({
+  adType,
+  product,
+  config,
+  aspect,
+  duration,
+  variants,
+  generating,
+  genError,
+  genNote,
+  onGenerate,
+  onReset,
+}: {
+  adType: AdType
+  product: ProductRow
+  config: Record<string, string>
+  aspect: AspectRatio
+  duration: number
+  variants: number
+  generating: boolean
+  genError: string | null
+  genNote: string | null
+  onGenerate: () => void
+  onReset: () => void
+}) {
+  // Resolve option ids → labels for the summary so the operator sees
+  // human text, not raw enum values.
+  const configSummary = useMemo(() => {
+    return adType.fields.map(field => {
+      const raw = config[field.id] ?? ''
+      const label = field.options?.find(o => o.id === raw)?.label ?? raw
+      return { label: field.label, value: label || '—' }
+    })
+  }, [adType, config])
+
+  if (genNote && !generating) {
+    return (
+      <div className="flex flex-col items-center gap-4 rounded-lg border border-[var(--color-admin-success)]/40 bg-[var(--color-admin-success-soft,#e8f5ee)] p-6 text-center">
+        <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--color-admin-success)] text-xl text-white">✓</div>
+        <div className="text-sm font-semibold text-[var(--color-admin-text-strong)]">Done!</div>
+        <div className="text-xs text-[var(--color-admin-muted)]">{genNote}</div>
+        <Button onClick={onReset}>Craft another</Button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="rounded-lg border border-[var(--color-admin-border)] bg-[var(--color-admin-bg-soft)] p-4">
+        <div className="flex items-center gap-3">
+          <div className="grid h-10 w-10 place-items-center rounded-lg bg-[var(--color-admin-surface)] text-xl">{adType.icon}</div>
+          <div>
+            <div className="text-sm font-semibold text-[var(--color-admin-text-strong)]">{adType.label}</div>
+            <div className="text-xs text-[var(--color-admin-muted)]">{adType.kind === 'video' ? `${duration}s video` : `${variants} image variant${variants === 1 ? '' : 's'}`} · {aspect}</div>
+          </div>
+        </div>
+
+        <div className="mt-3 flex items-center gap-3 border-t border-[var(--color-admin-border)] pt-3">
+          {product.image_url ? (
+            <img src={product.image_url} alt="" className="h-10 w-10 rounded-md object-cover" />
+          ) : null}
+          <div className="min-w-0">
+            <div className="truncate text-sm font-medium text-[var(--color-admin-text-strong)]">{product.compound}</div>
+            {product.tagline ? <div className="truncate text-xs text-[var(--color-admin-muted)]">{product.tagline}</div> : null}
+          </div>
+        </div>
+
+        {configSummary.length > 0 ? (
+          <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 border-t border-[var(--color-admin-border)] pt-3">
+            {configSummary.map((s, i) => (
+              <div key={i} className="flex flex-col">
+                <dt className="text-[10px] uppercase tracking-wider text-[var(--color-admin-muted)]">{s.label}</dt>
+                <dd className="truncate text-xs text-[var(--color-admin-text-strong)]">{s.value}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : null}
+      </div>
+
+      {genError ? (
+        <div className="rounded-md border border-[var(--color-admin-danger)]/40 bg-[var(--color-admin-danger)]/5 p-3 text-xs text-[var(--color-admin-danger)]">
+          {genError}
+        </div>
+      ) : null}
+
+      <Button onClick={onGenerate} disabled={generating}>
+        {generating
+          ? (adType.kind === 'video' ? 'Submitting…' : 'Crafting…')
+          : `Craft ${adType.kind === 'video' ? 'the video' : `the image${variants > 1 ? 's' : ''}`}`}
+      </Button>
+
+      <p className="text-center text-[11px] text-[var(--color-admin-muted)]">
+        {adType.kind === 'video'
+          ? 'Video ads usually take 30-120 seconds and appear in the library when ready.'
+          : 'Image ads take about 5-15 seconds.'}
+      </p>
+    </div>
+  )
+}
+
+/* ────────────────────────────────────────────────────────────────────────
+ * Library + preview modal. Mostly unchanged from the previous design —
+ * just updated to show the friendly ad-type label instead of the
+ * engine identifier.
+ * ──────────────────────────────────────────────────────────────────────── */
 
 interface LibraryProps {
   creatives: CreativeRow[]
@@ -600,18 +893,19 @@ function CreativeLibrary({ creatives, loading, products }: LibraryProps) {
   return (
     <>
       <Card>
-        <CardHeader title="Library" description={creatives.length ? `${creatives.length} creatives saved · click to preview` : 'Your generated creatives land here'} />
+        <CardHeader title="Library" description={creatives.length ? `${creatives.length} creative${creatives.length === 1 ? '' : 's'} · click to preview` : 'Your crafted ads land here'} />
         <CardBody className="flex flex-col gap-3">
           {loading ? (
             <div className="text-sm text-[var(--color-admin-muted)]">Loading…</div>
           ) : creatives.length === 0 ? (
             <div className="rounded-lg border border-dashed border-[var(--color-admin-border)] p-6 text-center text-sm text-[var(--color-admin-muted)]">
-              No creatives yet. Generate one with the form on the left.
+              Nothing yet. Step through the wizard on the left to craft your first ad.
             </div>
           ) : (
             creatives.slice(0, 20).map(c => {
               const product = c.product_id ? productById.get(c.product_id) : null
               const copy = c.metadata?.ad_copy ?? null
+              const styleLabel = c.metadata?.ad_type ? friendlyAdTypeLabel(c.metadata.ad_type) : (c.preset ? friendlyAdTypeLabel(c.preset) : (c.kind === 'video' ? 'Video' : 'Image'))
               return (
                 <div key={c.id} className="flex flex-col gap-2 rounded-lg border border-[var(--color-admin-border)] bg-[var(--color-admin-bg-soft)] p-2 transition-colors hover:border-[var(--color-admin-border-strong)]">
                   <button
@@ -625,8 +919,6 @@ function CreativeLibrary({ creatives, loading, products }: LibraryProps) {
                         <img src={c.public_url} alt="" className="h-full w-full object-cover" />
                       ) : (
                         <>
-                          {/* Use the first frame of the video as the thumb when
-                              the provider didn't upload a separate one. */}
                           {c.thumbnail_url ? (
                             <img src={c.thumbnail_url} alt="" className="h-full w-full object-cover" />
                           ) : (
@@ -649,10 +941,9 @@ function CreativeLibrary({ creatives, loading, products }: LibraryProps) {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline justify-between gap-2">
                         <div className="truncate text-sm font-medium text-[var(--color-admin-text-strong)]">{product?.compound ?? '—'}</div>
-                        <span className="shrink-0 text-[10px] uppercase tracking-wider text-[var(--color-admin-muted)]">{c.kind} · {c.aspect_ratio}</span>
+                        <span className="shrink-0 text-[10px] uppercase tracking-wider text-[var(--color-admin-muted)]">{c.aspect_ratio}</span>
                       </div>
-                      <div className="mt-0.5 text-xs text-[var(--color-admin-muted)]">{c.generator}</div>
-                      {c.prompt ? <div className="mt-1 line-clamp-2 text-xs text-[var(--color-admin-muted)]">{c.prompt}</div> : null}
+                      <div className="mt-0.5 text-xs text-[var(--color-admin-muted)]">{styleLabel}</div>
                     </div>
                   </button>
                   {copy ? <AdCopyPanel copy={copy} /> : null}
@@ -682,10 +973,6 @@ function PlayIcon() {
   )
 }
 
-/* Full-screen preview overlay. Renders a <video controls autoplay> for
- * video creatives so the operator can scrub before deciding to use it,
- * and a full-size image for image creatives. Click the backdrop or hit
- * Esc to close. */
 function CreativePreviewModal({
   creative,
   product,
@@ -713,6 +1000,12 @@ function CreativePreviewModal({
     : creative.aspect_ratio === '4:5' ? 'aspect-[4/5] max-h-[80vh] max-w-[min(90vw,calc(80vh*4/5))]'
     : 'aspect-square max-h-[80vh] max-w-[min(90vw,80vh)]'
 
+  const styleLabel = creative.metadata?.ad_type
+    ? friendlyAdTypeLabel(creative.metadata.ad_type)
+    : creative.preset
+    ? friendlyAdTypeLabel(creative.preset)
+    : creative.kind === 'video' ? 'Video' : 'Image'
+
   return (
     <div
       className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-4 backdrop-blur-sm"
@@ -730,7 +1023,7 @@ function CreativePreviewModal({
               {product?.compound ?? 'Creative'}
             </div>
             <div className="mt-0.5 text-xs text-[var(--color-admin-muted)]">
-              {creative.kind} · {creative.aspect_ratio} · {creative.generator}
+              {styleLabel} · {creative.aspect_ratio}
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
@@ -781,25 +1074,13 @@ function CreativePreviewModal({
             )}
           </div>
         </div>
-
-        {creative.prompt ? (
-          <details className="rounded-md border border-[var(--color-admin-border)] bg-[var(--color-admin-bg-soft)] p-2.5">
-            <summary className="cursor-pointer text-[11px] uppercase tracking-wider text-[var(--color-admin-muted)]">
-              Prompt
-            </summary>
-            <pre className="mt-1.5 whitespace-pre-wrap text-xs text-[var(--color-admin-text)]">{creative.prompt}</pre>
-          </details>
-        ) : null}
       </div>
     </div>
   )
 }
 
 
-/* Renders the Facebook ad copy bundle with one-click copy buttons next
- * to each paste target. Three headlines because Meta's Advantage+ surface
- * accepts up to five and rotates — three is plenty without overwhelming
- * the operator. */
+/* Renders the Facebook ad copy bundle with one-click copy buttons. */
 function AdCopyPanel({ copy }: { copy: AdCopy }) {
   return (
     <div className="rounded-md border border-[var(--color-admin-border)] bg-[var(--color-admin-surface)] p-2.5">

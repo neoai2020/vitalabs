@@ -7,8 +7,10 @@
  *      JWT; we re-derive admin status from app_metadata).
  *   2. Load the product (image_url + copy) from the brand the admin is
  *      operating on.
- *   3. Resolve the hook template + tokens, append any custom prompt the
- *      operator added.
+ *   3. Resolve the ad-type entry from _shared/adTypes.ts and build the
+ *      prompt server-side from the operator's structured config. The
+ *      client never sends prompt text — it only sends the ad_type and
+ *      structured config fields.
  *   4. Download the product image and base64-encode it as a reference.
  *   5. Call Gemini once per variant (in parallel) — Nano Banana returns
  *      one image per call, so N variants = N calls.
@@ -20,13 +22,20 @@
  * success is fine because the operator can hit "Generate" again to fill
  * the remaining slots. Total failure returns 502.
  *
- * Body: { brand, product_id, hook_id, aspect_ratio, custom_prompt?, variants_n }
+ * Body: { brand, product_id, ad_type, config, aspect_ratio, variants_n }
  * Returns: { ok, creatives: Creative[], errors?: string[] }
  */
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { handleOptions, jsonResponse } from '../_shared/cors.ts'
 import { generateAdCopy } from '../_shared/adCopy.ts'
+import {
+  buildAdPrompt,
+  getAdTypeEntry,
+  type AdTypeConfig,
+  type Brand,
+  type ProductContext,
+} from '../_shared/adTypes.ts'
 
 /* Image generation requires the v1beta endpoint — `responseModalities`
  * is a beta-only generationConfig field and v1 rejects the request as
@@ -34,30 +43,15 @@ import { generateAdCopy } from '../_shared/adCopy.ts'
 const GEMINI_MODEL = 'gemini-2.5-flash-image'
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`
 
-type Brand = 'vitalabs' | 'peptiva'
 type AspectRatio = '1:1' | '9:16' | '16:9' | '4:5'
 
 interface RequestBody {
   brand: Brand
   product_id: string
-  hook_id: string
+  ad_type: string
+  config: AdTypeConfig
   aspect_ratio: AspectRatio
-  custom_prompt?: string
   variants_n?: number
-  /** Resolved prompt template from the client. Server-side we still
-   * re-fill tokens against the canonical product row to stop a malicious
-   * client from injecting random tokens. */
-  prompt_template: string
-}
-
-interface Product {
-  id: string
-  brand: Brand
-  compound: string
-  tagline: string | null
-  description: string | null
-  benefits: string[] | null
-  image_url: string | null
 }
 
 interface CreatedCreative {
@@ -106,15 +100,17 @@ serve(async (req: Request) => {
     return jsonResponse({ ok: false, error: 'invalid json' }, 400)
   }
 
-  if (!body.brand || !body.product_id) {
-    return jsonResponse({ ok: false, error: 'brand and product_id required' }, 400)
-  }
-  if (!body.prompt_template) {
-    return jsonResponse({ ok: false, error: 'prompt_template required' }, 400)
+  if (!body.brand || !body.product_id || !body.ad_type) {
+    return jsonResponse({ ok: false, error: 'brand, product_id, and ad_type are required' }, 400)
   }
 
-  const variantsN = Math.max(1, Math.min(MAX_VARIANTS, body.variants_n ?? 4))
-  const aspect = body.aspect_ratio ?? '1:1'
+  const adTypeEntry = getAdTypeEntry(body.ad_type)
+  if (!adTypeEntry || adTypeEntry.kind !== 'image') {
+    return jsonResponse({ ok: false, error: `ad_type "${body.ad_type}" is not a valid image type` }, 400)
+  }
+
+  const variantsN = Math.max(1, Math.min(MAX_VARIANTS, body.variants_n ?? 2))
+  const aspect = body.aspect_ratio ?? adTypeEntry.defaultAspect
 
   const admin = createClient(
     Deno.env.get('SUPABASE_URL')!,
@@ -133,6 +129,20 @@ serve(async (req: Request) => {
   if (productErr || !product) {
     return jsonResponse({ ok: false, error: 'product not found' }, 404)
   }
+
+  const productCtx: ProductContext = {
+    compound: product.compound,
+    tagline: product.tagline,
+    description: product.description,
+    benefits: product.benefits,
+    image_url: product.image_url,
+  }
+
+  const built = buildAdPrompt(body.ad_type, body.config ?? {}, productCtx, body.brand)
+  if (!built) {
+    return jsonResponse({ ok: false, error: 'failed to build prompt' }, 500)
+  }
+  const finalPrompt = `${built.prompt}\n\nCompose for a ${aspect} aspect ratio.`
 
   // Try to download the product image as a reference. If it fails we
   // proceed without it — Gemini will still produce something usable from
@@ -153,21 +163,13 @@ serve(async (req: Request) => {
     }
   }
 
-  const filledPrompt = fillPromptTokens({
-    template: body.prompt_template,
-    product: product as Product,
-    brand: body.brand,
-    aspect_ratio: aspect,
-    extra: body.custom_prompt ?? '',
-  })
-
   // Generate variants in parallel. Each call is independent — failures
   // are caught per-variant so a single bad call doesn't kill the batch.
   const generations = await Promise.allSettled(
     Array.from({ length: variantsN }, (_, idx) =>
       generateSingleVariant({
         apiKey,
-        prompt: filledPrompt,
+        prompt: finalPrompt,
         referenceImage,
         variantIndex: idx,
       }),
@@ -197,8 +199,8 @@ serve(async (req: Request) => {
       product_name: product.compound,
       product_tagline: product.tagline ?? '',
       primary_benefit: (product.benefits?.[0] ?? product.tagline ?? 'better daily performance'),
-      creative_angle: body.hook_id,
-      visual_prompt: filledPrompt,
+      creative_angle: built.angle,
+      visual_prompt: finalPrompt,
       kind: 'image',
     })
 
@@ -210,15 +212,16 @@ serve(async (req: Request) => {
         brand: body.brand,
         product_id: body.product_id,
         kind: 'image',
-        generator: 'gemini-nano-banana',
-        preset: body.hook_id,
-        prompt: filledPrompt,
+        generator: adTypeEntry.model,
+        preset: body.ad_type,
+        prompt: finalPrompt,
         aspect_ratio: aspect,
         storage_path: '',
         public_url: '',
         status: 'ready',
         metadata: {
-          hook_id: body.hook_id,
+          ad_type: body.ad_type,
+          config: body.config ?? {},
           variant_index: i,
           ad_copy: adCopy ?? null,
         },
@@ -289,7 +292,6 @@ async function generateSingleVariant(opts: {
     },
     body: JSON.stringify({
       contents: [{ parts }],
-      // The image preview models ignore some safetySettings but harmless to include.
       generationConfig: { responseModalities: ['IMAGE'] },
     }),
   })
@@ -308,38 +310,6 @@ async function generateSingleVariant(opts: {
     if (inline?.data) return base64ToBytes(inline.data)
   }
   return null
-}
-
-
-interface FillOpts {
-  template: string
-  product: Product
-  brand: Brand
-  aspect_ratio: AspectRatio
-  extra: string
-}
-
-/** Replaces {{token}} placeholders + appends a styling footer that tells
- *  Gemini what aspect ratio and brand voice to compose for. */
-function fillPromptTokens(opts: FillOpts): string {
-  const benefits = opts.product.benefits ?? []
-  const primaryBenefit = benefits[0] ?? opts.product.tagline ?? 'better daily performance'
-  const tokens: Record<string, string> = {
-    product_name: opts.product.compound,
-    product_tagline: opts.product.tagline ?? '',
-    primary_benefit: primaryBenefit,
-    brand_name: BRAND_NAMES[opts.brand],
-    testimonial_quote: 'I noticed the difference within a fortnight.',
-    testimonial_author: 'Verified UK customer',
-    problem_question: `Tired of ${primaryBenefit.toLowerCase()} feeling out of reach?`,
-  }
-  let prompt = opts.template
-  for (const [key, value] of Object.entries(tokens)) {
-    prompt = prompt.replaceAll(`{{${key}}}`, value)
-  }
-  const extra = opts.extra.trim() ? `\n\nAdditional direction from the brand operator: ${opts.extra.trim()}` : ''
-  const footer = `\n\nCompose for a ${opts.aspect_ratio} aspect ratio. Photo-real, premium UK wellness brand aesthetic. Avoid any explicit medical claims. Do not show needles or syringes. The product label should remain readable.`
-  return `${prompt}${extra}${footer}`
 }
 
 

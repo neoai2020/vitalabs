@@ -54,7 +54,7 @@ serve(async (req: Request) => {
   if (!credentials) {
     return jsonResponse({
       ok: false,
-      error: 'HIGGSFIELD_API_KEY not configured. Set it as "KEY_ID:KEY_SECRET" or set HIGGSFIELD_API_KEY and HIGGSFIELD_API_SECRET separately.',
+      error: 'Video engine credentials not configured. Contact the platform admin.',
     }, 500)
   }
 
@@ -231,6 +231,9 @@ async function finaliseSuccess(opts: FinaliseOpts): Promise<string | null> {
     model_id?: string
     provider_model?: string
     preset?: string | null
+    ad_type?: string
+    config?: Record<string, unknown>
+    angle?: string
     prompt?: string
     aspect_ratio?: string
     duration_s?: number
@@ -288,7 +291,7 @@ async function finaliseSuccess(opts: FinaliseOpts): Promise<string | null> {
         product_name: product.compound,
         product_tagline: product.tagline ?? '',
         primary_benefit: product.benefits?.[0] ?? product.tagline ?? 'better daily performance',
-        creative_angle: params.preset ?? 'ugc',
+        creative_angle: params.angle ?? params.ad_type ?? 'video',
         visual_prompt: params.prompt ?? '',
         kind: 'video',
       })
@@ -301,8 +304,8 @@ async function finaliseSuccess(opts: FinaliseOpts): Promise<string | null> {
       brand: opts.job.brand,
       product_id: params.product_id ?? null,
       kind: 'video',
-      generator: `higgsfield:${params.provider_model ?? params.model_id ?? 'unknown'}`,
-      preset: params.preset ?? null,
+      generator: params.model_id ?? 'video-engine',
+      preset: params.ad_type ?? params.preset ?? null,
       prompt: params.prompt ?? null,
       aspect_ratio: params.aspect_ratio ?? '9:16',
       duration_s: params.duration_s ?? null,
@@ -311,7 +314,8 @@ async function finaliseSuccess(opts: FinaliseOpts): Promise<string | null> {
       thumbnail_url: thumbnailUrl,
       status: 'ready',
       metadata: {
-        model_id: params.model_id,
+        ad_type: params.ad_type ?? null,
+        config: params.config ?? {},
         external_id: opts.job.id,
         ad_copy: adCopy ?? null,
       },
