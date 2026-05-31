@@ -152,6 +152,36 @@ export default function CheckoutPage() {
 
   const countdown = useCountdown(10)
 
+  /* Capture the latest customer + shipping values in a ref so the
+   * payment-intent metadata can include them at init time WITHOUT
+   * pinning them as useCallback deps. Without this, every keystroke
+   * in a shipping field rebuilt initPayment, retriggered the effect,
+   * created a fresh PaymentIntent, and ripped+remounted the Uprails
+   * iframe — both a UX nightmare (skeleton flash on every key) and a
+   * production cost issue (PaymentIntent per keystroke). */
+  const formMetaRef = useRef({
+    customerName,
+    customerEmail,
+    shippingAddress1,
+    shippingAddress2,
+    shippingCity,
+    shippingCounty,
+    shippingPostcode,
+    shippingCountry,
+  })
+  useEffect(() => {
+    formMetaRef.current = {
+      customerName,
+      customerEmail,
+      shippingAddress1,
+      shippingAddress2,
+      shippingCity,
+      shippingCounty,
+      shippingPostcode,
+      shippingCountry,
+    }
+  })
+
   const initPayment = useCallback(async () => {
     if (!state) return
 
@@ -165,23 +195,24 @@ export default function CheckoutPage() {
       // local `promo.discount` is only used for UI display.
       const discountedAmount = Math.max(0, state.amount - Math.round((promo?.discount ?? 0) * 100))
 
+      const meta = formMetaRef.current
       const { clientSecret } = await createPaymentIntent({
         amount: discountedAmount,
         currency: 'GBP',
         description: state.description,
-        email: customerEmail || state.email,
+        email: meta.customerEmail || state.email,
         redemptionToken: promo?.token,
         subtotal: state.amount,
         metadata: {
           skus,
           quantity: String(state.quantity),
-          shipping_name: customerName,
-          shipping_address1: shippingAddress1,
-          shipping_address2: shippingAddress2,
-          shipping_city: shippingCity,
-          shipping_county: shippingCounty,
-          shipping_postcode: shippingPostcode,
-          shipping_country: shippingCountry,
+          shipping_name: meta.customerName,
+          shipping_address1: meta.shippingAddress1,
+          shipping_address2: meta.shippingAddress2,
+          shipping_city: meta.shippingCity,
+          shipping_county: meta.shippingCounty,
+          shipping_postcode: meta.shippingPostcode,
+          shipping_country: meta.shippingCountry,
         },
       })
 
@@ -211,7 +242,10 @@ export default function CheckoutPage() {
       setErrorMsg(err instanceof Error ? err.message : 'Failed to load payment form')
       setStatus('failed')
     }
-  }, [state, promo?.discount, promo?.token, customerEmail, customerName, shippingAddress1, shippingAddress2, shippingCity, shippingCounty, shippingPostcode, shippingCountry])
+    // Only re-init on amount-changing inputs. Shipping/customer fields
+    // flow through formMetaRef and the explicit sessionStorage write at
+    // submit time, so they don't need to retrigger init.
+  }, [state, promo?.discount, promo?.token])
 
   useEffect(() => {
     initPayment()
