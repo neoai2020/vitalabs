@@ -6,6 +6,7 @@ import { ConfigProvider } from '../lib/config/ConfigProvider'
 import { AdminNav } from './components/AdminNav'
 import { BrandSwitcher } from './components/BrandSwitcher'
 import { Button } from './components/ui/Button'
+import { AdminErrorBoundary } from './components/ErrorBoundary'
 import './admin.css'
 
 function AdminConfigGate({ children }: { children: ReactNode }) {
@@ -55,7 +56,9 @@ export function AdminLayout() {
 
           <main className="flex-1 overflow-x-hidden">
             <div className="mx-auto max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
-              <Outlet />
+              <AdminErrorBoundary>
+                <Outlet />
+              </AdminErrorBoundary>
             </div>
           </main>
         </div>
