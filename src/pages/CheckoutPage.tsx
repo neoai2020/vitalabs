@@ -8,48 +8,59 @@ import {
   type CheckoutState,
 } from '../lib/uprails'
 import { useCart } from '../lib/cart'
-import { validatePromoCode, discountFor, type PromoCode } from '../lib/marketing'
+import { redeemPromoCode } from '../lib/marketing'
 
 type Status = 'idle' | 'loading' | 'ready' | 'submitting' | 'succeeded' | 'failed'
 
+interface AppliedPromo {
+  code: string
+  discount: number
+  token: string
+}
+
 interface PromoSectionProps {
   subtotalGBP: number
-  onChange: (next: { code: string; promo: PromoCode | null; discount: number }) => void
+  onChange: (next: AppliedPromo | null) => void
 }
 
 function PromoSection({ subtotalGBP, onChange }: PromoSectionProps) {
   const [code, setCode] = useState('')
   const [validating, setValidating] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [promo, setPromo] = useState<PromoCode | null>(null)
+  const [applied, setApplied] = useState<AppliedPromo | null>(null)
 
   const apply = async () => {
     setValidating(true)
     setError(null)
-    const result = await validatePromoCode(code)
+    const result = await redeemPromoCode(code, subtotalGBP)
     setValidating(false)
-    if (!result.ok || !result.promo) {
+    if (!result.ok || !result.token || !result.code) {
       setError(result.error ?? 'Invalid code')
-      setPromo(null)
-      onChange({ code: '', promo: null, discount: 0 })
+      setApplied(null)
+      onChange(null)
       return
     }
-    setPromo(result.promo)
-    onChange({ code: result.promo.code, promo: result.promo, discount: discountFor(result.promo, subtotalGBP) })
+    const next: AppliedPromo = {
+      code: result.code,
+      discount: result.discount ?? 0,
+      token: result.token,
+    }
+    setApplied(next)
+    onChange(next)
   }
 
   const clear = () => {
-    setPromo(null)
+    setApplied(null)
     setCode('')
     setError(null)
-    onChange({ code: '', promo: null, discount: 0 })
+    onChange(null)
   }
 
   return (
     <div className="ck-promo" style={{ marginTop: 12 }}>
-      {promo ? (
+      {applied ? (
         <div className="ck-promo-applied" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 8, background: '#ecfdf5', color: '#065f46', fontSize: 13 }}>
-          <span><strong>{promo.code}</strong> applied — {promo.type === 'percent' ? `${promo.value}% off` : `£${promo.value.toFixed(2)} off`}</span>
+          <span><strong>{applied.code}</strong> applied — £{applied.discount.toFixed(2)} off</span>
           <button type="button" onClick={clear} style={{ background: 'transparent', border: 'none', color: '#065f46', cursor: 'pointer', textDecoration: 'underline', fontSize: 12 }}>Remove</button>
         </div>
       ) : (
@@ -117,7 +128,7 @@ export default function CheckoutPage() {
   const [shippingCounty, setShippingCounty] = useState('')
   const [shippingPostcode, setShippingPostcode] = useState('')
 
-  const [promo, setPromo] = useState<{ code: string; promo: PromoCode | null; discount: number }>({ code: '', promo: null, discount: 0 })
+  const [promo, setPromo] = useState<AppliedPromo | null>(null)
 
   const customerIdRef = useRef<string | null>(null)
   const hyperRef = useRef<ReturnType<typeof getHyperInstance> | null>(null)
@@ -136,22 +147,20 @@ export default function CheckoutPage() {
 
       const skus = state.items.map(i => i.sku).join(', ')
 
-      // Promo discount applied client-side. Server-side re-validation
-      // against the promo_codes table is recommended before going live;
-      // current setup matches the pre-existing pattern of trusting the
-      // client-supplied amount in createPaymentIntent.
-      const discountedAmount = Math.max(0, state.amount - Math.round(promo.discount * 100))
+      // Discount amount is server-derived from the redemption_token. The
+      // local `promo.discount` is only used for UI display.
+      const discountedAmount = Math.max(0, state.amount - Math.round((promo?.discount ?? 0) * 100))
 
       const { clientSecret } = await createPaymentIntent({
         amount: discountedAmount,
         currency: 'GBP',
         description: state.description,
         email: customerEmail || state.email,
+        redemptionToken: promo?.token,
+        subtotal: state.amount,
         metadata: {
           skus,
           quantity: String(state.quantity),
-          promo_code: promo.code,
-          promo_discount: promo.discount > 0 ? promo.discount.toFixed(2) : '',
           shipping_name: customerName,
           shipping_address1: shippingAddress1,
           shipping_address2: shippingAddress2,
@@ -188,7 +197,7 @@ export default function CheckoutPage() {
       setErrorMsg(err instanceof Error ? err.message : 'Failed to load payment form')
       setStatus('failed')
     }
-  }, [state, promo.discount])
+  }, [state, promo?.discount, promo?.token, customerEmail, customerName, shippingAddress1, shippingAddress2, shippingCity, shippingCounty, shippingPostcode, shippingCountry])
 
   useEffect(() => {
     initPayment()
@@ -646,7 +655,7 @@ export default function CheckoutPage() {
                 <span>Tax</span>
                 <span>£0.00</span>
               </div>
-              {promo.discount > 0 ? (
+              {promo && promo.discount > 0 ? (
                 <div className="ck-summary-row" style={{ color: '#16a34a' }}>
                   <span>Promo ({promo.code})</span>
                   <span>−£{promo.discount.toFixed(2)}</span>
@@ -662,7 +671,7 @@ export default function CheckoutPage() {
 
               <div className="ck-summary-row ck-summary-row--total">
                 <span>TOTAL</span>
-                <span>£{((state.amount / 100) - promo.discount).toFixed(2)}</span>
+                <span>£{((state.amount / 100) - (promo?.discount ?? 0)).toFixed(2)}</span>
               </div>
             </div>
 

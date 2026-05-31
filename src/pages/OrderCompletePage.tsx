@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { fireCapiEvent, newEventId } from '../lib/tracking/capi'
 
 interface OrderInfo {
   description?: string
@@ -32,12 +33,34 @@ export default function OrderCompletePage() {
         const parsed = JSON.parse(stored) as OrderInfo
         setOrder(parsed)
 
-        // Fire Facebook Purchase pixel with order value
-        if (parsed.amount && typeof window.fbq === 'function') {
+        // Fire Facebook Purchase event on BOTH browser pixel and server-side
+        // Conversions API using the same event_id so Meta dedupes. CAPI is a
+        // backup signal for users with ad-blockers / iOS ITP that drop the
+        // browser pixel — recovers ~10–30% of conversions.
+        if (parsed.amount) {
           const valueInPounds = parsed.amount / 100
-          window.fbq('track', 'Purchase', {
-            value: valueInPounds,
-            currency: 'GBP',
+          const eventId = newEventId('Purchase')
+          if (typeof window.fbq === 'function') {
+            window.fbq('track', 'Purchase', {
+              value: valueInPounds,
+              currency: 'GBP',
+            }, { eventID: eventId })
+          }
+          void fireCapiEvent({
+            eventId,
+            eventName: 'Purchase',
+            email: parsed.customerEmail,
+            phone: parsed.customerPhone,
+            firstName: parsed.customerName?.split(' ')[0],
+            lastName: parsed.customerName?.split(' ').slice(1).join(' '),
+            country: parsed.shippingAddress?.country,
+            customData: {
+              value: valueInPounds,
+              currency: 'GBP',
+              content_ids: parsed.items?.map(i => i.sku),
+              content_type: 'product',
+              num_items: parsed.items?.length ?? 1,
+            },
           })
         }
 

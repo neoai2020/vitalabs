@@ -101,6 +101,12 @@ export async function createPaymentIntent(opts: {
   email?: string
   customerId?: string
   metadata?: Record<string, string>
+  /** If a promo was redeemed, pass the HMAC token issued by redeem-promo
+   * here. The server will re-derive the final amount from the token and
+   * reject if `subtotal` doesn't match the token's payload. */
+  redemptionToken?: string
+  /** Pre-discount subtotal in pence — required when redemptionToken set. */
+  subtotal?: number
 }): Promise<CreatePaymentResponse> {
   const { data, error } = await supabase.functions.invoke('create-payment', {
     body: {
@@ -110,6 +116,8 @@ export async function createPaymentIntent(opts: {
       email: opts.email,
       customer_id: opts.customerId,
       metadata: opts.metadata,
+      redemption_token: opts.redemptionToken,
+      subtotal: opts.subtotal,
     },
   })
 

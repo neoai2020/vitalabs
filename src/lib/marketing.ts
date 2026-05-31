@@ -15,49 +15,52 @@ export interface PromoCode {
   description: string | null
 }
 
-export interface ValidatePromoResult {
+export interface RedemptionResult {
   ok: boolean
-  promo?: PromoCode
+  /** Discount in pounds (pence converted) — display only. */
+  discount?: number
+  /** Server-issued HMAC token to pass to create-payment for verification. */
+  token?: string
+  /** Server-canonical code (upper-cased). */
+  code?: string
+  type?: PromoType
   error?: string
 }
 
 /**
- * Validates a promo code for the current brand. Pure client-side check
- * (active + not expired + usage cap not reached). Uses count is not
- * incremented here — actual redemption needs to happen server-side
- * after payment confirms.
+ * Calls the `redeem-promo` Edge Function to validate a code server-side
+ * and obtain a short-lived signed token. The token is then handed to
+ * `createPaymentIntent` so the server can re-verify the discount before
+ * charging — guarantees the discount the user sees is the discount the
+ * server will honour, and prevents devtools tampering with the amount.
+ *
+ * `subtotalPounds` is the pre-discount cart subtotal in pounds.
  */
-export async function validatePromoCode(rawCode: string): Promise<ValidatePromoResult> {
+export async function redeemPromoCode(
+  rawCode: string,
+  subtotalPounds: number,
+): Promise<RedemptionResult> {
   const code = rawCode.trim().toUpperCase()
   if (!code) return { ok: false, error: 'Enter a code' }
+  if (!subtotalPounds || subtotalPounds <= 0) return { ok: false, error: 'Empty cart' }
 
-  const { data, error } = await supabase
-    .from('promo_codes')
-    .select('id, code, type, value, max_uses, uses, expires_at, active, description')
-    .eq('brand', getBrand())
-    .ilike('code', code)
-    .maybeSingle()
-  if (error) return { ok: false, error: 'Could not validate code' }
-  if (!data) return { ok: false, error: 'Code not found' }
-  if (!data.active) return { ok: false, error: 'Code is inactive' }
-  if (data.expires_at && new Date(data.expires_at) < new Date()) {
-    return { ok: false, error: 'Code has expired' }
-  }
-  if (data.max_uses !== null && data.uses >= data.max_uses) {
-    return { ok: false, error: 'Code usage limit reached' }
-  }
-  return { ok: true, promo: data as PromoCode }
-}
+  const { data, error } = await supabase.functions.invoke('redeem-promo', {
+    body: {
+      brand: getBrand(),
+      code,
+      subtotal_pence: Math.round(subtotalPounds * 100),
+    },
+  })
 
-/**
- * Computes the absolute discount in pounds for a given promo + subtotal.
- * Returns 0 for invalid combinations.
- */
-export function discountFor(promo: PromoCode | null | undefined, subtotal: number): number {
-  if (!promo || subtotal <= 0) return 0
-  if (promo.type === 'percent') return Math.min(subtotal, (subtotal * promo.value) / 100)
-  if (promo.type === 'fixed') return Math.min(subtotal, promo.value)
-  return 0
+  if (error) return { ok: false, error: error.message || 'Could not validate code' }
+  if (!data?.ok) return { ok: false, error: data?.error || 'Invalid code' }
+  return {
+    ok: true,
+    discount: (data.discount_pence ?? 0) / 100,
+    token: data.token,
+    code: data.code,
+    type: data.type,
+  }
 }
 
 export interface UpsellOffer {
