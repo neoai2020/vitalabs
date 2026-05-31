@@ -1,8 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { CartProvider } from './lib/cart'
 import CartDrawer from './components/CartDrawer'
 import WhatsAppWidget from './components/WhatsAppWidget'
+import { AdminRoutes } from './admin/AdminRoutes'
 import LandingPage from './pages/LandingPage'
 import ProductsPage from './pages/ProductsPage'
 import ProductDetailPage from './pages/ProductDetailPage'
@@ -73,13 +75,30 @@ function ScrollToTop() {
 
 export default function App() {
   const { pathname } = useLocation()
+  const isAdminRoute = pathname.startsWith('/admin')
   const hideThemeToggle =
     pathname === '/' ||
     pathname.startsWith('/quiz') ||
     pathname.startsWith('/products') ||
     ['/capture', '/results', '/upsell', '/tsl', '/checkout', '/order-complete', '/terms', '/privacy', '/refund-policy', '/disclaimer', '/shipping'].includes(pathname) ||
-    pathname.startsWith('/members')
+    pathname.startsWith('/members') ||
+    isAdminRoute
   const showToggle = !hideThemeToggle
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: { queries: { staleTime: 30_000, refetchOnWindowFocus: false } },
+  }))
+
+  if (isAdminRoute) {
+    return (
+      <AuthProvider>
+        <QueryClientProvider client={queryClient}>
+          <Routes>
+            <Route path="/admin/*" element={<AdminRoutes />} />
+          </Routes>
+        </QueryClientProvider>
+      </AuthProvider>
+    )
+  }
 
   return (
     <AuthProvider>

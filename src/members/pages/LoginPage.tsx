@@ -9,15 +9,23 @@ export default function LoginPage() {
   const [password, setPassword] = useState('password')
   const [error, setError] = useState('')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [busy, setBusy] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email || !password) {
       setError('Please fill in all fields')
       return
     }
-    const ok = login(email, password)
-    if (ok) navigate('/members')
-    else setError('Invalid credentials')
+    setBusy(true)
+    setError('')
+    try {
+      const ok = await login(email, password)
+      if (ok) navigate('/members')
+      else setError('Invalid credentials')
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -50,12 +58,11 @@ export default function LoginPage() {
               className="m-auth-input"
             />
           </label>
-          <button type="submit" className="m-auth-submit">Sign In →</button>
+          <button type="submit" className="m-auth-submit" disabled={busy}>{busy ? 'Signing in…' : 'Sign In →'}</button>
           <p className="m-auth-switch">
             Don't have an account? <Link to="/members/signup">Create one</Link>
           </p>
         </form>
-        <p className="m-auth-note">Testing mode: click Sign In with any credentials</p>
       </div>
     </div>
   )

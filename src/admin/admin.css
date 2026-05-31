@@ -1,0 +1,39 @@
+/*
+ * Admin-only Tailwind. We intentionally skip Tailwind's preflight (base
+ * reset) so the public site's custom CSS in src/index.css and
+ * src/storefront.css is not affected. Admin components use Tailwind
+ * utilities; the rest of the app is untouched.
+ */
+@import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/utilities" layer(utilities);
+
+@theme {
+  --color-admin-bg: #f8fafc;
+  --color-admin-surface: #ffffff;
+  --color-admin-border: #e2e8f0;
+  --color-admin-text: #0f172a;
+  --color-admin-muted: #64748b;
+  --color-admin-primary: #143F66;
+  --color-admin-primary-hover: #0f3358;
+  --color-admin-danger: #dc2626;
+  --color-admin-success: #16a34a;
+  --color-admin-warning: #d97706;
+}
+
+/* Scoped reset for the admin shell only */
+.admin-root {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--color-admin-text);
+  background: var(--color-admin-bg);
+  min-height: 100vh;
+}
+
+.admin-root *,
+.admin-root *::before,
+.admin-root *::after {
+  box-sizing: border-box;
+}
+
+.admin-root button {
+  font-family: inherit;
+}

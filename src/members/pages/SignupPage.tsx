@@ -11,15 +11,23 @@ export default function SignupPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [busy, setBusy] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!firstName || !lastName || !email || !password) {
       setError('Please fill in all fields')
       return
     }
-    const ok = signup(firstName, lastName, email, password)
-    if (ok) navigate('/members')
-    else setError('Something went wrong')
+    setBusy(true)
+    setError('')
+    try {
+      const ok = await signup(firstName, lastName, email, password)
+      if (ok) navigate('/members')
+      else setError('Something went wrong')
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -50,12 +58,11 @@ export default function SignupPage() {
             <span>Password</span>
             <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min 8 characters" className="m-auth-input" />
           </label>
-          <button type="submit" className="m-auth-submit">Create Account →</button>
+          <button type="submit" className="m-auth-submit" disabled={busy}>{busy ? 'Creating…' : 'Create Account →'}</button>
           <p className="m-auth-switch">
             Already have an account? <Link to="/members/login">Sign in</Link>
           </p>
         </form>
-        <p className="m-auth-note">Testing mode: no email verification required</p>
       </div>
     </div>
   )

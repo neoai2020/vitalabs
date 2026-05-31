@@ -1,4 +1,11 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
+import { supabase } from '../../lib/supabase'
+import {
+  signInWithPassword,
+  signUpWithPassword,
+  signOut as supabaseSignOut,
+  toAppUser,
+} from '../../lib/supabaseAuth'
 
 export interface UserProfile {
   gender: 'male' | 'female'
@@ -24,81 +31,115 @@ export interface User {
   compound: string
   plan: '1-month' | '3-month'
   profile: UserProfile | null
+  isAdmin: boolean
 }
 
 interface AuthContextType {
   user: User | null
-  login: (email: string, password: string) => boolean
-  signup: (firstName: string, lastName: string, email: string, password: string) => boolean
-  logout: () => void
+  loading: boolean
+  login: (email: string, password: string) => Promise<boolean>
+  signup: (firstName: string, lastName: string, email: string, password: string) => Promise<boolean>
+  logout: () => Promise<void>
   updateUser: (updates: Partial<User>) => void
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
 
-const STORAGE_KEY = 'vitalabs-member'
+const PROFILE_KEY_PREFIX = 'vitalabs-profile-'
 
-const DEFAULT_USER: User = {
-  id: 'u1',
-  firstName: 'Alex',
-  lastName: 'Morgan',
-  email: 'alex@example.com',
-  avatar: '',
-  joinDate: new Date(Date.now() - 14 * 86400000).toISOString(),
-  compound: 'Tirzepatide',
-  plan: '3-month',
-  profile: null,
+function loadStoredProfile(userId: string): UserProfile | null {
+  try {
+    const raw = localStorage.getItem(PROFILE_KEY_PREFIX + userId)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
+function buildUser(authUser: ReturnType<typeof toAppUser>, profile: UserProfile | null): User | null {
+  if (!authUser) return null
+  return {
+    id: authUser.id,
+    firstName: authUser.firstName,
+    lastName: authUser.lastName,
+    email: authUser.email,
+    avatar: '',
+    joinDate: new Date().toISOString(),
+    compound: 'Tirzepatide',
+    plan: '3-month',
+    profile,
+    isAdmin: authUser.isAdmin,
+  }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      return stored ? JSON.parse(stored) : null
-    } catch {
-      return null
-    }
-  })
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (user) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
-    } else {
-      localStorage.removeItem(STORAGE_KEY)
-    }
-  }, [user])
+    let mounted = true
 
-  const login = (_email: string, _password: string): boolean => {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
-      setUser(JSON.parse(stored))
-    } else {
-      setUser({ ...DEFAULT_USER, email: _email })
+    supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return
+      const appUser = toAppUser(data.session?.user ?? null)
+      const profile = appUser ? loadStoredProfile(appUser.id) : null
+      setUser(buildUser(appUser, profile))
+      setLoading(false)
+    })
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      const appUser = toAppUser(session?.user ?? null)
+      const profile = appUser ? loadStoredProfile(appUser.id) : null
+      setUser(buildUser(appUser, profile))
+    })
+
+    return () => {
+      mounted = false
+      sub.subscription.unsubscribe()
     }
-    return true
+  }, [])
+
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      await signInWithPassword(email, password)
+      return true
+    } catch {
+      return false
+    }
   }
 
-  const signup = (firstName: string, lastName: string, email: string, _password: string): boolean => {
-    const newUser: User = {
-      ...DEFAULT_USER,
-      id: 'u' + Date.now(),
-      firstName,
-      lastName,
-      email,
-      joinDate: new Date().toISOString(),
+  const signup = async (firstName: string, lastName: string, email: string, password: string): Promise<boolean> => {
+    try {
+      await signUpWithPassword(email, password, firstName, lastName)
+      return true
+    } catch {
+      return false
     }
-    setUser(newUser)
-    return true
   }
 
-  const logout = () => setUser(null)
+  const logout = async () => {
+    await supabaseSignOut()
+  }
 
   const updateUser = (updates: Partial<User>) => {
-    setUser(prev => prev ? { ...prev, ...updates } : null)
+    setUser(prev => {
+      if (!prev) return prev
+      const next = { ...prev, ...updates }
+      if (updates.profile !== undefined) {
+        try {
+          if (updates.profile) {
+            localStorage.setItem(PROFILE_KEY_PREFIX + prev.id, JSON.stringify(updates.profile))
+          } else {
+            localStorage.removeItem(PROFILE_KEY_PREFIX + prev.id)
+          }
+        } catch { /* ignore quota errors */ }
+      }
+      return next
+    })
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   )
