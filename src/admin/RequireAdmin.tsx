@@ -18,7 +18,7 @@ export function RequireAdmin({ children }: Props) {
   }
 
   if (!user) {
-    return <Navigate to={`/members/login?next=${encodeURIComponent(pathname)}`} replace />
+    return <Navigate to={`/admin/login?next=${encodeURIComponent(pathname)}`} replace />
   }
 
   if (!user.isAdmin) {

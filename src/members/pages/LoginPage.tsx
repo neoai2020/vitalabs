@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const next = new URLSearchParams(location.search).get('next')
   const [email, setEmail] = useState('alex@example.com')
   const [password, setPassword] = useState('password')
   const [error, setError] = useState('')
@@ -21,7 +23,7 @@ export default function LoginPage() {
     setError('')
     try {
       const ok = await login(email, password)
-      if (ok) navigate('/members')
+      if (ok) navigate(next || '/members')
       else setError('Invalid credentials')
     } finally {
       setBusy(false)
