@@ -66,7 +66,7 @@ export default function ReviewsPage() {
           <Label>Source<Input value={draft.source} onChange={e => setDraft(d => ({ ...d, source: e.target.value }))} placeholder="Trustpilot, Site, …" /></Label>
           <Label>Product ID<Input value={draft.product_id} onChange={e => setDraft(d => ({ ...d, product_id: e.target.value }))} placeholder="Blank for site-wide" /></Label>
           <Label>Rating
-            <select className="h-10 rounded-md border border-[var(--color-admin-border)] bg-white px-3 text-sm" value={draft.rating} onChange={e => setDraft(d => ({ ...d, rating: Number(e.target.value) }))}>
+            <select className="h-10 rounded-md border border-[var(--color-admin-border-strong)] bg-[var(--color-admin-bg-soft)] px-3 text-sm text-[var(--color-admin-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-admin-primary)]" value={draft.rating} onChange={e => setDraft(d => ({ ...d, rating: Number(e.target.value) }))}>
               {[5, 4, 3, 2, 1].map(n => <option key={n} value={n}>{n} stars</option>)}
             </select>
           </Label>

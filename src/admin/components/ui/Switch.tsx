@@ -19,13 +19,13 @@ export function Switch({ checked, onChange, disabled, label }: Props) {
       className={cn(
         'relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-admin-primary)]',
-        checked ? 'bg-[var(--color-admin-primary)]' : 'bg-slate-300',
+        checked ? 'bg-[var(--color-admin-primary)]' : 'bg-[var(--color-admin-border-strong)]',
         disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
       )}
     >
       <span
         className={cn(
-          'inline-block h-5 w-5 rounded-full bg-white shadow transition-transform',
+          'inline-block h-5 w-5 rounded-full bg-white shadow-md transition-transform',
           checked ? 'translate-x-5' : 'translate-x-0.5',
         )}
       />

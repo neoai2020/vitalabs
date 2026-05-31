@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { PageHeader } from '../../components/PageHeader'
+import { PreviewPanel } from '../../components/PreviewPanel'
 import { Card, CardBody, CardFooter, CardHeader } from '../../components/ui/Card'
 import { Input } from '../../components/ui/Input'
 import { Label } from '../../components/ui/Label'
@@ -42,6 +43,15 @@ const EMPTY: Draft = {
   active: true,
 }
 
+function Row({ k, v, strong, highlight }: { k: string; v: string; strong?: boolean; highlight?: boolean }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 14, fontWeight: strong ? 700 : 500, color: highlight ? '#0d9488' : strong ? '#0f172a' : '#475569' }}>
+      <span>{k}</span>
+      <span>{v}</span>
+    </div>
+  )
+}
+
 export default function PromoCodesPage() {
   const { data: codes = [], isLoading } = useBrandList<PromoRow>({
     table: 'promo_codes',
@@ -73,16 +83,69 @@ export default function PromoCodesPage() {
     catch (err) { setError(err instanceof Error ? err.message : 'Failed') }
   }
 
+  const previewDiscount = useMemo(() => {
+    const SUBTOTAL = 129
+    if (draft.type === 'percent') return Math.min(SUBTOTAL, (SUBTOTAL * draft.value) / 100)
+    if (draft.type === 'fixed') return Math.min(SUBTOTAL, draft.value)
+    return 0
+  }, [draft.type, draft.value])
+  const previewSubtotal = 129
+  const previewShipping = draft.type === 'free_shipping' ? 0 : 4.99
+  const previewTotal = Math.max(0, previewSubtotal - previewDiscount) + previewShipping
+
   return (
     <>
-      <PageHeader title="Promo codes" description="Discount codes validated at checkout. Codes are matched case-insensitively." />
+      <PageHeader eyebrow="Marketing" title="Promo codes" description="Discount codes validated at checkout. Codes are matched case-insensitively. The preview shows how a £129 cart looks with your draft code applied." />
+
+      <PreviewPanel
+        className="mb-6"
+        title="Checkout preview"
+        description="How a £129 order appears with your draft code applied"
+        viewportToggle={false}
+      >
+        {() => (
+          <div style={{ background: '#fff', padding: '20px 24px', fontFamily: 'system-ui, sans-serif', color: '#0f172a' }}>
+            <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b' }}>Order summary</div>
+            <div style={{ marginTop: 12, paddingBottom: 12, borderBottom: '1px solid #e2e8f0', display: 'flex', gap: 12, alignItems: 'center' }}>
+              <div style={{ width: 48, height: 48, borderRadius: 8, background: '#f1f5f9' }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 600, fontSize: 14 }}>Retatrutide 12mg — 1 month</div>
+                <div style={{ fontSize: 12, color: '#64748b' }}>SKU RETA-12 · UK shipping</div>
+              </div>
+              <div style={{ fontWeight: 600 }}>£129.00</div>
+            </div>
+
+            <div style={{ marginTop: 16, marginBottom: 8, display: 'flex', gap: 8 }}>
+              <div style={{ flex: 1, border: '1px solid #cbd5e1', borderRadius: 6, padding: '8px 10px', fontFamily: 'monospace', fontSize: 13, color: '#0f172a', background: '#f8fafc' }}>
+                {draft.code || 'PROMO-CODE'}
+              </div>
+              <div style={{ background: '#10b981', color: 'white', padding: '8px 14px', borderRadius: 6, fontSize: 13, fontWeight: 600 }}>Applied</div>
+            </div>
+            {draft.description ? (
+              <div style={{ fontSize: 12, color: '#64748b' }}>{draft.description}</div>
+            ) : null}
+
+            <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 6, fontSize: 14 }}>
+              <Row k="Subtotal" v={`£${previewSubtotal.toFixed(2)}`} />
+              <Row k={`Discount (${draft.code || 'CODE'})`} v={`-£${previewDiscount.toFixed(2)}`} highlight />
+              <Row k="Shipping" v={draft.type === 'free_shipping' ? 'FREE' : `£${previewShipping.toFixed(2)}`} highlight={draft.type === 'free_shipping'} />
+              <div style={{ height: 1, background: '#e2e8f0', margin: '4px 0' }} />
+              <Row k="Total" v={`£${previewTotal.toFixed(2)}`} strong />
+            </div>
+
+            <button style={{ marginTop: 16, width: '100%', background: '#143F66', color: 'white', padding: '12px', borderRadius: 8, fontWeight: 600, border: 0, fontSize: 14 }}>
+              Pay £{previewTotal.toFixed(2)}
+            </button>
+          </div>
+        )}
+      </PreviewPanel>
 
       <Card className="mb-4">
         <CardHeader title="Add promo code" />
         <CardBody className="grid gap-3 sm:grid-cols-2">
           <Label>Code<Input value={draft.code} onChange={e => setDraft(d => ({ ...d, code: e.target.value.toUpperCase() }))} placeholder="WELCOME10" /></Label>
           <Label>Type
-            <select className="h-10 rounded-md border border-[var(--color-admin-border)] bg-white px-3 text-sm" value={draft.type} onChange={e => setDraft(d => ({ ...d, type: e.target.value as PromoType }))}>
+            <select className="h-10 rounded-md border border-[var(--color-admin-border-strong)] bg-[var(--color-admin-bg-soft)] px-3 text-sm text-[var(--color-admin-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-admin-primary)]" value={draft.type} onChange={e => setDraft(d => ({ ...d, type: e.target.value as PromoType }))}>
               <option value="percent">Percent off</option>
               <option value="fixed">Fixed £ off</option>
               <option value="free_shipping">Free shipping</option>
@@ -127,7 +190,7 @@ export default function PromoCodesPage() {
                   <Td>{c.uses}{c.max_uses !== null ? ` / ${c.max_uses}` : ''}</Td>
                   <Td className="text-xs">{c.expires_at ? new Date(c.expires_at).toLocaleString() : '—'}</Td>
                   <Td>
-                    <button onClick={() => void toggleActive(c)} className={`rounded-full px-2 py-0.5 text-xs font-medium ${c.active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
+                    <button onClick={() => void toggleActive(c)} className={`rounded-full px-2 py-0.5 text-xs font-medium ${c.active ? 'bg-[var(--color-admin-success-soft)] text-[var(--color-admin-success)]' : 'bg-[var(--color-admin-surface-elevated)] text-[var(--color-admin-muted)]'}`}>
                       {c.active ? 'Active' : 'Inactive'}
                     </button>
                   </Td>

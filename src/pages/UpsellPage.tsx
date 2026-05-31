@@ -1,9 +1,22 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { recommendPeptides } from '../lib/recommend'
 import { loadQuiz } from '../lib/quizStorage'
 import { defaultQuizAnswers } from '../types/quiz'
 import { fetchActiveUpsellOffer, type UpsellOffer } from '../lib/marketing'
+
+function decodePreviewOffer(search: string): UpsellOffer | null {
+  try {
+    const params = new URLSearchParams(search)
+    if (params.get('preview') !== '1') return null
+    const raw = params.get('offer')
+    if (!raw) return null
+    const decoded = JSON.parse(atob(decodeURIComponent(raw)))
+    return decoded as UpsellOffer
+  } catch {
+    return null
+  }
+}
 
 const PRICES: Record<string, { was: number; now: number }> = {
   '17': { was: 189, now: 129 },
@@ -24,28 +37,34 @@ function getPrice(id: string) {
   return PRICES[id] || { was: 149, now: 99 }
 }
 
-function UpsellCountdown({ totalMs }: { totalMs: number }) {
+function UpsellCountdown({ totalMs, isPreview = false }: { totalMs: number; isPreview?: boolean }) {
+  const storageKey = isPreview ? null : 'vitalabs-upsell-timer'
   const [left, setLeft] = useState(() => {
-    const stored = sessionStorage.getItem('vitalabs-upsell-timer')
+    if (!storageKey) return totalMs
+    const stored = sessionStorage.getItem(storageKey)
     if (stored) {
       const diff = parseInt(stored, 10) - Date.now()
       return diff > 0 ? diff : 0
     }
     const end = Date.now() + totalMs
-    sessionStorage.setItem('vitalabs-upsell-timer', String(end))
+    sessionStorage.setItem(storageKey, String(end))
     return totalMs
   })
 
   useEffect(() => {
     if (left <= 0) return
     const t = setInterval(() => {
-      const stored = sessionStorage.getItem('vitalabs-upsell-timer')
+      if (!storageKey) {
+        setLeft(prev => Math.max(0, prev - 1000))
+        return
+      }
+      const stored = sessionStorage.getItem(storageKey)
       if (!stored) { setLeft(0); return }
       const diff = parseInt(stored, 10) - Date.now()
       setLeft(diff > 0 ? diff : 0)
     }, 1000)
     return () => clearInterval(t)
-  }, [left])
+  }, [left, storageKey])
 
   const mins = Math.floor(left / 60000)
   const secs = Math.floor((left % 60000) / 1000)
@@ -89,19 +108,37 @@ function ProgressBar() {
 
 export default function UpsellPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const previewOffer = useMemo(() => decodePreviewOffer(location.search), [location.search])
+  const isPreview = previewOffer !== null
   const answers = useMemo(() => loadQuiz(), [])
-  const valid = answers.goal && answers.researchAck
-  const rec = useMemo(() => valid ? recommendPeptides(answers) : null, [answers, valid])
+  const previewFallbackQuiz = isPreview && !answers.goal
+  const valid = (answers.goal && answers.researchAck) || isPreview
+  const rec = useMemo(() => {
+    if (isPreview && previewFallbackQuiz) {
+      return recommendPeptides({ ...defaultQuizAnswers(), goal: 'weight_management', researchAck: true })
+    }
+    return valid ? recommendPeptides(answers) : null
+  }, [answers, valid, isPreview, previewFallbackQuiz])
   const [declining, setDeclining] = useState(false)
 
-  const [offer, setOffer] = useState<UpsellOffer | null>(null)
+  const [offer, setOffer] = useState<UpsellOffer | null>(previewOffer)
 
   useEffect(() => {
     window.scrollTo(0, 0)
-    void fetchActiveUpsellOffer().then(setOffer)
-  }, [])
+    if (!isPreview) {
+      void fetchActiveUpsellOffer().then(setOffer)
+    }
+  }, [isPreview])
+
+  // Live preview re-reads the offer when the iframe URL changes.
+  useEffect(() => {
+    if (isPreview && previewOffer) setOffer(previewOffer)
+  }, [isPreview, previewOffer])
 
   const timerMs = (offer?.timer_seconds ?? 600) * 1000
+  const discountPct = offer?.discount_pct ?? 20
+  const discountMultiplier = Math.max(0, 1 - discountPct / 100)
 
   if (!valid || !rec) {
     return (
@@ -115,15 +152,22 @@ export default function UpsellPage() {
 
   const merged = { ...defaultQuizAnswers(), ...answers }
   const { primary } = rec
-  const name = merged.lead?.firstName || 'there'
+  const name = isPreview ? 'there' : (merged.lead?.firstName || 'there')
   const oneMonthPrice = getPrice(primary.id)
 
   const threeMonthRegular = oneMonthPrice.now * 3
-  const threeMonthDiscount = Math.round(threeMonthRegular * 0.80)
+  const threeMonthDiscount = Math.round(threeMonthRegular * discountMultiplier)
   const totalSaved = threeMonthRegular - threeMonthDiscount
   const perMonth = Math.round(threeMonthDiscount / 3)
   const vsRetailTotal = oneMonthPrice.was * 3
   const totalVsRetailSaved = vsRetailTotal - threeMonthDiscount
+
+  const headline = offer?.headline?.trim()
+    || `${name}, lock in 3 months of ${primary.sku} and save an extra ${discountPct}%`
+  const subheadline = offer?.subheadline?.trim()
+    || `You already chose the right compound. Now choose the smart commitment. Most customers who see results at 30 days wish they'd ordered the 3-month supply from the start.`
+  const ctaLabel = offer?.cta?.trim()
+    || `Yes — Upgrade to 3 Months for £${threeMonthDiscount} →`
 
   const handleAccept = () => {
     navigate('/checkout', {
@@ -173,20 +217,20 @@ export default function UpsellPage() {
 
   return (
     <div className="up-page">
-      <UpsellCountdown totalMs={timerMs} />
+      {isPreview ? (
+        <div style={{ background: '#1f1f25', color: '#fbbf24', textAlign: 'center', fontSize: 12, padding: '4px 12px', fontFamily: 'system-ui' }}>
+          PREVIEW MODE — live updates as you edit the admin form
+        </div>
+      ) : null}
+      <UpsellCountdown totalMs={timerMs} isPreview={isPreview} key={`${timerMs}-${isPreview}`} />
       <ProgressBar />
 
       {/* WAIT BANNER */}
       <section className="up-wait">
         <div className="up-wrap">
           <span className="up-wait-badge">⚡ WAIT — YOUR ORDER ISN'T COMPLETE YET</span>
-          <h1 className="up-wait-h1">
-            {name}, lock in <span className="up-hl">3 months</span> of {primary.sku} and save an extra 20%
-          </h1>
-          <p className="up-wait-sub">
-            You already chose the right compound. Now choose the smart commitment.
-            Most customers who see results at 30 days wish they'd ordered the 3-month supply from the start.
-          </p>
+          <h1 className="up-wait-h1">{headline}</h1>
+          <p className="up-wait-sub">{subheadline}</p>
         </div>
       </section>
 
@@ -249,7 +293,7 @@ export default function UpsellPage() {
                 <li className="up-compare-list--green">Extended dosing guide included</li>
               </ul>
               <button type="button" className="up-cta-btn" onClick={handleAccept}>
-                Yes — Upgrade to 3 Months for £{threeMonthDiscount} →
+                {ctaLabel}
               </button>
               <p className="up-cta-trust">🔒 Secure checkout · Same batch quality · Ships together</p>
             </div>

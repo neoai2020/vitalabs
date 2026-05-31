@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { PageHeader } from '../../components/PageHeader'
+import { PreviewPanel } from '../../components/PreviewPanel'
 import { Card, CardBody, CardFooter, CardHeader } from '../../components/ui/Card'
 import { Input } from '../../components/ui/Input'
 import { Label } from '../../components/ui/Label'
@@ -7,6 +8,7 @@ import { Switch } from '../../components/ui/Switch'
 import { Button } from '../../components/ui/Button'
 import { Table, TBody, THead, Th, Td, Tr } from '../../components/ui/Table'
 import { useBrandList, useBrandMutation } from '../../hooks/useBrandQuery'
+import Banner from '../../../components/Banner'
 
 interface BannerRow {
   id: string
@@ -61,7 +63,34 @@ export default function BannersPage() {
 
   return (
     <>
-      <PageHeader title="Banners" description="Promotional strips shown site-wide above the navigation. Only the first eligible banner (by sort_order, in window, active) is shown." />
+      <PageHeader eyebrow="Marketing" title="Banners" description="Promotional strips shown site-wide above the navigation. Only the first eligible banner (by sort_order, in window, active) is shown." />
+
+      <PreviewPanel
+        className="mb-6"
+        title="Live preview"
+        description="Updates as you edit the form below"
+        viewportToggle={false}
+      >
+        {() => (
+          <div style={{ background: '#fff', minHeight: 40 }}>
+            <Banner override={{
+              message: draft.message || 'Your banner message will appear here',
+              link: draft.link || null,
+              background_color: draft.background_color,
+              text_color: draft.text_color,
+            }} />
+            <div style={{ padding: '14px 20px', borderTop: '1px solid #eee', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: 'system-ui, sans-serif' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 28, height: 28, borderRadius: 6, background: '#143F66', display: 'grid', placeItems: 'center', color: 'white', fontWeight: 700, fontSize: 12 }}>VL</div>
+                <span style={{ fontSize: 14, fontWeight: 600, color: '#0f172a' }}>Vita Labs</span>
+              </div>
+              <div style={{ display: 'flex', gap: 16, fontSize: 13, color: '#64748b' }}>
+                <span>Quiz</span><span>Shop</span><span>Reviews</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </PreviewPanel>
 
       <Card className="mb-4">
         <CardHeader title="Add banner" />
@@ -121,7 +150,7 @@ export default function BannersPage() {
                     {b.start_at ? new Date(b.start_at).toLocaleDateString() : '—'} → {b.end_at ? new Date(b.end_at).toLocaleDateString() : '—'}
                   </Td>
                   <Td>
-                    <button onClick={() => void toggleActive(b)} className={`rounded-full px-2 py-0.5 text-xs font-medium ${b.active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
+                    <button onClick={() => void toggleActive(b)} className={`rounded-full px-2 py-0.5 text-xs font-medium ${b.active ? 'bg-[var(--color-admin-success-soft)] text-[var(--color-admin-success)]' : 'bg-[var(--color-admin-surface-elevated)] text-[var(--color-admin-muted)]'}`}>
                       {b.active ? 'Active' : 'Inactive'}
                     </button>
                   </Td>

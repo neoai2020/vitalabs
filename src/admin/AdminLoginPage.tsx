@@ -35,10 +35,10 @@ export default function AdminLoginPage() {
   if (user && !user.isAdmin) {
     return (
       <div className="admin-root flex min-h-screen items-center justify-center px-6">
-        <div className="w-full max-w-md rounded-lg border border-[var(--color-admin-border)] bg-white p-6 shadow-sm">
-          <h1 className="text-lg font-semibold text-[var(--color-admin-text)]">Not an admin account</h1>
+        <div className="w-full max-w-md rounded-xl border border-[var(--color-admin-border)] bg-[var(--color-admin-surface)] p-6 shadow-2xl">
+          <h1 className="text-lg font-semibold text-[var(--color-admin-text-strong)]">Not an admin account</h1>
           <p className="mt-2 text-sm text-[var(--color-admin-muted)]">
-            You are signed in as <strong>{user.email}</strong>, but this account does
+            You are signed in as <strong className="text-[var(--color-admin-text)]">{user.email}</strong>, but this account does
             not have admin permissions.
           </p>
           <Button
@@ -76,17 +76,20 @@ export default function AdminLoginPage() {
 
   return (
     <div className="admin-root flex min-h-screen items-center justify-center px-6">
-      <div className="w-full max-w-sm rounded-lg border border-[var(--color-admin-border)] bg-white p-8 shadow-sm">
+      <div className="w-full max-w-sm rounded-xl border border-[var(--color-admin-border)] bg-[var(--color-admin-surface)] p-8 shadow-2xl">
         <div className="mb-6 text-center">
-          <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-muted)]">Admin</div>
-          <h1 className="mt-1 text-xl font-semibold text-[var(--color-admin-text)]">Sign in</h1>
+          <div className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-lg bg-[var(--color-admin-primary)] text-sm font-semibold text-white shadow-[0_1px_0_0_rgba(255,255,255,0.15)_inset]">
+            VL
+          </div>
+          <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-primary)]">Admin</div>
+          <h1 className="mt-1 text-xl font-semibold text-[var(--color-admin-text-strong)]">Sign in</h1>
           <p className="mt-1 text-sm text-[var(--color-admin-muted)]">
-            Use your Supabase account with the <code className="rounded bg-slate-100 px-1 py-0.5 text-xs">is_admin</code> flag.
+            Use your Supabase account with the <code className="rounded bg-[var(--color-admin-bg-soft)] px-1 py-0.5 text-xs text-[var(--color-admin-text)]">is_admin</code> flag.
           </p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error ? (
-            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <div className="rounded-md border border-[var(--color-admin-danger)]/30 bg-[var(--color-admin-danger-soft)] px-3 py-2 text-sm text-[var(--color-admin-danger)]">
               {error}
             </div>
           ) : null}

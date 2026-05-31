@@ -26,21 +26,21 @@ export class AdminErrorBoundary extends Component<Props, State> {
     if (this.state.error) {
       return (
         <div className="admin-root flex min-h-screen items-center justify-center px-6">
-          <div className="max-w-md rounded-lg border border-[var(--color-admin-border)] bg-white p-6 shadow-sm">
-            <h1 className="text-lg font-semibold">Something went wrong</h1>
+          <div className="max-w-md rounded-xl border border-[var(--color-admin-border)] bg-[var(--color-admin-surface)] p-6 shadow-2xl">
+            <h1 className="text-lg font-semibold text-[var(--color-admin-text-strong)]">Something went wrong</h1>
             <p className="mt-2 text-sm text-[var(--color-admin-muted)]">
               The admin panel hit an unexpected error. The rest of the site is
               not affected. Reload the page or pick a different section from
               the sidebar.
             </p>
-            <pre className="mt-3 overflow-x-auto rounded-md bg-slate-50 p-3 text-xs text-[var(--color-admin-danger)]">
+            <pre className="mt-3 overflow-x-auto rounded-md border border-[var(--color-admin-border)] bg-[var(--color-admin-bg-soft)] p-3 text-xs text-[var(--color-admin-danger)]">
               {this.state.error.message}
             </pre>
             <div className="mt-4 flex gap-2">
               <button
                 type="button"
                 onClick={this.reset}
-                className="rounded-md border border-[var(--color-admin-border)] bg-white px-4 py-2 text-sm hover:bg-slate-50"
+                className="rounded-md border border-[var(--color-admin-border-strong)] bg-[var(--color-admin-surface-elevated)] px-4 py-2 text-sm text-[var(--color-admin-text)] hover:bg-[var(--color-admin-surface-hover)]"
               >Try again</button>
               <a
                 href="/admin"

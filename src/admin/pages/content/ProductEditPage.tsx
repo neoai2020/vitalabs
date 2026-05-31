@@ -108,7 +108,7 @@ export default function ProductEditPage() {
           </Link>
         }
       />
-      {error ? <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-[var(--color-admin-danger)]">{error}</div> : null}
+      {error ? <div className="mb-4 rounded-md border border-[var(--color-admin-danger)]/30 bg-[var(--color-admin-danger-soft)] px-4 py-3 text-sm text-[var(--color-admin-danger)]">{error}</div> : null}
       <div className="grid gap-4">
         <Card>
           <CardHeader title="Identity" />
@@ -134,7 +134,7 @@ export default function ProductEditPage() {
               <select
                 value={row.status}
                 onChange={e => setField('status', e.target.value as ProductRow['status'])}
-                className="h-10 w-full rounded-md border border-[var(--color-admin-border)] bg-white px-3 text-sm"
+                className="h-10 w-full rounded-md border border-[var(--color-admin-border-strong)] bg-[var(--color-admin-bg-soft)] px-3 text-sm text-[var(--color-admin-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-admin-primary)]"
               >
                 <option value="active">Active</option>
                 <option value="draft">Draft</option>

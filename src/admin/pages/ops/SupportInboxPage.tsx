@@ -91,7 +91,7 @@ export default function SupportInboxPage() {
   return (
     <>
       <PageHeader title="Support inbox" description="Customer support threads. Replies sent here appear in the member's chat in real time." />
-      {error ? <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-[var(--color-admin-danger)]">{error}</div> : null}
+      {error ? <div className="mb-4 rounded-md border border-[var(--color-admin-danger)]/30 bg-[var(--color-admin-danger-soft)] px-4 py-3 text-sm text-[var(--color-admin-danger)]">{error}</div> : null}
       <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
         <Card className="h-fit">
           <CardHeader title={loading ? 'Loading…' : `${threads.length} threads`} />
@@ -101,7 +101,7 @@ export default function SupportInboxPage() {
                 <li key={t.threadId}>
                   <button
                     onClick={() => setActive(t.threadId)}
-                    className={`w-full px-4 py-3 text-left text-sm hover:bg-slate-50 ${active === t.threadId ? 'bg-slate-100' : ''}`}
+                    className={`w-full px-4 py-3 text-left text-sm transition-colors hover:bg-[var(--color-admin-surface-hover)] ${active === t.threadId ? 'bg-[var(--color-admin-surface-elevated)]' : ''}`}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-mono text-xs text-[var(--color-admin-muted)]">{t.threadId.slice(0, 8)}…</span>
@@ -130,10 +130,10 @@ export default function SupportInboxPage() {
                   <div key={m.id} className={`flex ${m.sender === 'user' ? 'justify-start' : 'justify-end'}`}>
                     <div className={`max-w-md rounded-lg px-3 py-2 text-sm ${
                       m.sender === 'user'
-                        ? 'bg-slate-100'
+                        ? 'bg-[var(--color-admin-surface-elevated)] text-[var(--color-admin-text)]'
                         : m.sender === 'agent'
                         ? 'bg-[var(--color-admin-primary)] text-white'
-                        : 'bg-amber-50 text-amber-900'
+                        : 'bg-[var(--color-admin-warning-soft)] text-[var(--color-admin-warning)]'
                     }`}>
                       <div className="text-xs opacity-70">{m.sender} · {new Date(m.created_at).toLocaleString()}</div>
                       <div className="mt-1 whitespace-pre-wrap">{m.body}</div>

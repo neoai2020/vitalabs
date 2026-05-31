@@ -60,9 +60,9 @@ async function loadCounters(brand: 'vitalabs' | 'peptiva'): Promise<Counters> {
 
 function Stat({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
-    <div className="rounded-lg border border-[var(--color-admin-border)] bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-[var(--color-admin-border)] bg-[var(--color-admin-surface)] p-5">
       <div className="text-xs uppercase tracking-wide text-[var(--color-admin-muted)]">{label}</div>
-      <div className="mt-2 text-3xl font-semibold text-[var(--color-admin-text)]">{value}</div>
+      <div className="mt-2 text-3xl font-semibold text-[var(--color-admin-text-strong)]">{value}</div>
       {sub ? <div className="mt-1 text-xs text-[var(--color-admin-muted)]">{sub}</div> : null}
     </div>
   )
@@ -92,7 +92,7 @@ export default function DashboardPage() {
         description={`Managing ${BRAND_LABELS[brand]}. Use the navigation on the left to edit site config, content, operations, and marketing.`}
       />
 
-      {error ? <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-[var(--color-admin-danger)]">{error}</div> : null}
+      {error ? <div className="mb-4 rounded-md border border-[var(--color-admin-danger)]/30 bg-[var(--color-admin-danger-soft)] px-4 py-3 text-sm text-[var(--color-admin-danger)]">{error}</div> : null}
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Stat label="Orders today" value={loading ? '…' : counters.ordersToday} />

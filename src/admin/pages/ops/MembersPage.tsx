@@ -22,7 +22,7 @@ export default function MembersPage() {
           <p className="mt-3 text-sm text-[var(--color-admin-muted)]">
             To grant admin to a user, run in the SQL editor:
           </p>
-          <pre className="mt-2 overflow-x-auto rounded-md bg-slate-50 p-3 text-xs">
+          <pre className="mt-2 overflow-x-auto rounded-md border border-[var(--color-admin-border)] bg-[var(--color-admin-bg-soft)] p-3 text-xs text-[var(--color-admin-text)]">
 {`update auth.users
 set raw_app_meta_data = jsonb_set(
   coalesce(raw_app_meta_data, '{}'::jsonb),

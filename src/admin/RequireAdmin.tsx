@@ -24,11 +24,11 @@ export function RequireAdmin({ children }: Props) {
   if (!user.isAdmin) {
     return (
       <div className="admin-root flex min-h-screen items-center justify-center px-6">
-        <div className="max-w-md rounded-lg border border-[var(--color-admin-border)] bg-white p-6 shadow-sm">
-          <h1 className="text-lg font-semibold">Admin access required</h1>
+        <div className="max-w-md rounded-xl border border-[var(--color-admin-border)] bg-[var(--color-admin-surface)] p-6 shadow-2xl">
+          <h1 className="text-lg font-semibold text-[var(--color-admin-text-strong)]">Admin access required</h1>
           <p className="mt-2 text-sm text-[var(--color-admin-muted)]">
             Your account ({user.email}) does not have admin permissions. Ask another
-            administrator to grant the <code>is_admin</code> flag on your user, or
+            administrator to grant the <code className="rounded bg-[var(--color-admin-bg-soft)] px-1 py-0.5 text-xs text-[var(--color-admin-text)]">is_admin</code> flag on your user, or
             sign in with a different account.
           </p>
         </div>

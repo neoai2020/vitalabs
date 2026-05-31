@@ -19,12 +19,12 @@ interface OrderRow {
 }
 
 const STATUS_COLOURS: Record<OrderRow['status'], string> = {
-  pending: 'bg-amber-100 text-amber-700',
-  paid: 'bg-emerald-100 text-emerald-700',
-  fulfilled: 'bg-blue-100 text-blue-700',
-  refunded: 'bg-rose-100 text-rose-700',
-  cancelled: 'bg-slate-100 text-slate-700',
-  failed: 'bg-red-100 text-red-700',
+  pending: 'bg-[var(--color-admin-warning-soft)] text-[var(--color-admin-warning)]',
+  paid: 'bg-[var(--color-admin-success-soft)] text-[var(--color-admin-success)]',
+  fulfilled: 'bg-[var(--color-admin-primary-soft)] text-[var(--color-admin-primary)]',
+  refunded: 'bg-[var(--color-admin-warning-soft)] text-[var(--color-admin-warning)]',
+  cancelled: 'bg-[var(--color-admin-surface-elevated)] text-[var(--color-admin-muted)]',
+  failed: 'bg-[var(--color-admin-danger-soft)] text-[var(--color-admin-danger)]',
 }
 
 function downloadCsv(orders: OrderRow[]) {

@@ -65,23 +65,33 @@ export function AdminNav() {
     <nav className="flex flex-col gap-6 p-4">
       {NAV.map(group => (
         <div key={group.title}>
-          <h3 className="mb-2 px-2 text-xs font-semibold uppercase tracking-wide text-[var(--color-admin-muted)]">
+          <h3 className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-[var(--color-admin-subtle)]">
             {group.title}
           </h3>
-          <ul className="flex flex-col gap-1">
+          <ul className="flex flex-col gap-0.5">
             {group.items.map(item => (
               <li key={item.to}>
                 <NavLink
                   to={item.to}
                   end={item.end}
                   className={({ isActive }) => cn(
-                    'block rounded-md px-3 py-1.5 text-sm transition-colors',
+                    'group relative flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-all',
                     isActive
-                      ? 'bg-[var(--color-admin-primary)] text-white'
-                      : 'text-[var(--color-admin-text)] hover:bg-slate-100',
+                      ? 'bg-[var(--color-admin-primary-soft)] text-[var(--color-admin-text-strong)] font-medium'
+                      : 'text-[var(--color-admin-muted)] hover:bg-[var(--color-admin-surface-hover)] hover:text-[var(--color-admin-text)]',
                   )}
                 >
-                  {item.label}
+                  {({ isActive }) => (
+                    <>
+                      {isActive ? (
+                        <span
+                          aria-hidden
+                          className="absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-r bg-[var(--color-admin-primary)]"
+                        />
+                      ) : null}
+                      <span>{item.label}</span>
+                    </>
+                  )}
                 </NavLink>
               </li>
             ))}

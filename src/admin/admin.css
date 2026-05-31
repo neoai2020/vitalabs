@@ -3,29 +3,47 @@
  * reset) so the public site's custom CSS in src/index.css and
  * src/storefront.css is not affected. Admin components use Tailwind
  * utilities; the rest of the app is untouched.
+ *
+ * Palette: full dark, Linear/Cursor-inspired. Two surface levels
+ * (bg + surface) and two border weights for hierarchy without
+ * harsh contrasts. Indigo accent works across both brands.
  */
 @import "tailwindcss/theme" layer(theme);
 @import "tailwindcss/utilities" layer(utilities);
 
 @theme {
-  --color-admin-bg: #f8fafc;
-  --color-admin-surface: #ffffff;
-  --color-admin-border: #e2e8f0;
-  --color-admin-text: #0f172a;
-  --color-admin-muted: #64748b;
-  --color-admin-primary: #143F66;
-  --color-admin-primary-hover: #0f3358;
-  --color-admin-danger: #dc2626;
-  --color-admin-success: #16a34a;
-  --color-admin-warning: #d97706;
+  --color-admin-bg: #08090b;
+  --color-admin-bg-soft: #0c0d10;
+  --color-admin-surface: #131317;
+  --color-admin-surface-elevated: #1b1b21;
+  --color-admin-surface-hover: #1f1f26;
+  --color-admin-border: #1f1f25;
+  --color-admin-border-strong: #2a2a32;
+  --color-admin-text: #ececee;
+  --color-admin-text-strong: #ffffff;
+  --color-admin-muted: #82828b;
+  --color-admin-subtle: #5e5e67;
+  --color-admin-primary: #6366f1;
+  --color-admin-primary-hover: #818cf8;
+  --color-admin-primary-soft: rgba(99, 102, 241, 0.12);
+  --color-admin-danger: #f87171;
+  --color-admin-danger-soft: rgba(248, 113, 113, 0.12);
+  --color-admin-success: #34d399;
+  --color-admin-success-soft: rgba(52, 211, 153, 0.12);
+  --color-admin-warning: #fbbf24;
+  --color-admin-warning-soft: rgba(251, 191, 36, 0.12);
 }
 
 /* Scoped reset for the admin shell only */
 .admin-root {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   color: var(--color-admin-text);
   background: var(--color-admin-bg);
   min-height: 100vh;
+  color-scheme: dark;
 }
 
 .admin-root *,
@@ -34,6 +52,49 @@
   box-sizing: border-box;
 }
 
-.admin-root button {
+.admin-root button,
+.admin-root input,
+.admin-root textarea,
+.admin-root select {
   font-family: inherit;
+}
+
+/* Inputs render with the platform's dark colour scheme so autofill, date
+   pickers etc. don't flash white. */
+.admin-root input,
+.admin-root textarea,
+.admin-root select {
+  color-scheme: dark;
+}
+
+/* Subtle scrollbars that fit the dark UI */
+.admin-root *::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.admin-root *::-webkit-scrollbar-track {
+  background: transparent;
+}
+.admin-root *::-webkit-scrollbar-thumb {
+  background: #2a2a32;
+  border-radius: 6px;
+  border: 2px solid var(--color-admin-bg);
+}
+.admin-root *::-webkit-scrollbar-thumb:hover {
+  background: #3a3a44;
+}
+
+/* Soft focus ring for any element that opts in via .admin-focus */
+.admin-root .admin-focus:focus-visible {
+  outline: 2px solid var(--color-admin-primary);
+  outline-offset: 2px;
+}
+
+/* Live preview chrome — used in marketing pages */
+.admin-preview-frame {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px var(--color-admin-border-strong), 0 20px 40px -20px rgba(0, 0, 0, 0.6);
 }

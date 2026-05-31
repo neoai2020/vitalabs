@@ -64,7 +64,7 @@ export default function ContentBlocksPage() {
         </CardBody>
       </Card>
 
-      {error ? <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-[var(--color-admin-danger)]">{error}</div> : null}
+      {error ? <div className="mb-4 rounded-md border border-[var(--color-admin-danger)]/30 bg-[var(--color-admin-danger-soft)] px-4 py-3 text-sm text-[var(--color-admin-danger)]">{error}</div> : null}
 
       {isLoading ? (
         <Card><CardBody className="text-sm text-[var(--color-admin-muted)]">Loading…</CardBody></Card>
@@ -87,7 +87,7 @@ export default function ContentBlocksPage() {
                     />
                   </Label>
                 ) : (
-                  <pre className="overflow-x-auto rounded-md bg-slate-50 p-3 text-xs">{JSON.stringify(block.value, null, 2)}</pre>
+                  <pre className="overflow-x-auto rounded-md border border-[var(--color-admin-border)] bg-[var(--color-admin-bg-soft)] p-3 text-xs text-[var(--color-admin-text)]">{JSON.stringify(block.value, null, 2)}</pre>
                 )}
               </CardBody>
               <CardFooter>

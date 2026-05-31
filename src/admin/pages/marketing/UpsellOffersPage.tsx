@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { PageHeader } from '../../components/PageHeader'
+import { PreviewPanel } from '../../components/PreviewPanel'
 import { Card, CardBody, CardFooter, CardHeader } from '../../components/ui/Card'
 import { Input } from '../../components/ui/Input'
 import { Label } from '../../components/ui/Label'
@@ -49,9 +50,47 @@ export default function UpsellOffersPage() {
     } catch (err) { setError(err instanceof Error ? err.message : 'Failed') }
   }
 
+  const previewUrl = useMemo(() => {
+    const offer = {
+      id: 'preview',
+      product_id: draft.product_id || '17',
+      discount_pct: draft.discount_pct,
+      timer_seconds: draft.timer_seconds,
+      headline: draft.headline || null,
+      subheadline: draft.subheadline || null,
+      cta: draft.cta || null,
+      active: true,
+      sort_order: draft.sort_order,
+    }
+    const encoded = encodeURIComponent(btoa(JSON.stringify(offer)))
+    return `/upsell?preview=1&offer=${encoded}`
+  }, [draft])
+
   return (
     <>
-      <PageHeader title="Upsell offers" description="One-time upsell shown after the quiz. The active offer's timer_seconds drives the countdown on /upsell." />
+      <PageHeader eyebrow="Marketing" title="Upsell offers" description="One-time upsell shown after the quiz. Edit the fields below to change the headline, sub-copy, CTA, discount %, and timer. The preview re-renders as you type." />
+
+      <PreviewPanel
+        className="mb-6"
+        title="Upsell page preview"
+        description="The actual /upsell page rendered with your draft values"
+        defaultViewport="desktop"
+      >
+        {({ height }) => (
+          <iframe
+            key={previewUrl}
+            src={previewUrl}
+            title="Upsell preview"
+            style={{
+              width: '100%',
+              height: height + 80,
+              border: 0,
+              display: 'block',
+              background: '#ffffff',
+            }}
+          />
+        )}
+      </PreviewPanel>
 
       <Card className="mb-4">
         <CardHeader title="Add offer" />
@@ -97,7 +136,7 @@ export default function UpsellOffersPage() {
                   <Td>{o.timer_seconds}s</Td>
                   <Td className="max-w-xs truncate">{o.headline ?? '—'}</Td>
                   <Td>
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${o.active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${o.active ? 'bg-[var(--color-admin-success-soft)] text-[var(--color-admin-success)]' : 'bg-[var(--color-admin-surface-elevated)] text-[var(--color-admin-muted)]'}`}>
                       {o.active ? 'Active' : 'Inactive'}
                     </span>
                   </Td>

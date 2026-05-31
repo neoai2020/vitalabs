@@ -11,7 +11,7 @@ export function BrandSwitcher() {
       <select
         value={brand}
         onChange={e => setBrand(e.target.value as Brand)}
-        className="h-8 rounded-md border border-[var(--color-admin-border)] bg-white px-2 text-sm font-medium text-[var(--color-admin-text)]"
+        className="h-8 rounded-md border border-[var(--color-admin-border-strong)] bg-[var(--color-admin-surface-elevated)] px-2 text-sm font-medium text-[var(--color-admin-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-admin-primary)]"
       >
         {BRANDS.map(b => <option key={b} value={b}>{BRAND_LABELS[b]}</option>)}
       </select>

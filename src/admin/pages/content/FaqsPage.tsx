@@ -50,7 +50,7 @@ export default function FaqsPage() {
         <CardHeader title="Add FAQ" />
         <CardBody className="grid gap-3 sm:grid-cols-2">
           <Label>Page
-            <select className="h-10 rounded-md border border-[var(--color-admin-border)] bg-white px-3 text-sm" value={draft.page} onChange={e => setDraft(d => ({ ...d, page: e.target.value }))}>
+            <select className="h-10 rounded-md border border-[var(--color-admin-border-strong)] bg-[var(--color-admin-bg-soft)] px-3 text-sm text-[var(--color-admin-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-admin-primary)]" value={draft.page} onChange={e => setDraft(d => ({ ...d, page: e.target.value }))}>
               {PAGE_OPTIONS.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
           </Label>

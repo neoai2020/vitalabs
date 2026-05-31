@@ -67,10 +67,10 @@ export default function ProductsListPage() {
                   <Td>
                     <span className={
                       p.status === 'active'
-                        ? 'rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700'
+                        ? 'rounded-full bg-[var(--color-admin-success-soft)] px-2 py-0.5 text-xs font-medium text-[var(--color-admin-success)]'
                         : p.status === 'draft'
-                        ? 'rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700'
-                        : 'rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600'
+                        ? 'rounded-full bg-[var(--color-admin-warning-soft)] px-2 py-0.5 text-xs font-medium text-[var(--color-admin-warning)]'
+                        : 'rounded-full bg-[var(--color-admin-surface-elevated)] px-2 py-0.5 text-xs font-medium text-[var(--color-admin-muted)]'
                     }>{p.status}</span>
                   </Td>
                   <Td className="text-right">
