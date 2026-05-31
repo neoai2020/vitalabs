@@ -13,10 +13,16 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { handleOptions, jsonResponse } from '../_shared/cors.ts'
+import { generateAdCopy } from '../_shared/adCopy.ts'
 
 const HIGGSFIELD_API_BASE = Deno.env.get('HIGGSFIELD_API_BASE') ?? 'https://api.higgsfield.ai'
 
 type Brand = 'vitalabs' | 'peptiva'
+
+const BRAND_NAMES: Record<Brand, string> = {
+  vitalabs: 'Vita Labs',
+  peptiva: 'Peptiva',
+}
 
 interface JobStatus {
   job_id: string
@@ -234,6 +240,32 @@ async function finaliseSuccess(opts: FinaliseOpts): Promise<string | null> {
     }
   }
 
+  // Best-effort Facebook ad copy generation. Pulls product + brand context
+  // so the copywriter brief matches the visual prompt the model was given.
+  // Failures are swallowed — the creative still ships without copy and
+  // the operator can regenerate copy from the library.
+  let adCopy: Awaited<ReturnType<typeof generateAdCopy>> = null
+  const geminiKey = Deno.env.get('GEMINI_API_KEY')
+  if (geminiKey && params.product_id) {
+    const { data: product } = await opts.admin
+      .from('products')
+      .select('compound, tagline, benefits')
+      .eq('brand', opts.job.brand)
+      .eq('id', params.product_id)
+      .maybeSingle() as { data: { compound?: string; tagline?: string | null; benefits?: string[] | null } | null }
+    if (product?.compound) {
+      adCopy = await generateAdCopy(geminiKey, {
+        brand_name: BRAND_NAMES[opts.job.brand],
+        product_name: product.compound,
+        product_tagline: product.tagline ?? '',
+        primary_benefit: product.benefits?.[0] ?? product.tagline ?? 'better daily performance',
+        creative_angle: params.preset ?? 'ugc',
+        visual_prompt: params.prompt ?? '',
+        kind: 'video',
+      })
+    }
+  }
+
   const { data: creativeRow, error: insertErr } = await opts.admin
     .from('ad_creatives')
     .insert({
@@ -249,7 +281,11 @@ async function finaliseSuccess(opts: FinaliseOpts): Promise<string | null> {
       public_url: '',
       thumbnail_url: thumbnailUrl,
       status: 'ready',
-      metadata: { model_id: params.model_id, external_id: opts.job.id },
+      metadata: {
+        model_id: params.model_id,
+        external_id: opts.job.id,
+        ad_copy: adCopy ?? null,
+      },
     })
     .select('id')
     .single()

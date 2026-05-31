@@ -26,6 +26,7 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { handleOptions, jsonResponse } from '../_shared/cors.ts'
+import { generateAdCopy } from '../_shared/adCopy.ts'
 
 const GEMINI_MODEL = 'gemini-2.5-flash-image'
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1/models/${GEMINI_MODEL}:generateContent`
@@ -185,6 +186,19 @@ serve(async (req: Request) => {
       continue
     }
 
+    // Best-effort Facebook ad copy generation. Run before the row insert
+    // so the metadata lands in a single write — copy failures are
+    // tolerated (creative still ships, copy can be regenerated later).
+    const adCopy = await generateAdCopy(apiKey, {
+      brand_name: BRAND_NAMES[body.brand],
+      product_name: product.compound,
+      product_tagline: product.tagline ?? '',
+      primary_benefit: (product.benefits?.[0] ?? product.tagline ?? 'better daily performance'),
+      creative_angle: body.hook_id,
+      visual_prompt: filledPrompt,
+      kind: 'image',
+    })
+
     // Insert the row first so we have a stable id for the storage path,
     // then upload the bytes and patch the row with the public URL.
     const { data: row, error: insertErr } = await admin
@@ -200,7 +214,11 @@ serve(async (req: Request) => {
         storage_path: '',
         public_url: '',
         status: 'ready',
-        metadata: { hook_id: body.hook_id, variant_index: i },
+        metadata: {
+          hook_id: body.hook_id,
+          variant_index: i,
+          ad_copy: adCopy ?? null,
+        },
       })
       .select('id')
       .single()

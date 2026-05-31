@@ -44,6 +44,23 @@ interface CreativeRow {
   starred: boolean
   created_at: string
   product_id: string | null
+  metadata: CreativeMetadata | null
+}
+
+interface CreativeMetadata {
+  hook_id?: string
+  variant_index?: number
+  ad_copy?: AdCopy | null
+  [key: string]: unknown
+}
+
+interface AdCopy {
+  primary_text: string
+  headlines: string[]
+  description: string
+  cta: string
+  hook_angle: string
+  compliance_note: string
 }
 
 interface JobRow {
@@ -548,30 +565,108 @@ function CreativeLibrary({ creatives, loading, products }: LibraryProps) {
         ) : (
           creatives.slice(0, 20).map(c => {
             const product = c.product_id ? productById.get(c.product_id) : null
+            const copy = c.metadata?.ad_copy ?? null
             return (
-              <div key={c.id} className="flex gap-3 rounded-lg border border-[var(--color-admin-border)] bg-[var(--color-admin-bg-soft)] p-2">
-                <div className="h-20 w-20 shrink-0 overflow-hidden rounded-md bg-[var(--color-admin-surface)]">
-                  {c.kind === 'image' ? (
-                    <img src={c.public_url} alt="" className="h-full w-full object-cover" />
-                  ) : c.thumbnail_url ? (
-                    <img src={c.thumbnail_url} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="grid h-full w-full place-items-center text-[10px] text-[var(--color-admin-muted)]">VIDEO</div>
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <div className="truncate text-sm font-medium text-[var(--color-admin-text-strong)]">{product?.compound ?? '—'}</div>
-                    <span className="shrink-0 text-[10px] uppercase tracking-wider text-[var(--color-admin-muted)]">{c.kind} · {c.aspect_ratio}</span>
+              <div key={c.id} className="flex flex-col gap-2 rounded-lg border border-[var(--color-admin-border)] bg-[var(--color-admin-bg-soft)] p-2">
+                <div className="flex gap-3">
+                  <div className="h-20 w-20 shrink-0 overflow-hidden rounded-md bg-[var(--color-admin-surface)]">
+                    {c.kind === 'image' ? (
+                      <img src={c.public_url} alt="" className="h-full w-full object-cover" />
+                    ) : c.thumbnail_url ? (
+                      <img src={c.thumbnail_url} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="grid h-full w-full place-items-center text-[10px] text-[var(--color-admin-muted)]">VIDEO</div>
+                    )}
                   </div>
-                  <div className="mt-0.5 text-xs text-[var(--color-admin-muted)]">{c.generator}</div>
-                  {c.prompt ? <div className="mt-1 line-clamp-2 text-xs text-[var(--color-admin-muted)]">{c.prompt}</div> : null}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <div className="truncate text-sm font-medium text-[var(--color-admin-text-strong)]">{product?.compound ?? '—'}</div>
+                      <span className="shrink-0 text-[10px] uppercase tracking-wider text-[var(--color-admin-muted)]">{c.kind} · {c.aspect_ratio}</span>
+                    </div>
+                    <div className="mt-0.5 text-xs text-[var(--color-admin-muted)]">{c.generator}</div>
+                    {c.prompt ? <div className="mt-1 line-clamp-2 text-xs text-[var(--color-admin-muted)]">{c.prompt}</div> : null}
+                  </div>
                 </div>
+                {copy ? <AdCopyPanel copy={copy} /> : null}
               </div>
             )
           })
         )}
       </CardBody>
     </Card>
+  )
+}
+
+
+/* Renders the Facebook ad copy bundle with one-click copy buttons next
+ * to each paste target. Three headlines because Meta's Advantage+ surface
+ * accepts up to five and rotates — three is plenty without overwhelming
+ * the operator. */
+function AdCopyPanel({ copy }: { copy: AdCopy }) {
+  return (
+    <div className="rounded-md border border-[var(--color-admin-border)] bg-[var(--color-admin-surface)] p-2.5">
+      <div className="flex items-center justify-between gap-2">
+        <div className="text-[10px] uppercase tracking-wider text-[var(--color-admin-muted)]">Facebook copy</div>
+        <span className="rounded bg-[var(--color-admin-bg-soft)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--color-admin-text-strong)]">
+          CTA: {copy.cta}
+        </span>
+      </div>
+
+      {copy.hook_angle ? (
+        <div className="mt-1.5 text-[11.5px] italic text-[var(--color-admin-muted)]">
+          Angle: {copy.hook_angle}
+        </div>
+      ) : null}
+
+      <CopyableField label="Primary text" value={copy.primary_text} multiline />
+
+      <div className="mt-1.5">
+        <div className="text-[10px] uppercase tracking-wider text-[var(--color-admin-muted)]">Headlines</div>
+        <div className="mt-0.5 flex flex-col gap-1">
+          {copy.headlines.map((h, idx) => (
+            <CopyableField key={idx} label={`#${idx + 1}`} value={h} />
+          ))}
+        </div>
+      </div>
+
+      <CopyableField label="Description" value={copy.description} />
+
+      {copy.compliance_note && copy.compliance_note.toLowerCase() !== 'none — copy reads policy-safe' ? (
+        <div className="mt-1.5 rounded bg-[var(--color-admin-warning-soft)] px-2 py-1 text-[11px] text-[var(--color-admin-warning)]">
+          ⚠ {copy.compliance_note}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+
+function CopyableField({ label, value, multiline = false }: { label: string; value: string; multiline?: boolean }) {
+  const [copied, setCopied] = useState(false)
+  const onCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(value)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 1200)
+    } catch {
+      // Clipboard can fail on insecure contexts; nothing graceful to do.
+    }
+  }
+  return (
+    <div className="mt-1.5">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-[10px] uppercase tracking-wider text-[var(--color-admin-muted)]">{label}</span>
+        <button
+          type="button"
+          onClick={() => void onCopy()}
+          className="rounded border border-[var(--color-admin-border)] bg-[var(--color-admin-bg-soft)] px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[var(--color-admin-text-strong)] transition-colors hover:border-[var(--color-admin-border-emphasis)]"
+        >
+          {copied ? 'Copied' : 'Copy'}
+        </button>
+      </div>
+      <div className={`mt-0.5 text-xs text-[var(--color-admin-text-strong)] ${multiline ? '' : 'truncate'}`}>
+        {value}
+      </div>
+    </div>
   )
 }
