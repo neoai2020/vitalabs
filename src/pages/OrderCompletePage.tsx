@@ -5,6 +5,7 @@ import { fireCapiEvent, newEventId } from '../lib/tracking/capi'
 import { trackEvent } from '../lib/analytics'
 
 interface OrderInfo {
+  brand?: 'vitalabs' | 'peptiva'
   description?: string
   displayPrice?: string
   amount?: number
@@ -78,6 +79,9 @@ export default function OrderCompletePage() {
           webhookSent.current = true
           supabase.functions.invoke('order-webhook', {
             body: {
+              // brand attributes the order on the shared DB so peptiva
+              // sales don't accidentally show under vitalabs.
+              brand: parsed.brand,
               customerName: parsed.customerName,
               customerEmail: parsed.customerEmail,
               customerPhone: parsed.customerPhone,
@@ -85,7 +89,7 @@ export default function OrderCompletePage() {
               items: parsed.items,
               amount: parsed.amount,
             },
-          }).catch(err => console.error('[OrderComplete] Zapier webhook failed:', err))
+          }).catch(err => console.error('[OrderComplete] order webhook failed:', err))
         }
       }
     } catch { /* ignore */ }

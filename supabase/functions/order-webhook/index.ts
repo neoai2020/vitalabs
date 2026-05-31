@@ -61,21 +61,24 @@ serve(async (req: Request) => {
     })
   }
 
-  const zapierUrl = Deno.env.get('ZAPIER_WEBHOOK_URL')
-  if (!zapierUrl) {
-    console.error('[order-webhook] ZAPIER_WEBHOOK_URL secret is not set')
-    return new Response(JSON.stringify({ error: 'Webhook not configured' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
-  }
-
   try {
     const body = await req.json()
 
-    // Persist to Supabase first (best-effort) so the admin orders
-    // dashboard reflects the sale even if Zapier is down.
+    // Persist to Supabase FIRST as the source of truth. Even if Zapier
+    // is misconfigured or down, the order must land in the admin
+    // dashboard. Previously this function bailed with 500 when
+    // ZAPIER_WEBHOOK_URL was missing — which silently dropped every
+    // order on the floor.
     await persistOrder(body)
+
+    const zapierUrl = Deno.env.get('ZAPIER_WEBHOOK_URL')
+    if (!zapierUrl) {
+      console.warn('[order-webhook] ZAPIER_WEBHOOK_URL not set; order persisted, skipping Zapier')
+      return new Response(JSON.stringify({ persisted: true, zapier: 'skipped' }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     const items = body.items ?? []
     const productNames = items.map((i: { sku?: string; compound?: string }) =>
@@ -88,6 +91,7 @@ serve(async (req: Request) => {
       : totalGBP
 
     const payload = {
+      brand: resolveBrand(body),
       name: body.customerName ?? '',
       email: body.customerEmail ?? '',
       phone: body.customerPhone ?? '',
@@ -104,8 +108,6 @@ serve(async (req: Request) => {
       order_date: new Date().toISOString(),
     }
 
-    console.log('[order-webhook] Sending to Zapier:', JSON.stringify(payload))
-
     const zapierRes = await fetch(zapierUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -114,10 +116,11 @@ serve(async (req: Request) => {
 
     if (!zapierRes.ok) {
       const errText = await zapierRes.text()
+      // Zapier failure is non-fatal — order is already persisted.
       console.error(`[order-webhook] Zapier returned ${zapierRes.status}: ${errText}`)
     }
 
-    return new Response(JSON.stringify({ sent: true }), {
+    return new Response(JSON.stringify({ persisted: true, zapier: zapierRes.ok ? 'sent' : 'failed' }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })

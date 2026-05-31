@@ -10,6 +10,7 @@ import {
 import { useCart } from '../lib/cart'
 import { redeemPromoCode } from '../lib/marketing'
 import { trackEvent } from '../lib/analytics'
+import { getBrand } from '../lib/config/brand'
 
 type Status = 'idle' | 'loading' | 'ready' | 'submitting' | 'succeeded' | 'failed'
 
@@ -204,6 +205,10 @@ export default function CheckoutPage() {
         redemptionToken: promo?.token,
         subtotal: state.amount,
         metadata: {
+          // brand goes on the PaymentIntent so the Uprails server-to-server
+          // webhook can attribute the order to the right brand on the
+          // shared database.
+          brand: getBrand(),
           skus,
           quantity: String(state.quantity),
           shipping_name: meta.customerName,
@@ -298,6 +303,7 @@ export default function CheckoutPage() {
     const returnPath = state?.returnPath || '/order-complete'
 
     sessionStorage.setItem('vitalabs-last-order', JSON.stringify({
+      brand: getBrand(),
       description: state?.description,
       displayPrice: state?.displayPrice,
       amount: state?.amount,
