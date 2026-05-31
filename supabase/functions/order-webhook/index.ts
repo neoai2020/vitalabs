@@ -1,9 +1,52 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
+}
+
+type Brand = 'vitalabs' | 'peptiva'
+
+function resolveBrand(body: { brand?: string }): Brand {
+  return body.brand === 'peptiva' ? 'peptiva' : 'vitalabs'
+}
+
+async function persistOrder(body: Record<string, unknown>): Promise<void> {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+  if (!supabaseUrl || !serviceKey) {
+    console.warn('[order-webhook] Supabase env not set; skipping DB persist')
+    return
+  }
+  const sb = createClient(supabaseUrl, serviceKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  })
+  const totalPence = typeof body.amount === 'number' ? body.amount : 0
+  const items = Array.isArray(body.items) ? body.items : []
+  const brand = resolveBrand(body)
+  const { error } = await sb.from('orders').insert({
+    brand,
+    stripe_id: typeof body.stripeId === 'string' ? body.stripeId : null,
+    uprails_id: typeof body.uprailsId === 'string' ? body.uprailsId : null,
+    email: typeof body.customerEmail === 'string' ? body.customerEmail : null,
+    customer_name: typeof body.customerName === 'string' ? body.customerName : null,
+    items,
+    subtotal: totalPence > 0 ? totalPence / 100 : null,
+    total: totalPence / 100,
+    currency: typeof body.currency === 'string' ? body.currency : 'GBP',
+    status: 'paid',
+    payment_method: typeof body.paymentMethod === 'string' ? body.paymentMethod : null,
+    metadata: {
+      shippingAddress: body.shippingAddress ?? null,
+      phone: body.customerPhone ?? null,
+      utm: body.utm ?? null,
+    },
+  })
+  if (error) {
+    console.error('[order-webhook] Supabase insert failed:', error.message)
+  }
 }
 
 serve(async (req: Request) => {
@@ -29,6 +72,10 @@ serve(async (req: Request) => {
 
   try {
     const body = await req.json()
+
+    // Persist to Supabase first (best-effort) so the admin orders
+    // dashboard reflects the sale even if Zapier is down.
+    await persistOrder(body)
 
     const items = body.items ?? []
     const productNames = items.map((i: { sku?: string; compound?: string }) =>

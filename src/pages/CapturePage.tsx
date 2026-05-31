@@ -2,6 +2,20 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { loadQuiz, saveQuiz } from '../lib/quizStorage'
 import { scheduleVapiCall } from '../lib/vapiCall'
+import { supabase } from '../lib/supabase'
+import { getBrand } from '../lib/config/brand'
+
+function readUtm(): Record<string, string> {
+  try {
+    const params = new URLSearchParams(window.location.search)
+    const utm: Record<string, string> = {}
+    for (const key of ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term']) {
+      const v = params.get(key)
+      if (v) utm[key] = v
+    }
+    return utm
+  } catch { return {} }
+}
 
 export default function CapturePage() {
   const navigate = useNavigate()
@@ -10,7 +24,7 @@ export default function CapturePage() {
   const [phone, setPhone] = useState('')
   const [error, setError] = useState('')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!firstName.trim()) { setError('Please enter your first name'); return }
     if (!email.trim() || !email.includes('@')) { setError('Please enter a valid email'); return }
@@ -22,6 +36,21 @@ export default function CapturePage() {
       phone: phone.trim() || '',
     }
     saveQuiz(answers)
+
+    // Best-effort lead insert; never blocks the funnel even if the
+    // Supabase call fails (network down, RLS misconfigured, etc.).
+    const utm = readUtm()
+    void supabase.from('leads').insert({
+      brand: getBrand(),
+      email: email.trim(),
+      first_name: firstName.trim(),
+      phone: phone.trim() || null,
+      source: 'quiz',
+      quiz_results: answers,
+      utm: Object.keys(utm).length ? utm : null,
+    }).then(({ error: leadError }) => {
+      if (leadError) console.warn('[lead] insert failed:', leadError.message)
+    })
 
     if (answers.lead.phone) {
       scheduleVapiCall(answers).then(result => {

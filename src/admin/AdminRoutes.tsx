@@ -15,6 +15,10 @@ import FaqsPage from './pages/content/FaqsPage'
 import ContentBlocksPage from './pages/content/ContentBlocksPage'
 import LegalPagesPage from './pages/content/LegalPagesPage'
 import QuizPage from './pages/content/QuizPage'
+import OrdersPage from './pages/ops/OrdersPage'
+import LeadsPage from './pages/ops/LeadsPage'
+import MembersPage from './pages/ops/MembersPage'
+import SupportInboxPage from './pages/ops/SupportInboxPage'
 
 /**
  * All /admin/* routes. Wrapped in <RequireAdmin> so unauthenticated users
@@ -49,6 +53,14 @@ export function AdminRoutes() {
             <Route path="blocks" element={<ContentBlocksPage />} />
             <Route path="legal" element={<LegalPagesPage />} />
             <Route path="quiz" element={<QuizPage />} />
+          </Route>
+
+          <Route path="ops">
+            <Route index element={<Navigate to="orders" replace />} />
+            <Route path="orders" element={<OrdersPage />} />
+            <Route path="leads" element={<LeadsPage />} />
+            <Route path="members" element={<MembersPage />} />
+            <Route path="support" element={<SupportInboxPage />} />
           </Route>
 
           <Route path="*" element={<DashboardPage />} />

@@ -1,12 +1,29 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { SUPPORT_ARTICLES } from '../data/memberData'
+import { supabase } from '../../lib/supabase'
+import { getBrand } from '../../lib/config/brand'
 
 interface ChatMessage {
   id: string
-  sender: 'user' | 'expert'
+  sender: 'user' | 'expert' | 'system'
   text: string
   time: string
+}
+
+interface SupportMessageRow {
+  id: string
+  sender: 'user' | 'agent' | 'system'
+  body: string
+  created_at: string
+}
+
+function formatTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+}
+
+function dbSenderToUi(s: 'user' | 'agent' | 'system'): ChatMessage['sender'] {
+  return s === 'agent' ? 'expert' : s
 }
 
 const EXPERT_RESPONSES: Record<string, string> = {
@@ -41,37 +58,99 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 
 export default function SupportPage() {
   const { user } = useAuth()
+  const threadId = user?.id ?? ''
   const [activeTab, setActiveTab] = useState<'chat' | 'knowledge' | 'contact'>('chat')
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: '1', sender: 'expert', text: `Hey ${user?.firstName}! I'm your dedicated Vita Labs support specialist. How can I help you today? You can ask me about your protocol, dosing, side effects, or anything else.`, time: 'Just now' },
-  ])
+  const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [typing, setTyping] = useState(false)
   const chatEndRef = useRef<HTMLDivElement>(null)
   const [filterCategory, setFilterCategory] = useState<string>('All')
 
+  // Load prior messages on mount and subscribe to new agent replies.
+  useEffect(() => {
+    if (!user || !threadId) return
+    let cancelled = false
+    void supabase
+      .from('support_messages')
+      .select('id, sender, body, created_at')
+      .eq('thread_id', threadId)
+      .eq('brand', getBrand())
+      .order('created_at', { ascending: true })
+      .then(({ data }) => {
+        if (cancelled) return
+        const rows = (data ?? []) as SupportMessageRow[]
+        if (rows.length === 0) {
+          setMessages([{
+            id: 'welcome',
+            sender: 'expert',
+            text: `Hey ${user.firstName}! I'm your dedicated Vita Labs support specialist. How can I help you today? You can ask me about your protocol, dosing, side effects, or anything else.`,
+            time: 'Just now',
+          }])
+        } else {
+          setMessages(rows.map(r => ({
+            id: r.id,
+            sender: dbSenderToUi(r.sender),
+            text: r.body,
+            time: formatTime(r.created_at),
+          })))
+        }
+      })
+
+    const channel = supabase
+      .channel(`support:${threadId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'support_messages', filter: `thread_id=eq.${threadId}` }, payload => {
+        const row = payload.new as SupportMessageRow
+        // Skip messages we already added optimistically (user's own).
+        if (row.sender === 'user') return
+        setMessages(prev => [...prev, {
+          id: row.id,
+          sender: dbSenderToUi(row.sender),
+          text: row.body,
+          time: formatTime(row.created_at),
+        }])
+      })
+      .subscribe()
+
+    return () => { cancelled = true; void supabase.removeChannel(channel) }
+  }, [user, threadId])
+
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const sendMessage = () => {
-    if (!input.trim()) return
-    const userMsg: ChatMessage = {
-      id: 'm' + Date.now(),
+  const sendMessage = async () => {
+    if (!input.trim() || !user || !threadId) return
+    const text = input.trim()
+    const optimistic: ChatMessage = {
+      id: 'tmp-' + Date.now(),
       sender: 'user',
-      text: input.trim(),
+      text,
       time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
     }
-    setMessages(prev => [...prev, userMsg])
-    const reply = getExpertReply(input)
+    setMessages(prev => [...prev, optimistic])
     setInput('')
-    setTyping(true)
 
+    void supabase.from('support_messages').insert({
+      brand: getBrand(),
+      thread_id: threadId,
+      user_id: user.id,
+      sender: 'user',
+      body: text,
+    }).then(({ error }) => {
+      if (error) console.warn('[support] user insert failed:', error.message)
+    })
+
+    // Canned auto-reply stays so users get an instant response while a
+    // human admin reply is pending. Kept local-only — RLS only lets a
+    // user insert their own user-sender rows; the agent/system replies
+    // come from the admin inbox or future Edge Function.
+    const reply = getExpertReply(text)
+    setTyping(true)
     setTimeout(() => {
       setTyping(false)
       setMessages(prev => [...prev, {
-        id: 'r' + Date.now(),
-        sender: 'expert',
+        id: 'sys-' + Date.now(),
+        sender: 'system',
         text: reply,
         time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
       }])
