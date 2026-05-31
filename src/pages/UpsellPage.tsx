@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { recommendPeptides } from '../lib/recommend'
 import { loadQuiz } from '../lib/quizStorage'
 import { defaultQuizAnswers } from '../types/quiz'
+import { fetchActiveUpsellOffer, type UpsellOffer } from '../lib/marketing'
 
 const PRICES: Record<string, { was: number; now: number }> = {
   '17': { was: 189, now: 129 },
@@ -23,16 +24,16 @@ function getPrice(id: string) {
   return PRICES[id] || { was: 149, now: 99 }
 }
 
-function UpsellCountdown() {
+function UpsellCountdown({ totalMs }: { totalMs: number }) {
   const [left, setLeft] = useState(() => {
     const stored = sessionStorage.getItem('vitalabs-upsell-timer')
     if (stored) {
       const diff = parseInt(stored, 10) - Date.now()
       return diff > 0 ? diff : 0
     }
-    const end = Date.now() + 10 * 60 * 1000
+    const end = Date.now() + totalMs
     sessionStorage.setItem('vitalabs-upsell-timer', String(end))
-    return 10 * 60 * 1000
+    return totalMs
   })
 
   useEffect(() => {
@@ -93,9 +94,14 @@ export default function UpsellPage() {
   const rec = useMemo(() => valid ? recommendPeptides(answers) : null, [answers, valid])
   const [declining, setDeclining] = useState(false)
 
+  const [offer, setOffer] = useState<UpsellOffer | null>(null)
+
   useEffect(() => {
     window.scrollTo(0, 0)
+    void fetchActiveUpsellOffer().then(setOffer)
   }, [])
+
+  const timerMs = (offer?.timer_seconds ?? 600) * 1000
 
   if (!valid || !rec) {
     return (
@@ -167,7 +173,7 @@ export default function UpsellPage() {
 
   return (
     <div className="up-page">
-      <UpsellCountdown />
+      <UpsellCountdown totalMs={timerMs} />
       <ProgressBar />
 
       {/* WAIT BANNER */}

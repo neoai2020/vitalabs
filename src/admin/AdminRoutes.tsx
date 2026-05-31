@@ -19,6 +19,9 @@ import OrdersPage from './pages/ops/OrdersPage'
 import LeadsPage from './pages/ops/LeadsPage'
 import MembersPage from './pages/ops/MembersPage'
 import SupportInboxPage from './pages/ops/SupportInboxPage'
+import PromoCodesPage from './pages/marketing/PromoCodesPage'
+import UpsellOffersPage from './pages/marketing/UpsellOffersPage'
+import BannersPage from './pages/marketing/BannersPage'
 
 /**
  * All /admin/* routes. Wrapped in <RequireAdmin> so unauthenticated users
@@ -61,6 +64,13 @@ export function AdminRoutes() {
             <Route path="leads" element={<LeadsPage />} />
             <Route path="members" element={<MembersPage />} />
             <Route path="support" element={<SupportInboxPage />} />
+          </Route>
+
+          <Route path="marketing">
+            <Route index element={<Navigate to="promo-codes" replace />} />
+            <Route path="promo-codes" element={<PromoCodesPage />} />
+            <Route path="upsell-offers" element={<UpsellOffersPage />} />
+            <Route path="banners" element={<BannersPage />} />
           </Route>
 
           <Route path="*" element={<DashboardPage />} />

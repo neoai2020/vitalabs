@@ -8,8 +8,73 @@ import {
   type CheckoutState,
 } from '../lib/uprails'
 import { useCart } from '../lib/cart'
+import { validatePromoCode, discountFor, type PromoCode } from '../lib/marketing'
 
 type Status = 'idle' | 'loading' | 'ready' | 'submitting' | 'succeeded' | 'failed'
+
+interface PromoSectionProps {
+  subtotalGBP: number
+  onChange: (next: { code: string; promo: PromoCode | null; discount: number }) => void
+}
+
+function PromoSection({ subtotalGBP, onChange }: PromoSectionProps) {
+  const [code, setCode] = useState('')
+  const [validating, setValidating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [promo, setPromo] = useState<PromoCode | null>(null)
+
+  const apply = async () => {
+    setValidating(true)
+    setError(null)
+    const result = await validatePromoCode(code)
+    setValidating(false)
+    if (!result.ok || !result.promo) {
+      setError(result.error ?? 'Invalid code')
+      setPromo(null)
+      onChange({ code: '', promo: null, discount: 0 })
+      return
+    }
+    setPromo(result.promo)
+    onChange({ code: result.promo.code, promo: result.promo, discount: discountFor(result.promo, subtotalGBP) })
+  }
+
+  const clear = () => {
+    setPromo(null)
+    setCode('')
+    setError(null)
+    onChange({ code: '', promo: null, discount: 0 })
+  }
+
+  return (
+    <div className="ck-promo" style={{ marginTop: 12 }}>
+      {promo ? (
+        <div className="ck-promo-applied" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 8, background: '#ecfdf5', color: '#065f46', fontSize: 13 }}>
+          <span><strong>{promo.code}</strong> applied — {promo.type === 'percent' ? `${promo.value}% off` : `£${promo.value.toFixed(2)} off`}</span>
+          <button type="button" onClick={clear} style={{ background: 'transparent', border: 'none', color: '#065f46', cursor: 'pointer', textDecoration: 'underline', fontSize: 12 }}>Remove</button>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', gap: 8 }}>
+          <input
+            type="text"
+            placeholder="Promo code"
+            value={code}
+            onChange={e => setCode(e.target.value)}
+            style={{ flex: 1, padding: '8px 12px', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 13 }}
+          />
+          <button
+            type="button"
+            onClick={apply}
+            disabled={validating || !code.trim()}
+            style={{ padding: '8px 14px', borderRadius: 6, border: '1px solid #143F66', background: '#143F66', color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer', opacity: validating || !code.trim() ? 0.6 : 1 }}
+          >
+            {validating ? 'Checking…' : 'Apply'}
+          </button>
+        </div>
+      )}
+      {error ? <p style={{ marginTop: 6, fontSize: 12, color: '#b91c1c' }}>{error}</p> : null}
+    </div>
+  )
+}
 
 function useCountdown(startMinutes: number) {
   const [seconds, setSeconds] = useState(startMinutes * 60)
@@ -52,6 +117,8 @@ export default function CheckoutPage() {
   const [shippingCounty, setShippingCounty] = useState('')
   const [shippingPostcode, setShippingPostcode] = useState('')
 
+  const [promo, setPromo] = useState<{ code: string; promo: PromoCode | null; discount: number }>({ code: '', promo: null, discount: 0 })
+
   const customerIdRef = useRef<string | null>(null)
   const hyperRef = useRef<ReturnType<typeof getHyperInstance> | null>(null)
   const widgetsRef = useRef<ReturnType<ReturnType<typeof getHyperInstance>['widgets']> | null>(null)
@@ -69,14 +136,22 @@ export default function CheckoutPage() {
 
       const skus = state.items.map(i => i.sku).join(', ')
 
+      // Promo discount applied client-side. Server-side re-validation
+      // against the promo_codes table is recommended before going live;
+      // current setup matches the pre-existing pattern of trusting the
+      // client-supplied amount in createPaymentIntent.
+      const discountedAmount = Math.max(0, state.amount - Math.round(promo.discount * 100))
+
       const { clientSecret } = await createPaymentIntent({
-        amount: state.amount,
+        amount: discountedAmount,
         currency: 'GBP',
         description: state.description,
         email: customerEmail || state.email,
         metadata: {
           skus,
           quantity: String(state.quantity),
+          promo_code: promo.code,
+          promo_discount: promo.discount > 0 ? promo.discount.toFixed(2) : '',
           shipping_name: customerName,
           shipping_address1: shippingAddress1,
           shipping_address2: shippingAddress2,
@@ -113,7 +188,7 @@ export default function CheckoutPage() {
       setErrorMsg(err instanceof Error ? err.message : 'Failed to load payment form')
       setStatus('failed')
     }
-  }, [state])
+  }, [state, promo.discount])
 
   useEffect(() => {
     initPayment()
@@ -571,12 +646,23 @@ export default function CheckoutPage() {
                 <span>Tax</span>
                 <span>£0.00</span>
               </div>
+              {promo.discount > 0 ? (
+                <div className="ck-summary-row" style={{ color: '#16a34a' }}>
+                  <span>Promo ({promo.code})</span>
+                  <span>−£{promo.discount.toFixed(2)}</span>
+                </div>
+              ) : null}
+
+              <PromoSection
+                subtotalGBP={state.amount / 100}
+                onChange={setPromo}
+              />
 
               <div className="ck-summary-divider" />
 
               <div className="ck-summary-row ck-summary-row--total">
                 <span>TOTAL</span>
-                <span>{state.displayPrice}</span>
+                <span>£{((state.amount / 100) - promo.discount).toFixed(2)}</span>
               </div>
             </div>
 

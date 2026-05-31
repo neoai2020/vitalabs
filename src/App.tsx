@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { CartProvider } from './lib/cart'
 import CartDrawer from './components/CartDrawer'
 import WhatsAppWidget from './components/WhatsAppWidget'
+import Banner from './components/Banner'
 import { AdminRoutes } from './admin/AdminRoutes'
 import { ConfigProvider } from './lib/config/ConfigProvider'
 import { TrackingBoot } from './lib/tracking/TrackingBoot'
@@ -107,6 +108,7 @@ export default function App() {
       <ConfigProvider>
       <CartProvider>
       <ScrollToTop />
+      <Banner />
       <CartDrawer />
       <TrackingBoot />
       <Routes>
