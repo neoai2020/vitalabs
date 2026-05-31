@@ -2,10 +2,11 @@ import { useMemo, useState } from 'react'
 import { PageHeader } from '../../components/PageHeader'
 import { PreviewPanel } from '../../components/PreviewPanel'
 import { Card, CardBody, CardFooter, CardHeader } from '../../components/ui/Card'
-import { Input } from '../../components/ui/Input'
+import { Input, Select } from '../../components/ui/Input'
 import { Label } from '../../components/ui/Label'
 import { Switch } from '../../components/ui/Switch'
 import { Button } from '../../components/ui/Button'
+import { StatusPill } from '../../components/ui/StatusPill'
 import { Table, TBody, THead, Th, Td, Tr } from '../../components/ui/Table'
 import { useBrandList, useBrandMutation } from '../../hooks/useBrandQuery'
 
@@ -145,11 +146,11 @@ export default function PromoCodesPage() {
         <CardBody className="grid gap-3 sm:grid-cols-2">
           <Label>Code<Input value={draft.code} onChange={e => setDraft(d => ({ ...d, code: e.target.value.toUpperCase() }))} placeholder="WELCOME10" /></Label>
           <Label>Type
-            <select className="h-10 rounded-md border border-[var(--color-admin-border-strong)] bg-[var(--color-admin-bg-soft)] px-3 text-sm text-[var(--color-admin-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-admin-primary)]" value={draft.type} onChange={e => setDraft(d => ({ ...d, type: e.target.value as PromoType }))}>
+            <Select value={draft.type} onChange={e => setDraft(d => ({ ...d, type: e.target.value as PromoType }))}>
               <option value="percent">Percent off</option>
               <option value="fixed">Fixed £ off</option>
               <option value="free_shipping">Free shipping</option>
-            </select>
+            </Select>
           </Label>
           <Label hint={draft.type === 'percent' ? 'Percentage, 0–100' : 'Pounds'}>Value<Input type="number" step="0.01" value={draft.value} onChange={e => setDraft(d => ({ ...d, value: Number(e.target.value) }))} /></Label>
           <Label hint="Blank for unlimited">Max uses<Input type="number" value={draft.max_uses} onChange={e => setDraft(d => ({ ...d, max_uses: e.target.value }))} /></Label>
@@ -190,12 +191,14 @@ export default function PromoCodesPage() {
                   <Td>{c.uses}{c.max_uses !== null ? ` / ${c.max_uses}` : ''}</Td>
                   <Td className="text-xs">{c.expires_at ? new Date(c.expires_at).toLocaleString() : '—'}</Td>
                   <Td>
-                    <button onClick={() => void toggleActive(c)} className={`rounded-full px-2 py-0.5 text-xs font-medium ${c.active ? 'bg-[var(--color-admin-success-soft)] text-[var(--color-admin-success)]' : 'bg-[var(--color-admin-surface-elevated)] text-[var(--color-admin-muted)]'}`}>
-                      {c.active ? 'Active' : 'Inactive'}
+                    <button type="button" onClick={() => void toggleActive(c)} className="appearance-none">
+                      <StatusPill tone={c.active ? 'success' : 'neutral'}>
+                        {c.active ? 'Active' : 'Inactive'}
+                      </StatusPill>
                     </button>
                   </Td>
                   <Td className="text-right">
-                    <button className="text-sm text-[var(--color-admin-danger)] hover:underline" onClick={() => { if (confirm('Delete this code?')) void remove.mutate({ id: c.id }) }}>Delete</button>
+                    <button className="text-[13px] text-[var(--color-admin-danger)] hover:underline" onClick={() => { if (confirm('Delete this code?')) void remove.mutate({ id: c.id }) }}>Delete</button>
                   </Td>
                 </Tr>
               ))}

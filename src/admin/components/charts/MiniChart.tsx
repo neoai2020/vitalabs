@@ -1,11 +1,12 @@
 /**
  * Inline SVG sparkline / area chart. Rolled by hand instead of pulling
  * in recharts/visx to keep the bundle slim (~0 added bytes vs ~110KB
- * for recharts) and to give us full control over the futuristic
- * gradient / glow styling defined in admin.css.
+ * for recharts) and to give us total control over the restrained
+ * style defined in admin.css.
  *
- * Renders nothing exotic — just two paths (area fill + stroke), a
- * dotted baseline, and the last data-point dot for emphasis.
+ * Renders nothing exotic — a soft area fill, a single-color line, and
+ * an optional dot on the last point. On mount the line draws in via
+ * stroke-dashoffset (one of three signature motions for the panel).
  */
 import { useMemo, useId } from 'react'
 
@@ -19,8 +20,8 @@ interface Props {
   data: ChartPoint[]
   /** Show grid lines + min/max labels. Default false for sparkline use. */
   showAxis?: boolean
-  /** Stroke gradient — defaults to the cyan→violet primary. */
-  variant?: 'primary' | 'success' | 'warning' | 'danger'
+  /** Stroke tone — defaults to the sage-teal primary. */
+  variant?: 'primary' | 'success' | 'warning' | 'danger' | 'muted'
   /** Optional height override. */
   height?: number
   /** Show dot at the most recent point. */
@@ -29,13 +30,24 @@ interface Props {
   formatY?: (v: number) => string
   /** Force the Y-axis max (lets multiple charts share a scale when overlaid). */
   yMax?: number
+  /** Re-trigger the draw-in animation when this key changes. */
+  animateKey?: string | number
 }
 
-const VARIANT: Record<NonNullable<Props['variant']>, { from: string; to: string; glow: string }> = {
-  primary: { from: '#22d3ee', to: '#a78bfa', glow: 'rgba(99,102,241,0.5)' },
-  success: { from: '#34d399', to: '#22d3ee', glow: 'rgba(52,211,153,0.45)' },
-  warning: { from: '#fbbf24', to: '#f97316', glow: 'rgba(251,191,36,0.45)' },
-  danger:  { from: '#f87171', to: '#a855f7', glow: 'rgba(248,113,113,0.45)' },
+const STROKES: Record<NonNullable<Props['variant']>, string> = {
+  primary: 'var(--color-admin-primary)',
+  success: 'var(--color-admin-success)',
+  warning: 'var(--color-admin-warning)',
+  danger:  'var(--color-admin-danger)',
+  muted:   'var(--color-admin-subtle)',
+}
+
+const FILLS: Record<NonNullable<Props['variant']>, string> = {
+  primary: 'var(--color-admin-primary-soft)',
+  success: 'var(--color-admin-success-soft)',
+  warning: 'var(--color-admin-warning-soft)',
+  danger:  'var(--color-admin-danger-soft)',
+  muted:   'var(--color-admin-surface-sunken)',
 }
 
 export function MiniChart({
@@ -46,16 +58,22 @@ export function MiniChart({
   showDot = true,
   formatY,
   yMax,
+  animateKey,
 }: Props) {
-  const palette = VARIANT[variant]
+  const stroke = STROKES[variant]
+  const fill = FILLS[variant]
   const gid = useId().replace(/:/g, '')
-  const strokeGid = `s-${gid}`
   const fillGid = `f-${gid}`
+
+  // Re-trigger the draw-in animation by remounting the path whenever its
+  // shape changes. Cheap: a stable string of first/last/length + caller key
+  // is enough, since we don't care about reanimating on within-series tweaks.
+  const drawKey = `${animateKey ?? ''}|${data.length}|${data[0]?.value ?? 0}|${data[data.length - 1]?.value ?? 0}`
 
   const view = useMemo(() => {
     const width = 100
-    const padTop = showAxis ? 14 : 6
-    const padBot = showAxis ? 18 : 6
+    const padTop = showAxis ? 16 : 4
+    const padBot = showAxis ? 18 : 4
     const padX = 2
     const hAvail = height - padTop - padBot
 
@@ -98,13 +116,9 @@ export function MiniChart({
         aria-hidden
       >
         <defs>
-          <linearGradient id={strokeGid} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor={palette.from} />
-            <stop offset="100%" stopColor={palette.to} />
-          </linearGradient>
           <linearGradient id={fillGid} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={palette.from} stopOpacity="0.28" />
-            <stop offset="100%" stopColor={palette.from} stopOpacity="0" />
+            <stop offset="0%" stopColor={stroke} stopOpacity="0.14" />
+            <stop offset="100%" stopColor={stroke} stopOpacity="0" />
           </linearGradient>
         </defs>
 
@@ -121,10 +135,11 @@ export function MiniChart({
                   y1={y}
                   y2={y}
                   className="admin-chart-grid"
+                  strokeDasharray="2 4"
                 />
               )
             })}
-            <text x={view.padX} y={view.padTop - 2} className="admin-chart-axis-label">
+            <text x={view.padX} y={view.padTop - 4} className="admin-chart-axis-label">
               {formatY ? formatY(view.max) : Math.round(view.max)}
             </text>
             <text x={view.padX} y={view.padTop + view.hAvail + 12} className="admin-chart-axis-label">
@@ -137,15 +152,14 @@ export function MiniChart({
           <>
             <path d={view.area} fill={`url(#${fillGid})`} />
             <path
+              key={drawKey}
               d={view.line}
-              stroke={`url(#${strokeGid})`}
-              className="admin-chart-line"
-              style={{ filter: `drop-shadow(0 0 3px ${palette.glow})` }}
+              stroke={stroke}
+              className="admin-chart-line admin-chart-line--draw"
             />
             {showDot && view.dot ? (
               <g className="admin-chart-dot">
-                <circle cx={view.dot.x} cy={view.dot.y} r="2.6" fill={palette.from} />
-                <circle cx={view.dot.x} cy={view.dot.y} r="4.5" fill={palette.from} opacity="0.18" />
+                <circle cx={view.dot.x} cy={view.dot.y} r="2.4" fill={stroke} />
               </g>
             ) : null}
           </>
@@ -156,6 +170,7 @@ export function MiniChart({
             textAnchor="middle"
             dominantBaseline="middle"
             className="admin-chart-axis-label"
+            fill={fill}
           >
             no data yet
           </text>

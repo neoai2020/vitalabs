@@ -167,14 +167,17 @@ export default function InsightsPage() {
         description="Spend, impressions, clicks, conversions, and ROAS per campaign. Pull on demand; Meta's reporting timezone applies."
         actions={
           <div className="flex items-center gap-2">
-            <div className="flex gap-1">
+            <div className="inline-flex items-center gap-0.5 rounded-md border border-[var(--color-admin-border-strong)] bg-[var(--color-admin-surface)] p-0.5">
               {(Object.keys(RANGES) as RangeId[]).map(id => (
                 <button
                   key={id}
                   type="button"
                   onClick={() => setRange(id)}
-                  className={`admin-tab${range === id ? ' admin-tab--active' : ''}`}
-                  style={{ fontSize: 12 }}
+                  className={`rounded px-2.5 py-1 text-[12px] font-medium transition-colors ${
+                    range === id
+                      ? 'bg-[var(--color-admin-text-strong)] text-white'
+                      : 'text-[var(--color-admin-muted)] hover:text-[var(--color-admin-text-strong)]'
+                  }`}
                 >
                   {RANGES[id].label}
                 </button>
@@ -189,10 +192,10 @@ export default function InsightsPage() {
       <AdsTabBar />
 
       {refreshError ? (
-        <div className="mb-4 rounded-lg border border-[var(--color-admin-danger)]/30 bg-[var(--color-admin-danger)]/10 p-3 text-sm text-[var(--color-admin-danger)]">{refreshError}</div>
+        <div className="mb-4 rounded-md border border-[var(--color-admin-danger)]/30 bg-[var(--color-admin-danger-soft)] px-4 py-3 text-[13px] text-[var(--color-admin-danger)]">{refreshError}</div>
       ) : null}
       {refreshNote ? (
-        <div className="mb-4 rounded-lg border border-[var(--color-admin-success)]/30 bg-[var(--color-admin-success-soft)] p-3 text-sm">{refreshNote}</div>
+        <div className="mb-4 rounded-md border border-[var(--color-admin-success)]/30 bg-[var(--color-admin-success-soft)] px-4 py-3 text-[13px] text-[var(--color-admin-success)]">{refreshNote}</div>
       ) : null}
 
       <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -255,9 +258,9 @@ export default function InsightsPage() {
 
 function Kpi({ label, value }: { label: string; value: string }) {
   return (
-    <div className="admin-kpi rounded-xl border border-[var(--color-admin-border)] bg-[var(--color-admin-surface)] p-4">
-      <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-admin-muted)]">{label}</div>
-      <div className="mt-1 text-2xl font-semibold tabular-nums text-[var(--color-admin-text-strong)]">{value}</div>
+    <div className="admin-kpi">
+      <div className="admin-eyebrow">{label}</div>
+      <div className="admin-kpi-value mt-2 text-[22px] font-semibold leading-none">{value}</div>
     </div>
   )
 }

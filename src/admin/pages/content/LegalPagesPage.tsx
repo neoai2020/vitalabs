@@ -44,15 +44,19 @@ export default function LegalPagesPage() {
 
   return (
     <>
-      <PageHeader title="Legal pages" description="Markdown bodies for terms, privacy, refund, disclaimer, and shipping." />
+      <PageHeader
+        eyebrow="Content"
+        title="Legal pages"
+        description="Edit the markdown for terms, privacy, refund, disclaimer, and shipping."
+      />
 
-      {error ? <div className="mb-4 rounded-md border border-[var(--color-admin-danger)]/30 bg-[var(--color-admin-danger-soft)] px-4 py-3 text-sm text-[var(--color-admin-danger)]">{error}</div> : null}
+      {error ? <div className="mb-4 rounded-md border border-[var(--color-admin-danger)]/30 bg-[var(--color-admin-danger-soft)] px-4 py-3 text-[13px] text-[var(--color-admin-danger)]">{error}</div> : null}
 
       {isLoading ? (
-        <Card><CardBody className="text-sm text-[var(--color-admin-muted)]">Loading…</CardBody></Card>
+        <Card><CardBody className="text-[13.5px] text-[var(--color-admin-muted)]">Loading…</CardBody></Card>
       ) : pages.length === 0 ? (
-        <Card><CardBody className="text-sm text-[var(--color-admin-muted)]">
-          No legal pages seeded. Run <code>npx tsx scripts/seed-from-data-files.ts</code> to bootstrap the standard set.
+        <Card><CardBody className="text-[13.5px] text-[var(--color-admin-muted)]">
+          No legal pages yet for this brand. Ask an engineer to seed the standard set, or paste your own markdown into a new page.
         </CardBody></Card>
       ) : (
         <div className="grid gap-4">
@@ -75,7 +79,7 @@ export default function LegalPagesPage() {
                       </button>
                     </div>
                     {preview ? (
-                      <div className="prose prose-sm prose-invert max-w-none rounded-md border border-[var(--color-admin-border)] bg-[var(--color-admin-bg-soft)] p-4 text-sm">
+                      <div className="prose prose-sm max-w-none rounded-md border border-[var(--color-admin-border)] bg-[var(--color-admin-surface-sunken)] p-4 text-[13.5px]">
                         <ReactMarkdown>{body}</ReactMarkdown>
                       </div>
                     ) : null}

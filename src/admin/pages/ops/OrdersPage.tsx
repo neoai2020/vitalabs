@@ -3,6 +3,7 @@ import { PageHeader } from '../../components/PageHeader'
 import { Card, CardHeader } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Table, TBody, THead, Th, Td, Tr } from '../../components/ui/Table'
+import { StatusPill, type StatusTone } from '../../components/ui/StatusPill'
 import { useBrandList, useBrandMutation } from '../../hooks/useBrandQuery'
 
 interface OrderRow {
@@ -18,13 +19,13 @@ interface OrderRow {
   created_at: string
 }
 
-const STATUS_COLOURS: Record<OrderRow['status'], string> = {
-  pending: 'bg-[var(--color-admin-warning-soft)] text-[var(--color-admin-warning)]',
-  paid: 'bg-[var(--color-admin-success-soft)] text-[var(--color-admin-success)]',
-  fulfilled: 'bg-[var(--color-admin-primary-soft)] text-[var(--color-admin-primary)]',
-  refunded: 'bg-[var(--color-admin-warning-soft)] text-[var(--color-admin-warning)]',
-  cancelled: 'bg-[var(--color-admin-surface-elevated)] text-[var(--color-admin-muted)]',
-  failed: 'bg-[var(--color-admin-danger-soft)] text-[var(--color-admin-danger)]',
+const STATUS_TONE: Record<OrderRow['status'], StatusTone> = {
+  pending:   'warning',
+  paid:      'success',
+  fulfilled: 'info',
+  refunded:  'warning',
+  cancelled: 'neutral',
+  failed:    'danger',
 }
 
 function downloadCsv(orders: OrderRow[]) {
@@ -66,7 +67,7 @@ export default function OrdersPage() {
     <>
       <PageHeader
         title="Orders"
-        description="Orders persisted by the order-webhook Edge Function. Refunds are recorded here but must be issued in Stripe/Uprails separately."
+        description="Every completed checkout. Refunds are tracked here but must also be issued from your payment provider."
         actions={<Button variant="secondary" onClick={() => downloadCsv(orders)} disabled={orders.length === 0}>Export CSV</Button>}
       />
       <Card>
@@ -97,15 +98,15 @@ export default function OrdersPage() {
                   </Td>
                   <Td className="text-right font-medium">{o.currency} {Number(o.total).toFixed(2)}</Td>
                   <Td>
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLOURS[o.status]}`}>{o.status}</span>
+                    <StatusPill tone={STATUS_TONE[o.status]}>{o.status}</StatusPill>
                   </Td>
-                  <Td className="font-mono text-xs">
-                    {o.stripe_id ? <div>S: {o.stripe_id.slice(0, 12)}…</div> : null}
-                    {o.uprails_id ? <div>U: {o.uprails_id.slice(0, 12)}…</div> : null}
+                  <Td className="admin-mono text-[11.5px] text-[var(--color-admin-muted)]">
+                    {o.stripe_id ? <div>S · {o.stripe_id.slice(0, 12)}…</div> : null}
+                    {o.uprails_id ? <div>U · {o.uprails_id.slice(0, 12)}…</div> : null}
                   </Td>
                   <Td className="text-right">
                     {o.status === 'paid' || o.status === 'fulfilled' ? (
-                      <button onClick={() => markRefunded(o)} className="text-sm text-[var(--color-admin-danger)] hover:underline">Mark refunded</button>
+                      <button onClick={() => markRefunded(o)} className="text-[13px] text-[var(--color-admin-danger)] hover:underline">Mark refunded</button>
                     ) : null}
                   </Td>
                 </Tr>

@@ -27,7 +27,7 @@ export default function AdminLoginPage() {
   if (loading) {
     return (
       <div className="admin-root flex min-h-screen items-center justify-center">
-        <p className="text-sm text-[var(--color-admin-muted)]">Loading…</p>
+        <p className="text-[13px] text-[var(--color-admin-muted)]">Loading…</p>
       </div>
     )
   }
@@ -35,19 +35,21 @@ export default function AdminLoginPage() {
   if (user && !user.isAdmin) {
     return (
       <div className="admin-root flex min-h-screen items-center justify-center px-6">
-        <div className="w-full max-w-md rounded-xl border border-[var(--color-admin-border)] bg-[var(--color-admin-surface)] p-6 shadow-2xl">
-          <h1 className="text-lg font-semibold text-[var(--color-admin-text-strong)]">Not an admin account</h1>
-          <p className="mt-2 text-sm text-[var(--color-admin-muted)]">
-            You are signed in as <strong className="text-[var(--color-admin-text)]">{user.email}</strong>, but this account does
-            not have admin permissions.
+        <div className="admin-card w-full max-w-md p-6">
+          <h1 className="text-[17px] font-semibold tracking-[-0.01em] text-[var(--color-admin-text-strong)]">
+            This account isn’t an admin
+          </h1>
+          <p className="mt-2 text-[13.5px] leading-relaxed text-[var(--color-admin-muted)]">
+            You’re signed in as <strong className="text-[var(--color-admin-text)]">{user.email}</strong>, which doesn’t have access to this workspace.
+            Sign out and use an admin account to continue.
           </p>
           <Button
             variant="secondary"
             size="sm"
-            className="mt-4"
+            className="mt-5"
             onClick={() => { void logout() }}
           >
-            Sign out and try another account
+            Sign out
           </Button>
         </div>
       </div>
@@ -76,20 +78,20 @@ export default function AdminLoginPage() {
 
   return (
     <div className="admin-root flex min-h-screen items-center justify-center px-6">
-      <div className="w-full max-w-sm rounded-xl border border-[var(--color-admin-border)] bg-[var(--color-admin-surface)] p-8 shadow-2xl">
-        <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-lg bg-[var(--color-admin-primary)] text-sm font-semibold text-white shadow-[0_1px_0_0_rgba(255,255,255,0.15)_inset]">
-            VL
-          </div>
-          <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-primary)]">Admin</div>
-          <h1 className="mt-1 text-xl font-semibold text-[var(--color-admin-text-strong)]">Sign in</h1>
-          <p className="mt-1 text-sm text-[var(--color-admin-muted)]">
-            Use your Supabase account with the <code className="rounded bg-[var(--color-admin-bg-soft)] px-1 py-0.5 text-xs text-[var(--color-admin-text)]">is_admin</code> flag.
+      <div className="admin-card w-full max-w-sm p-8">
+        <div className="mb-7 flex flex-col items-center text-center">
+          <div className="admin-brand-badge mb-4 h-9 w-9 text-[12px]">VL</div>
+          <div className="admin-eyebrow">Vitalabs · Admin</div>
+          <h1 className="mt-2 text-[20px] font-semibold tracking-[-0.015em] text-[var(--color-admin-text-strong)]">
+            Sign in
+          </h1>
+          <p className="mt-1.5 text-[13px] text-[var(--color-admin-muted)]">
+            Welcome back. Sign in with your admin account.
           </p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error ? (
-            <div className="rounded-md border border-[var(--color-admin-danger)]/30 bg-[var(--color-admin-danger-soft)] px-3 py-2 text-sm text-[var(--color-admin-danger)]">
+            <div className="rounded-md border border-[var(--color-admin-danger)]/30 bg-[var(--color-admin-danger-soft)] px-3 py-2 text-[13px] text-[var(--color-admin-danger)]">
               {error}
             </div>
           ) : null}
@@ -100,7 +102,7 @@ export default function AdminLoginPage() {
               autoComplete="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              placeholder="you@vitalabs.com"
             />
           </Label>
           <Label>

@@ -7,6 +7,7 @@ import { Label } from '../../components/ui/Label'
 import { Switch } from '../../components/ui/Switch'
 import { Button } from '../../components/ui/Button'
 import { Table, TBody, THead, Th, Td, Tr } from '../../components/ui/Table'
+import { StatusPill } from '../../components/ui/StatusPill'
 import { useBrandList, useBrandMutation } from '../../hooks/useBrandQuery'
 import {
   TEMPLATE_ORDER,
@@ -163,15 +164,15 @@ export default function UpsellOffersPage() {
                   key={id}
                   type="button"
                   onClick={() => setDraft(d => draftFromTemplate(id, d))}
-                  className={`flex flex-col gap-2 rounded-xl border p-4 text-left transition-colors ${
+                  className={`flex flex-col gap-2 rounded-md border p-4 text-left transition-colors ${
                     active
-                      ? 'border-[var(--color-admin-primary)] bg-[var(--color-admin-primary-soft)] shadow-[0_0_0_1px_var(--color-admin-primary)_inset]'
-                      : 'border-[var(--color-admin-border)] bg-[var(--color-admin-surface-elevated)] hover:border-[var(--color-admin-border-strong)]'
+                      ? 'border-[var(--color-admin-text-strong)] bg-[var(--color-admin-surface)] shadow-[0_0_0_1px_var(--color-admin-text-strong)_inset]'
+                      : 'border-[var(--color-admin-border)] bg-[var(--color-admin-surface)] hover:border-[var(--color-admin-border-strong)]'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-sm font-semibold text-[var(--color-admin-text-strong)]">{tpl.label}</span>
-                    <span className="rounded-full bg-[var(--color-admin-bg-soft)] px-2 py-0.5 font-mono text-[10px] text-[var(--color-admin-muted)]">
+                    <span className="admin-mono rounded-full bg-[var(--color-admin-surface-sunken)] px-2 py-0.5 text-[10.5px] text-[var(--color-admin-muted)]">
                       {tpl.months}× · {tpl.defaultDiscountPct}%
                     </span>
                   </div>
@@ -333,9 +334,9 @@ export default function UpsellOffersPage() {
                     </Td>
                     <Td className="max-w-xs truncate text-sm">{o.headline ?? <span className="text-[var(--color-admin-subtle)]">(template default)</span>}</Td>
                     <Td>
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${o.active ? 'bg-[var(--color-admin-success-soft)] text-[var(--color-admin-success)]' : 'bg-[var(--color-admin-surface-elevated)] text-[var(--color-admin-muted)]'}`}>
+                      <StatusPill tone={o.active ? 'success' : 'neutral'}>
                         {o.active ? 'Active' : 'Staged'}
-                      </span>
+                      </StatusPill>
                     </Td>
                     <Td className="text-sm">{o.sort_order}</Td>
                     <Td className="text-right">

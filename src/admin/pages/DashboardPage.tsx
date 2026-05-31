@@ -3,10 +3,11 @@ import { Link } from 'react-router-dom'
 import { PageHeader } from '../components/PageHeader'
 import { Card, CardBody, CardHeader } from '../components/ui/Card'
 import { useAdminBrand } from '../context/AdminBrandContext'
-import { BRAND_LABELS, type Brand } from '../../lib/config/brand'
+import type { Brand } from '../../lib/config/brand'
 import { supabase } from '../../lib/supabase'
 import { KpiCard } from '../components/charts/KpiCard'
-import { MiniChart, type ChartPoint } from '../components/charts/MiniChart'
+import { LineChart } from '../components/charts/LineChart'
+import type { ChartPoint } from '../components/charts/MiniChart'
 
 type Range = '7d' | '30d'
 
@@ -197,13 +198,17 @@ async function loadAnalytics(brand: Brand, range: Range): Promise<LoadResult> {
 function RangeToggle({ value, onChange }: { value: Range; onChange: (r: Range) => void }) {
   const opts: Range[] = ['7d', '30d']
   return (
-    <div className="flex items-center gap-1">
+    <div className="inline-flex items-center gap-0.5 rounded-md border border-[var(--color-admin-border-strong)] bg-[var(--color-admin-surface)] p-0.5">
       {opts.map(opt => (
         <button
           key={opt}
           type="button"
           onClick={() => onChange(opt)}
-          className={`admin-tab font-mono uppercase ${value === opt ? 'admin-tab--active' : ''}`}
+          className={`admin-mono rounded px-2.5 py-1 text-[11.5px] uppercase transition-colors ${
+            value === opt
+              ? 'bg-[var(--color-admin-text-strong)] text-white'
+              : 'text-[var(--color-admin-muted)] hover:text-[var(--color-admin-text-strong)]'
+          }`}
         >
           {opt}
         </button>
@@ -252,21 +257,22 @@ export default function DashboardPage() {
     <>
       <PageHeader
         title="Dashboard"
-        description={`Real-time funnel for ${BRAND_LABELS[brand]} — visitors, checkout intent, conversion rate, abandonment.`}
+        description="Visitors, checkout intent, conversion rate, and abandonment — at a glance."
         actions={<RangeToggle value={range} onChange={setRange} />}
       />
 
       {error ? (
-        <div className="mb-4 rounded-md border border-[var(--color-admin-danger)]/30 bg-[var(--color-admin-danger-soft)] px-4 py-3 text-sm text-[var(--color-admin-danger)]">
+        <div className="mb-4 rounded-md border border-[var(--color-admin-danger)]/30 bg-[var(--color-admin-danger-soft)] px-4 py-3 text-[13px] text-[var(--color-admin-danger)]">
           {error}
         </div>
       ) : null}
 
       {/* KPI ROW */}
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
+          index={0}
           label="Total visitors"
-          value={loading ? '…' : String(totals?.visitors ?? 0)}
+          value={loading ? '—' : String(totals?.visitors ?? 0)}
           hint={periodLabel}
           deltaPct={deltas?.visitors ?? null}
           data={series?.visitors ?? []}
@@ -274,8 +280,9 @@ export default function DashboardPage() {
           loading={loading}
         />
         <KpiCard
+          index={1}
           label="Reached checkout"
-          value={loading ? '…' : String(totals?.checkouts ?? 0)}
+          value={loading ? '—' : String(totals?.checkouts ?? 0)}
           hint={periodLabel}
           deltaPct={deltas?.checkouts ?? null}
           data={series?.checkouts ?? []}
@@ -283,194 +290,201 @@ export default function DashboardPage() {
           loading={loading}
         />
         <KpiCard
+          index={2}
           label="Conversion rate"
-          value={loading ? '…' : `${(totals?.conversionPct ?? 0).toFixed(2)}%`}
-          hint={`${totals?.conversions ?? 0} paid / ${totals?.visitors ?? 0} visitors`}
+          value={loading ? '—' : `${(totals?.conversionPct ?? 0).toFixed(2)}%`}
+          hint={`${totals?.conversions ?? 0} paid · ${totals?.visitors ?? 0} visitors`}
           deltaPct={deltas?.conversion ?? null}
           data={conversionRateData}
           variant="warning"
           loading={loading}
+          formatBreakdown={n => `${n.toFixed(1)}%`}
         />
         <KpiCard
+          index={3}
           label="Cart abandonment"
-          value={loading ? '…' : `${(totals?.abandonmentPct ?? 0).toFixed(1)}%`}
+          value={loading ? '—' : `${(totals?.abandonmentPct ?? 0).toFixed(1)}%`}
           hint={`${(totals?.checkouts ?? 0) - (totals?.conversions ?? 0)} abandoned of ${totals?.checkouts ?? 0}`}
           deltaPct={deltas?.abandonment ?? null}
           goodWhenDown
           data={series?.abandonment ?? []}
           variant="danger"
           loading={loading}
+          formatBreakdown={n => `${n.toFixed(0)}%`}
         />
       </div>
 
       {/* SECONDARY: large chart + funnel */}
-      <div className="mb-6 grid gap-4 lg:grid-cols-3">
+      <div className="mb-8 grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader
             title="Visitors vs checkouts"
-            description="Daily uniques. Wide gap below the visitor line = friction in the funnel."
+            description="Daily uniques. Hover the chart for exact numbers per day."
           />
-          <CardBody>
-            <div className="mb-3 flex items-center gap-4 text-xs">
-              <span className="inline-flex items-center gap-2 text-[var(--color-admin-muted)]">
-                <span className="inline-block h-2 w-3 rounded-sm bg-gradient-to-r from-[#22d3ee] to-[#a78bfa]" />
-                Visitors
-              </span>
-              <span className="inline-flex items-center gap-2 text-[var(--color-admin-muted)]">
-                <span className="inline-block h-2 w-3 rounded-sm bg-gradient-to-r from-[#34d399] to-[#22d3ee]" />
-                Reached checkout
-              </span>
-            </div>
-            <OverlayChart
-              primary={series?.visitors ?? []}
-              secondary={series?.checkouts ?? []}
-              height={200}
+          <CardBody className="pt-6">
+            <LineChart
+              height={280}
+              series={[
+                {
+                  id: 'visitors',
+                  label: 'Visitors',
+                  variant: 'primary',
+                  fill: true,
+                  data: series?.visitors ?? [],
+                },
+                {
+                  id: 'checkouts',
+                  label: 'Reached checkout',
+                  variant: 'success',
+                  fill: false,
+                  data: series?.checkouts ?? [],
+                },
+              ]}
             />
           </CardBody>
         </Card>
 
         <Card>
-          <CardHeader title="Funnel snapshot" description={periodLabel} />
-          <CardBody>
-            <FunnelStep
-              label="Visitors"
-              value={totals?.visitors ?? 0}
-              barPct={100}
-              colorFrom="#22d3ee"
-              colorTo="#22d3ee"
-            />
-            <FunnelStep
-              label="Reached checkout"
-              value={totals?.checkouts ?? 0}
-              barPct={totals && totals.visitors > 0 ? (totals.checkouts / totals.visitors) * 100 : 0}
-              colorFrom="#22d3ee"
-              colorTo="#34d399"
-            />
-            <FunnelStep
-              label="Completed purchase"
-              value={totals?.conversions ?? 0}
-              barPct={totals && totals.visitors > 0 ? (totals.conversions / totals.visitors) * 100 : 0}
-              colorFrom="#a78bfa"
-              colorTo="#6366f1"
-            />
-            <div className="mt-4 flex items-center justify-between border-t border-[var(--color-admin-border)] pt-3 text-xs">
-              <span className="text-[var(--color-admin-muted)]">Revenue ({periodLabel})</span>
-              <span className="admin-kpi-value text-base font-semibold">
-                £{(totals?.revenue ?? 0).toFixed(2)}
+          <CardHeader title="Conversion funnel" description={periodLabel} />
+          <CardBody className="pt-2">
+            <FunnelTable totals={totals} loading={loading} />
+            <div className="mt-5 flex items-baseline justify-between border-t border-[var(--color-admin-border)] pt-4">
+              <span className="text-[11.5px] uppercase tracking-[0.1em] text-[var(--color-admin-muted)]">Revenue</span>
+              <span className="admin-mono text-[17px] font-semibold tracking-[-0.01em] text-[var(--color-admin-text-strong)]">
+                £{(totals?.revenue ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
           </CardBody>
         </Card>
       </div>
 
-      {/* QUICK LINKS */}
+      {/* SHORTCUTS */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader title="Site config" description="Pixels, brand, WhatsApp, SEO" />
-          <CardBody className="flex flex-col gap-2 text-sm">
-            <Link to="/admin/site-config/tracking" className="text-[var(--color-admin-primary)] hover:underline">Edit tracking pixels →</Link>
-            <Link to="/admin/site-config/brand" className="text-[var(--color-admin-primary)] hover:underline">Brand info →</Link>
-            <Link to="/admin/site-config/whatsapp" className="text-[var(--color-admin-primary)] hover:underline">WhatsApp widget →</Link>
-          </CardBody>
-        </Card>
-        <Card>
-          <CardHeader title="Catalogue" description="Products, reviews, FAQs" />
-          <CardBody className="flex flex-col gap-2 text-sm">
-            <Link to="/admin/content/products" className="text-[var(--color-admin-primary)] hover:underline">Products →</Link>
-            <Link to="/admin/content/reviews" className="text-[var(--color-admin-primary)] hover:underline">Reviews →</Link>
-            <Link to="/admin/content/legal" className="text-[var(--color-admin-primary)] hover:underline">Legal pages →</Link>
-          </CardBody>
-        </Card>
-        <Card>
-          <CardHeader title="Operations" description="Orders, leads, support" />
-          <CardBody className="flex flex-col gap-2 text-sm">
-            <Link to="/admin/ops/orders" className="text-[var(--color-admin-primary)] hover:underline">Orders →</Link>
-            <Link to="/admin/ops/leads" className="text-[var(--color-admin-primary)] hover:underline">Leads (CSV export) →</Link>
-            <Link to="/admin/ops/support" className="text-[var(--color-admin-primary)] hover:underline">Support inbox →</Link>
-          </CardBody>
-        </Card>
+        <ShortcutCard
+          title="Site config"
+          description="Pixels, brand, WhatsApp, SEO"
+          links={[
+            { to: '/admin/site-config/tracking', label: 'Tracking pixels' },
+            { to: '/admin/site-config/brand', label: 'Brand info' },
+            { to: '/admin/site-config/whatsapp', label: 'WhatsApp widget' },
+          ]}
+        />
+        <ShortcutCard
+          title="Catalogue"
+          description="Products, reviews, FAQs"
+          links={[
+            { to: '/admin/content/products', label: 'Products' },
+            { to: '/admin/content/reviews', label: 'Reviews' },
+            { to: '/admin/content/legal', label: 'Legal pages' },
+          ]}
+        />
+        <ShortcutCard
+          title="Operations"
+          description="Orders, leads, support"
+          links={[
+            { to: '/admin/ops/orders', label: 'Orders' },
+            { to: '/admin/ops/leads', label: 'Leads · CSV export' },
+            { to: '/admin/ops/support', label: 'Support inbox' },
+          ]}
+        />
       </div>
     </>
   )
 }
 
-function OverlayChart({
-  primary,
-  secondary,
-  height,
+function ShortcutCard({
+  title,
+  description,
+  links,
 }: {
-  primary: ChartPoint[]
-  secondary: ChartPoint[]
-  height: number
+  title: string
+  description: string
+  links: { to: string; label: string }[]
 }) {
-  // Both series share the same Y scale so a checkout count never appears
-  // above the visitor count from the same day (which would be misleading).
-  const sharedMax = useMemo(() => {
-    const all = [...primary, ...secondary].map(p => p.value)
-    return Math.max(...all, 1)
-  }, [primary, secondary])
-
   return (
-    <div className="relative" style={{ height }}>
-      <div className="absolute inset-0">
-        <MiniChart
-          data={primary}
-          height={height}
-          showAxis
-          variant="primary"
-          showDot={false}
-          yMax={sharedMax}
-        />
-      </div>
-      <div className="absolute inset-0">
-        <MiniChart
-          data={secondary}
-          height={height}
-          showAxis={false}
-          variant="success"
-          showDot
-          yMax={sharedMax}
-        />
-      </div>
-    </div>
+    <Card>
+      <CardHeader title={title} description={description} />
+      <CardBody className="flex flex-col">
+        {links.map(link => (
+          <Link
+            key={link.to}
+            to={link.to}
+            className="group -mx-1 flex items-center justify-between rounded-md px-1 py-1.5 text-[13.5px] text-[var(--color-admin-text)] transition-colors hover:text-[var(--color-admin-text-strong)]"
+          >
+            <span>{link.label}</span>
+            <span className="text-[var(--color-admin-subtle)] transition-transform group-hover:translate-x-0.5 group-hover:text-[var(--color-admin-text-strong)]">
+              →
+            </span>
+          </Link>
+        ))}
+      </CardBody>
+    </Card>
   )
 }
 
-function FunnelStep({
-  label,
-  value,
-  barPct,
-  colorFrom,
-  colorTo,
+/**
+ * Tabular funnel — replaces the bouncy-bar version with a structural,
+ * monospace breakdown. Each row carries:
+ *   - a label and the absolute count (right-aligned monospace)
+ *   - a hairline progress meter sized to the % of the top of funnel
+ *   - the drop-off vs the *previous* step (e.g. "−71.2% from Visitors")
+ * Reads like a real analytics breakdown, not a chart-junk infographic.
+ */
+function FunnelTable({
+  totals,
+  loading,
 }: {
-  label: string
-  value: number
-  barPct: number
-  colorFrom: string
-  colorTo: string
+  totals: Totals | undefined
+  loading: boolean
 }) {
-  const safe = Math.max(0, Math.min(100, barPct))
+  const rows = useMemo(() => {
+    const visitors = totals?.visitors ?? 0
+    const checkouts = totals?.checkouts ?? 0
+    const conversions = totals?.conversions ?? 0
+    return [
+      { id: 'visitors',    label: 'Visitors',          value: visitors,    prev: null as number | null, prevLabel: null as string | null },
+      { id: 'checkouts',   label: 'Reached checkout',  value: checkouts,   prev: visitors,              prevLabel: 'visitors' },
+      { id: 'conversions', label: 'Completed purchase', value: conversions, prev: checkouts,             prevLabel: 'checkouts' },
+    ].map(r => {
+      const top = visitors > 0 ? Math.min(100, (r.value / visitors) * 100) : 0
+      const dropPct = r.prev !== null && r.prev > 0
+        ? ((r.prev - r.value) / r.prev) * 100
+        : null
+      return { ...r, topPct: top, dropPct }
+    })
+  }, [totals])
+
   return (
-    <div className="mb-3 last:mb-0">
-      <div className="mb-1 flex items-center justify-between gap-2 text-xs">
-        <span className="text-[var(--color-admin-muted)]">{label}</span>
-        <span className="admin-kpi-value font-semibold text-[var(--color-admin-text-strong)]">
-          {value.toLocaleString()}
-        </span>
-      </div>
-      <div className="relative h-2 overflow-hidden rounded-full bg-[var(--color-admin-bg-soft)] ring-1 ring-inset ring-[var(--color-admin-border)]">
+    <div className="flex flex-col">
+      {rows.map((r, i) => (
         <div
-          className="absolute inset-y-0 left-0 rounded-full"
-          style={{
-            width: `${safe}%`,
-            background: `linear-gradient(90deg, ${colorFrom} 0%, ${colorTo} 100%)`,
-            boxShadow: `0 0 8px ${colorFrom}55`,
-          }}
-        />
-      </div>
-      <div className="mt-1 text-right font-mono text-[10px] text-[var(--color-admin-subtle)]">
-        {safe.toFixed(1)}%
-      </div>
+          key={r.id}
+          className={`py-3 ${i === 0 ? '' : 'border-t border-[var(--color-admin-border)]'}`}
+        >
+          <div className="flex items-baseline justify-between gap-3">
+            <span className="text-[13px] text-[var(--color-admin-text)]">{r.label}</span>
+            <span className="admin-mono text-[15px] font-semibold tracking-[-0.01em] text-[var(--color-admin-text-strong)]">
+              {loading ? '—' : r.value.toLocaleString()}
+            </span>
+          </div>
+          <div className="mt-2 relative h-[3px] overflow-hidden rounded-full bg-[var(--color-admin-surface-sunken)]">
+            <div
+              className="absolute inset-y-0 left-0 rounded-full bg-[var(--color-admin-text-strong)] transition-[width] duration-700 ease-out"
+              style={{ width: `${r.topPct}%` }}
+            />
+          </div>
+          <div className="mt-1.5 flex items-center justify-between text-[10.5px] text-[var(--color-admin-subtle)]">
+            <span className="admin-mono">
+              {r.topPct.toFixed(1)}% of top
+            </span>
+            {r.dropPct !== null
+              ? <span className="admin-mono">
+                  −{r.dropPct.toFixed(1)}% vs {r.prevLabel}
+                </span>
+              : null}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

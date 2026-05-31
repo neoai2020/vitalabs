@@ -13,7 +13,7 @@ export default function MetaAdsPage() {
       <PageHeader
         eyebrow="Site config"
         title="Meta Ads"
-        description="The Facebook ad account, Page, and (optional) Instagram actor used when the Ad Studio publishes campaign drafts for this brand. The long-lived system user token is set as a Supabase secret — only ad_account_id and page_id live here."
+        description="The Facebook ad account, Page, and optional Instagram actor used when Ad Studio publishes campaign drafts. Brand-specific — the shared business token is configured separately."
       />
 
       <Card>
@@ -49,14 +49,14 @@ export default function MetaAdsPage() {
             />
           </Label>
 
-          <div className="rounded-lg border border-[var(--color-admin-border)] bg-[var(--color-admin-bg-soft)] p-3 text-xs leading-relaxed text-[var(--color-admin-muted)]">
-            <strong className="font-medium text-[var(--color-admin-text)]">System user token: </strong>
-            Set once as a Supabase Edge Function secret named <code className="rounded bg-[var(--color-admin-surface-elevated)] px-1 py-0.5 font-mono">META_SYSTEM_USER_TOKEN</code>.
-            One token works for both brands because they share a Business Manager. Scopes required:{' '}
-            <code className="rounded bg-[var(--color-admin-surface-elevated)] px-1 py-0.5 font-mono">ads_management</code>,{' '}
-            <code className="rounded bg-[var(--color-admin-surface-elevated)] px-1 py-0.5 font-mono">ads_read</code>,{' '}
-            <code className="rounded bg-[var(--color-admin-surface-elevated)] px-1 py-0.5 font-mono">business_management</code>,{' '}
-            <code className="rounded bg-[var(--color-admin-surface-elevated)] px-1 py-0.5 font-mono">pages_read_engagement</code>.
+          <div className="rounded-md border border-[var(--color-admin-border)] bg-[var(--color-admin-surface-sunken)] p-4 text-[12.5px] leading-relaxed text-[var(--color-admin-muted)]">
+            <div className="admin-eyebrow mb-2">System user token</div>
+            Configured once at the platform level so both brands share the same Business Manager
+            integration. Required scopes:{' '}
+            <span className="admin-mono text-[11.5px] text-[var(--color-admin-text-strong)]">ads_management</span>,{' '}
+            <span className="admin-mono text-[11.5px] text-[var(--color-admin-text-strong)]">ads_read</span>,{' '}
+            <span className="admin-mono text-[11.5px] text-[var(--color-admin-text-strong)]">business_management</span>,{' '}
+            <span className="admin-mono text-[11.5px] text-[var(--color-admin-text-strong)]">pages_read_engagement</span>.
           </div>
         </CardBody>
         <CardFooter>

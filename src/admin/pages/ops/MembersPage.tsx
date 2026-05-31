@@ -2,33 +2,28 @@ import { PageHeader } from '../../components/PageHeader'
 import { Card, CardBody } from '../../components/ui/Card'
 
 /**
- * Read-only members view. Supabase auth.users isn't exposed via the
- * standard REST API without elevated privileges; a real members list
- * needs a server-side function. Until that ships, point admins at
- * the Supabase dashboard.
+ * Read-only members view. A first-class members table (with admin toggle,
+ * password reset, delete) needs a server-side edge function with elevated
+ * privileges — that ships in a follow-up phase. Until then, point admins
+ * to the right place.
  */
 export default function MembersPage() {
   return (
     <>
-      <PageHeader title="Members" description="Authenticated user accounts." />
+      <PageHeader
+        title="Members"
+        description="Customer accounts. A full members table with role management lands in a follow-up."
+      />
       <Card>
         <CardBody>
-          <p className="text-sm text-[var(--color-admin-muted)]">
-            For now, manage member accounts in the Supabase dashboard under
-            <strong className="px-1">Authentication → Users</strong>. A first-class
-            members list (with admin-toggle, password reset, delete) lands in a follow-up
-            phase that introduces a server-side Edge Function with elevated privileges.
+          <p className="text-[13.5px] leading-relaxed text-[var(--color-admin-muted)]">
+            Member accounts are stored alongside customer sessions. Until the dedicated members table
+            lands, manage individual accounts in your auth provider dashboard under{' '}
+            <span className="text-[var(--color-admin-text-strong)]">Authentication → Users</span>.
           </p>
-          <p className="mt-3 text-sm text-[var(--color-admin-muted)]">
-            To grant admin to a user, run in the SQL editor:
+          <p className="mt-3 text-[13.5px] text-[var(--color-admin-muted)]">
+            To promote a user to admin, set the <span className="admin-mono text-[12.5px] text-[var(--color-admin-text-strong)]">is_admin</span> claim on their account.
           </p>
-          <pre className="mt-2 overflow-x-auto rounded-md border border-[var(--color-admin-border)] bg-[var(--color-admin-bg-soft)] p-3 text-xs text-[var(--color-admin-text)]">
-{`update auth.users
-set raw_app_meta_data = jsonb_set(
-  coalesce(raw_app_meta_data, '{}'::jsonb),
-  '{is_admin}', 'true'::jsonb)
-where email = 'you@example.com';`}
-          </pre>
         </CardBody>
       </Card>
     </>

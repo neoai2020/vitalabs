@@ -3,9 +3,10 @@ import { useQueryClient } from '@tanstack/react-query'
 import { PageHeader } from '../../../components/PageHeader'
 import { Card, CardBody, CardFooter, CardHeader } from '../../../components/ui/Card'
 import { Button } from '../../../components/ui/Button'
-import { Input } from '../../../components/ui/Input'
+import { Input, Select } from '../../../components/ui/Input'
 import { Label } from '../../../components/ui/Label'
 import { Table, TBody, THead, Th, Td, Tr } from '../../../components/ui/Table'
+import { StatusPill, type StatusTone } from '../../../components/ui/StatusPill'
 import { useBrandList } from '../../../hooks/useBrandQuery'
 import { useAdminBrand } from '../../../context/AdminBrandContext'
 import { useConfig } from '../../../../lib/config/ConfigProvider'
@@ -37,16 +38,16 @@ interface CreativeRow {
 
 const STATUS_LABEL: Record<CampaignRow['status'], string> = {
   draft_local: 'Local draft',
-  draft_synced: 'Draft (Meta-synced)',
-  live_external: 'Live in Ads Manager',
+  draft_synced: 'Synced draft',
+  live_external: 'Live',
   archived: 'Archived',
 }
 
-const STATUS_TONE: Record<CampaignRow['status'], string> = {
-  draft_local: 'bg-[var(--color-admin-surface-elevated)] text-[var(--color-admin-muted)]',
-  draft_synced: 'bg-[var(--color-admin-primary)]/15 text-[var(--color-admin-primary)]',
-  live_external: 'bg-[var(--color-admin-success-soft)] text-[var(--color-admin-success)]',
-  archived: 'bg-[var(--color-admin-surface-elevated)] text-[var(--color-admin-muted)]',
+const STATUS_TONE: Record<CampaignRow['status'], StatusTone> = {
+  draft_local:   'neutral',
+  draft_synced:  'info',
+  live_external: 'success',
+  archived:      'neutral',
 }
 
 const OBJECTIVES = [
@@ -86,7 +87,7 @@ export default function CampaignsPage() {
       <PageHeader
         eyebrow="Marketing"
         title="Ad Studio"
-        description="Bundle creatives into Facebook campaign drafts. Every campaign is pushed as PAUSED — you launch it from Ads Manager."
+        description="Bundle creatives into Facebook campaign drafts. Every campaign is pushed as paused — you launch it from Ads Manager when you’re ready."
         actions={
           <Button
             onClick={() => setWizardOpen(true)}
@@ -99,10 +100,10 @@ export default function CampaignsPage() {
       <AdsTabBar />
 
       {!metaReady ? (
-        <div className="mb-4 rounded-lg border border-[var(--color-admin-border)] bg-[var(--color-admin-bg-soft)] p-4 text-sm">
-          <strong className="text-[var(--color-admin-text-strong)]">Meta Ads not configured.</strong>{' '}
-          <span className="text-[var(--color-admin-muted)]">
-            Set the ad account ID and Page ID in <a href="/admin/site-config/meta-ads" className="text-[var(--color-admin-primary)] hover:underline">Site config → Meta Ads</a> before publishing campaigns.
+        <div className="mb-4 rounded-md border border-[var(--color-admin-warning)]/30 bg-[var(--color-admin-warning-soft)] px-4 py-3 text-[13px]">
+          <strong className="font-medium text-[var(--color-admin-warning)]">Meta Ads not configured.</strong>{' '}
+          <span className="text-[var(--color-admin-text)]">
+            Add the ad account ID and Page ID in <a href="/admin/site-config/meta-ads" className="underline underline-offset-2 hover:text-[var(--color-admin-primary)]">Site config → Meta Ads</a> before publishing campaigns.
           </span>
         </div>
       ) : null}
@@ -143,9 +144,7 @@ export default function CampaignsPage() {
                     <Td>{OBJECTIVES.find(o => o.id === c.objective)?.label ?? c.objective}</Td>
                     <Td>{c.daily_budget_pence != null ? `£${(c.daily_budget_pence / 100).toFixed(2)}` : '—'}</Td>
                     <Td>
-                      <span className={`rounded-full px-2 py-0.5 text-xs ${STATUS_TONE[c.status]}`}>
-                        {STATUS_LABEL[c.status]}
-                      </span>
+                      <StatusPill tone={STATUS_TONE[c.status]}>{STATUS_LABEL[c.status]}</StatusPill>
                     </Td>
                     <Td className="text-xs">{new Date(c.created_at).toLocaleDateString()}</Td>
                     <Td className="text-right">
@@ -154,12 +153,12 @@ export default function CampaignsPage() {
                           href={`https://business.facebook.com/adsmanager/manage/campaigns?act=${accountId.replace(/^act_/, '')}&selected_campaign_ids=${c.fb_campaign_id}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-sm text-[var(--color-admin-primary)] hover:underline"
+                          className="text-[13px] font-medium text-[var(--color-admin-text-strong)] underline-offset-2 hover:text-[var(--color-admin-primary)] hover:underline"
                         >
-                          Open in Ads Manager →
+                          Open in Ads Manager ↗
                         </a>
                       ) : (
-                        <span className="text-xs text-[var(--color-admin-muted)]">Not synced</span>
+                        <span className="text-[12px] text-[var(--color-admin-subtle)]">Not synced</span>
                       )}
                     </Td>
                   </Tr>
@@ -263,29 +262,35 @@ function CampaignWizard({ brand, creatives, onClose, onCreated }: WizardProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,18,22,0.35)] p-4 backdrop-blur-[2px]"
+      onClick={onClose}
+    >
       <div
-        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl border border-[var(--color-admin-border)] bg-[var(--color-admin-surface)] shadow-2xl"
+        className="admin-page-enter max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-[var(--color-admin-border)] bg-[var(--color-admin-surface)] shadow-[0_24px_64px_-24px_rgba(15,18,22,0.25),0_2px_4px_rgba(15,18,22,0.04)]"
         onClick={e => e.stopPropagation()}
       >
-        <div className="border-b border-[var(--color-admin-border)] px-6 py-4">
-          <h2 className="text-base font-semibold text-[var(--color-admin-text-strong)]">New campaign draft</h2>
-          <p className="mt-1 text-sm text-[var(--color-admin-muted)]">Creates a PAUSED campaign on Meta. You launch from Ads Manager.</p>
+        <div className="border-b border-[var(--color-admin-border)] px-6 py-5">
+          <div className="admin-eyebrow mb-1.5">New campaign</div>
+          <h2 className="text-[18px] font-semibold tracking-tight text-[var(--color-admin-text-strong)]">Draft for Meta</h2>
+          <p className="mt-1 text-[13px] leading-relaxed text-[var(--color-admin-muted)]">
+            Creates a paused campaign on Meta. You launch from Ads Manager when you’re ready.
+          </p>
         </div>
 
         {success ? (
           <div className="flex flex-col gap-4 px-6 py-6">
-            <div className="rounded-lg border border-[var(--color-admin-success)]/30 bg-[var(--color-admin-success-soft)] p-4 text-sm">
+            <div className="rounded-md border border-[var(--color-admin-success)]/30 bg-[var(--color-admin-success-soft)] p-4 text-[13.5px]">
               <strong className="font-medium text-[var(--color-admin-success)]">Draft synced.</strong>
               <p className="mt-1 text-[var(--color-admin-text)]">
-                Review your ad set, audience, and creatives in Meta Ads Manager, then launch when ready.
+                Review the ad set, audience, and creatives in Meta Ads Manager, then launch when ready.
               </p>
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="secondary" onClick={onCreated}>Close</Button>
               {success.url ? (
                 <a href={success.url} target="_blank" rel="noreferrer">
-                  <Button>Open in Ads Manager →</Button>
+                  <Button>Open in Ads Manager ↗</Button>
                 </a>
               ) : null}
             </div>
@@ -301,13 +306,9 @@ function CampaignWizard({ brand, creatives, onClose, onCreated }: WizardProps) {
               <div className="grid gap-4 sm:grid-cols-2">
                 <Label>
                   Objective
-                  <select
-                    value={objective}
-                    onChange={e => setObjective(e.target.value)}
-                    className="mt-1 h-10 w-full rounded-md border border-[var(--color-admin-border-strong)] bg-[var(--color-admin-surface)] px-3 text-sm text-[var(--color-admin-text)]"
-                  >
+                  <Select value={objective} onChange={e => setObjective(e.target.value)}>
                     {OBJECTIVES.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
-                  </select>
+                  </Select>
                 </Label>
 
                 <Label hint="Total per day, in £. Split across ad sets when there's more than one.">
@@ -327,8 +328,8 @@ function CampaignWizard({ brand, creatives, onClose, onCreated }: WizardProps) {
                 </Label>
               </div>
 
-              <div className="rounded-lg border border-[var(--color-admin-border)] bg-[var(--color-admin-bg-soft)] p-4">
-                <h3 className="mb-3 text-sm font-medium text-[var(--color-admin-text-strong)]">Ad set</h3>
+              <div className="rounded-md border border-[var(--color-admin-border)] bg-[var(--color-admin-surface-sunken)] p-4">
+                <div className="admin-eyebrow mb-3">Ad set</div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <Label>
                     Ad set name
@@ -348,12 +349,12 @@ function CampaignWizard({ brand, creatives, onClose, onCreated }: WizardProps) {
                   </Label>
                 </div>
 
-                <div className="mt-4">
-                  <div className="mb-2 text-xs font-medium uppercase tracking-wider text-[var(--color-admin-muted)]">
-                    Attached creatives ({selectedCreativeIds.length} selected)
+                <div className="mt-5">
+                  <div className="admin-eyebrow mb-2">
+                    Creatives · {selectedCreativeIds.length} selected
                   </div>
                   {creatives.length === 0 ? (
-                    <p className="text-sm text-[var(--color-admin-muted)]">No creatives available. Generate some in the Studio tab first.</p>
+                    <p className="text-[13px] text-[var(--color-admin-muted)]">No creatives available. Generate some in the Studio tab first.</p>
                   ) : (
                     <div className="grid max-h-64 grid-cols-2 gap-2 overflow-y-auto sm:grid-cols-3">
                       {creatives.map(c => {
@@ -363,10 +364,10 @@ function CampaignWizard({ brand, creatives, onClose, onCreated }: WizardProps) {
                             key={c.id}
                             type="button"
                             onClick={() => toggleCreative(c.id)}
-                            className={`relative overflow-hidden rounded-md border text-left transition-all ${
+                            className={`relative overflow-hidden rounded-md border text-left transition-colors ${
                               selected
-                                ? 'border-[var(--color-admin-primary)] ring-2 ring-[var(--color-admin-primary)]/40'
-                                : 'border-[var(--color-admin-border)] hover:border-[var(--color-admin-border-strong)]'
+                                ? 'border-[var(--color-admin-text-strong)] ring-2 ring-[var(--color-admin-text-strong)] ring-offset-1 ring-offset-[var(--color-admin-surface-sunken)]'
+                                : 'border-[var(--color-admin-border)] hover:border-[var(--color-admin-border-emphasis)]'
                             }`}
                           >
                             <div className="aspect-square w-full bg-[var(--color-admin-surface)]">
@@ -375,10 +376,10 @@ function CampaignWizard({ brand, creatives, onClose, onCreated }: WizardProps) {
                               ) : c.thumbnail_url ? (
                                 <img src={c.thumbnail_url} alt="" className="h-full w-full object-cover" />
                               ) : (
-                                <div className="grid h-full w-full place-items-center text-xs text-[var(--color-admin-muted)]">VIDEO</div>
+                                <div className="admin-mono grid h-full w-full place-items-center text-[10px] text-[var(--color-admin-muted)]">VIDEO</div>
                               )}
                             </div>
-                            <div className="px-2 py-1 text-[10px] uppercase tracking-wider text-[var(--color-admin-muted)]">
+                            <div className="admin-mono px-2 py-1 text-[10px] text-[var(--color-admin-muted)]">
                               {c.kind} · {c.aspect_ratio}
                             </div>
                           </button>
@@ -390,10 +391,12 @@ function CampaignWizard({ brand, creatives, onClose, onCreated }: WizardProps) {
               </div>
             </div>
             <CardFooter>
-              {error ? <span className="mr-auto text-xs text-[var(--color-admin-danger)]">{error}</span> : <span className="mr-auto text-xs text-[var(--color-admin-muted)]">Status: PAUSED on Meta after sync.</span>}
+              {error
+                ? <span className="mr-auto text-[12px] text-[var(--color-admin-danger)]">{error}</span>
+                : <span className="mr-auto text-[12px] text-[var(--color-admin-muted)]">Will arrive on Meta as paused.</span>}
               <Button variant="secondary" onClick={onClose} disabled={submitting}>Cancel</Button>
               <Button onClick={() => void submit()} disabled={!canSubmit}>
-                {submitting ? 'Syncing…' : 'Create + sync to Meta'}
+                {submitting ? 'Syncing…' : 'Create and sync'}
               </Button>
             </CardFooter>
           </>

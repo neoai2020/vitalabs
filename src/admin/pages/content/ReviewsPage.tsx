@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { PageHeader } from '../../components/PageHeader'
 import { Card, CardBody, CardFooter, CardHeader } from '../../components/ui/Card'
-import { Input, Textarea } from '../../components/ui/Input'
+import { Input, Select, Textarea } from '../../components/ui/Input'
 import { Label } from '../../components/ui/Label'
 import { Switch } from '../../components/ui/Switch'
 import { Button } from '../../components/ui/Button'
@@ -66,9 +66,9 @@ export default function ReviewsPage() {
           <Label>Source<Input value={draft.source} onChange={e => setDraft(d => ({ ...d, source: e.target.value }))} placeholder="Trustpilot, Site, …" /></Label>
           <Label>Product ID<Input value={draft.product_id} onChange={e => setDraft(d => ({ ...d, product_id: e.target.value }))} placeholder="Blank for site-wide" /></Label>
           <Label>Rating
-            <select className="h-10 rounded-md border border-[var(--color-admin-border-strong)] bg-[var(--color-admin-bg-soft)] px-3 text-sm text-[var(--color-admin-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-admin-primary)]" value={draft.rating} onChange={e => setDraft(d => ({ ...d, rating: Number(e.target.value) }))}>
+            <Select value={draft.rating} onChange={e => setDraft(d => ({ ...d, rating: Number(e.target.value) }))}>
               {[5, 4, 3, 2, 1].map(n => <option key={n} value={n}>{n} stars</option>)}
-            </select>
+            </Select>
           </Label>
           <Label className="sm:col-span-2">Text<Textarea rows={3} value={draft.text} onChange={e => setDraft(d => ({ ...d, text: e.target.value }))} /></Label>
           <div className="flex items-center gap-2">

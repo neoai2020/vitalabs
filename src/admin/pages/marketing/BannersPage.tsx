@@ -6,6 +6,7 @@ import { Input } from '../../components/ui/Input'
 import { Label } from '../../components/ui/Label'
 import { Switch } from '../../components/ui/Switch'
 import { Button } from '../../components/ui/Button'
+import { StatusPill } from '../../components/ui/StatusPill'
 import { Table, TBody, THead, Th, Td, Tr } from '../../components/ui/Table'
 import { useBrandList, useBrandMutation } from '../../hooks/useBrandQuery'
 import Banner from '../../../components/Banner'
@@ -95,7 +96,7 @@ export default function BannersPage() {
       <Card className="mb-4">
         <CardHeader title="Add banner" />
         <CardBody className="grid gap-3 sm:grid-cols-2">
-          <Label className="sm:col-span-2">Message<Input value={draft.message} onChange={e => setDraft(d => ({ ...d, message: e.target.value }))} placeholder="🔥 Free UK shipping this week" /></Label>
+          <Label className="sm:col-span-2">Message<Input value={draft.message} onChange={e => setDraft(d => ({ ...d, message: e.target.value }))} placeholder="Free UK shipping this week" /></Label>
           <Label hint="Optional. Wraps the banner in a link.">Link URL<Input value={draft.link} onChange={e => setDraft(d => ({ ...d, link: e.target.value }))} /></Label>
           <Label>Sort order<Input type="number" value={draft.sort_order} onChange={e => setDraft(d => ({ ...d, sort_order: Number(e.target.value) }))} /></Label>
           <Label>Background colour
@@ -150,13 +151,15 @@ export default function BannersPage() {
                     {b.start_at ? new Date(b.start_at).toLocaleDateString() : '—'} → {b.end_at ? new Date(b.end_at).toLocaleDateString() : '—'}
                   </Td>
                   <Td>
-                    <button onClick={() => void toggleActive(b)} className={`rounded-full px-2 py-0.5 text-xs font-medium ${b.active ? 'bg-[var(--color-admin-success-soft)] text-[var(--color-admin-success)]' : 'bg-[var(--color-admin-surface-elevated)] text-[var(--color-admin-muted)]'}`}>
-                      {b.active ? 'Active' : 'Inactive'}
+                    <button type="button" onClick={() => void toggleActive(b)} className="appearance-none">
+                      <StatusPill tone={b.active ? 'success' : 'neutral'}>
+                        {b.active ? 'Active' : 'Inactive'}
+                      </StatusPill>
                     </button>
                   </Td>
                   <Td>{b.sort_order}</Td>
                   <Td className="text-right">
-                    <button className="text-sm text-[var(--color-admin-danger)] hover:underline" onClick={() => { if (confirm('Delete this banner?')) void remove.mutate({ id: b.id }) }}>Delete</button>
+                    <button className="text-[13px] text-[var(--color-admin-danger)] hover:underline" onClick={() => { if (confirm('Delete this banner?')) void remove.mutate({ id: b.id }) }}>Delete</button>
                   </Td>
                 </Tr>
               ))}

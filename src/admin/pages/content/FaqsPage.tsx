@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { PageHeader } from '../../components/PageHeader'
 import { Card, CardBody, CardFooter, CardHeader } from '../../components/ui/Card'
-import { Input, Textarea } from '../../components/ui/Input'
+import { Input, Select, Textarea } from '../../components/ui/Input'
 import { Label } from '../../components/ui/Label'
 import { Button } from '../../components/ui/Button'
 import { Table, TBody, THead, Th, Td, Tr } from '../../components/ui/Table'
@@ -50,9 +50,9 @@ export default function FaqsPage() {
         <CardHeader title="Add FAQ" />
         <CardBody className="grid gap-3 sm:grid-cols-2">
           <Label>Page
-            <select className="h-10 rounded-md border border-[var(--color-admin-border-strong)] bg-[var(--color-admin-bg-soft)] px-3 text-sm text-[var(--color-admin-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-admin-primary)]" value={draft.page} onChange={e => setDraft(d => ({ ...d, page: e.target.value }))}>
+            <Select value={draft.page} onChange={e => setDraft(d => ({ ...d, page: e.target.value }))}>
               {PAGE_OPTIONS.map(p => <option key={p} value={p}>{p}</option>)}
-            </select>
+            </Select>
           </Label>
           <Label>Sort order<Input type="number" value={draft.sort_order} onChange={e => setDraft(d => ({ ...d, sort_order: Number(e.target.value) }))} /></Label>
           <Label className="sm:col-span-2">Question<Input value={draft.question} onChange={e => setDraft(d => ({ ...d, question: e.target.value }))} /></Label>

@@ -3,7 +3,14 @@ import { PageHeader } from '../../components/PageHeader'
 import { Card } from '../../components/ui/Card'
 import { Table, TBody, THead, Th, Td, Tr } from '../../components/ui/Table'
 import { Button } from '../../components/ui/Button'
+import { StatusPill, type StatusTone } from '../../components/ui/StatusPill'
 import { useBrandList } from '../../hooks/useBrandQuery'
+
+const PRODUCT_STATUS_TONE: Record<ProductRow['status'], StatusTone> = {
+  active:   'success',
+  draft:    'warning',
+  archived: 'neutral',
+}
 
 interface ProductRow {
   id: string
@@ -41,9 +48,13 @@ export default function ProductsListPage() {
         {isLoading ? (
           <div className="px-6 py-8 text-sm text-[var(--color-admin-muted)]">Loading…</div>
         ) : products.length === 0 ? (
-          <div className="px-6 py-8 text-sm text-[var(--color-admin-muted)]">
-            No products yet. Run <code>npx tsx scripts/seed-from-data-files.ts</code> to seed
-            from <code>src/data/peptides.ts</code>, or create one with the New product button.
+          <div className="px-6 py-12 text-center text-[13.5px] text-[var(--color-admin-muted)]">
+            <div className="mx-auto max-w-sm">
+              No products yet. Create your first one to start filling the catalogue.
+            </div>
+            <div className="mt-4">
+              <Link to="/admin/content/products/new"><Button size="sm">New product</Button></Link>
+            </div>
           </div>
         ) : (
           <Table>
@@ -64,17 +75,12 @@ export default function ProductsListPage() {
                   <Td className="font-medium">{p.compound}</Td>
                   <Td>{p.sku}</Td>
                   <Td>{p.category}</Td>
-                  <Td>
-                    <span className={
-                      p.status === 'active'
-                        ? 'rounded-full bg-[var(--color-admin-success-soft)] px-2 py-0.5 text-xs font-medium text-[var(--color-admin-success)]'
-                        : p.status === 'draft'
-                        ? 'rounded-full bg-[var(--color-admin-warning-soft)] px-2 py-0.5 text-xs font-medium text-[var(--color-admin-warning)]'
-                        : 'rounded-full bg-[var(--color-admin-surface-elevated)] px-2 py-0.5 text-xs font-medium text-[var(--color-admin-muted)]'
-                    }>{p.status}</span>
-                  </Td>
+                  <Td><StatusPill tone={PRODUCT_STATUS_TONE[p.status]}>{p.status}</StatusPill></Td>
                   <Td className="text-right">
-                    <Link to={`/admin/content/products/${p.id}`} className="text-sm font-medium text-[var(--color-admin-primary)] hover:underline">
+                    <Link
+                      to={`/admin/content/products/${p.id}`}
+                      className="text-[13px] font-medium text-[var(--color-admin-text-strong)] underline-offset-2 hover:text-[var(--color-admin-primary)] hover:underline"
+                    >
                       Edit
                     </Link>
                   </Td>

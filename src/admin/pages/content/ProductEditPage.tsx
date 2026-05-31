@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { PageHeader } from '../../components/PageHeader'
 import { Card, CardBody, CardFooter, CardHeader } from '../../components/ui/Card'
-import { Input, Textarea } from '../../components/ui/Input'
+import { Input, Select, Textarea } from '../../components/ui/Input'
 import { Label } from '../../components/ui/Label'
 import { Button } from '../../components/ui/Button'
 import { useBrandMutation } from '../../hooks/useBrandQuery'
@@ -131,15 +131,14 @@ export default function ProductEditPage() {
             </Label>
             <Label>
               Status
-              <select
+              <Select
                 value={row.status}
                 onChange={e => setField('status', e.target.value as ProductRow['status'])}
-                className="h-10 w-full rounded-md border border-[var(--color-admin-border-strong)] bg-[var(--color-admin-bg-soft)] px-3 text-sm text-[var(--color-admin-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-admin-primary)]"
               >
                 <option value="active">Active</option>
                 <option value="draft">Draft</option>
                 <option value="archived">Archived</option>
-              </select>
+              </Select>
             </Label>
             <Label>
               Sort order

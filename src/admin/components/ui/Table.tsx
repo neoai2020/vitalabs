@@ -4,7 +4,7 @@ import { cn } from '../../lib/cn'
 export function Table({ className, ...rest }: TableHTMLAttributes<HTMLTableElement>) {
   return (
     <div className="overflow-x-auto">
-      <table {...rest} className={cn('w-full text-sm', className)} />
+      <table {...rest} className={cn('w-full text-[13.5px]', className)} />
     </div>
   )
 }
@@ -14,7 +14,8 @@ export function THead({ className, ...rest }: HTMLAttributes<HTMLTableSectionEle
     <thead
       {...rest}
       className={cn(
-        'border-b border-[var(--color-admin-border)] bg-[var(--color-admin-bg-soft)] text-left text-xs uppercase tracking-wide text-[var(--color-admin-muted)]',
+        'border-b border-[var(--color-admin-border)] bg-[var(--color-admin-surface-sunken)]',
+        'text-left text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--color-admin-muted)]',
         className,
       )}
     />
@@ -26,11 +27,16 @@ export function TBody({ className, ...rest }: HTMLAttributes<HTMLTableSectionEle
 }
 
 export function Tr({ className, ...rest }: HTMLAttributes<HTMLTableRowElement>) {
-  return <tr {...rest} className={cn('transition-colors hover:bg-[var(--color-admin-surface-hover)]', className)} />
+  return (
+    <tr
+      {...rest}
+      className={cn('transition-colors duration-100 hover:bg-[var(--color-admin-surface-hover)]', className)}
+    />
+  )
 }
 
 export function Th({ className, ...rest }: ThHTMLAttributes<HTMLTableCellElement>) {
-  return <th {...rest} className={cn('px-4 py-3 font-semibold', className)} />
+  return <th {...rest} className={cn('px-4 py-2.5 font-medium', className)} />
 }
 
 export function Td({ className, ...rest }: TdHTMLAttributes<HTMLTableCellElement>) {
