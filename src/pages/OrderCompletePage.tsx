@@ -2,12 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
-declare global {
-  interface Window {
-    fbq: (...args: unknown[]) => void
-  }
-}
-
 interface OrderInfo {
   description?: string
   displayPrice?: string

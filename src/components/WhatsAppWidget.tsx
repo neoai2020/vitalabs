@@ -1,19 +1,22 @@
 import { useLocation } from 'react-router-dom'
 import { getPeptideById } from '../data/peptides'
+import { useConfig } from '../lib/config/ConfigProvider'
 
-const PHONE = '447440153510'
-
-// Routes where the WhatsApp widget is hidden. Currently checkout only —
-// the sticky mobile pay bar there overlaps the floating button and we
-// want zero distractions during payment.
-const HIDDEN_ROUTES = ['/checkout']
-
+/**
+ * Floating WhatsApp button. Phone, default message, enabled flag, and
+ * the list of routes where it should be hidden are all driven by
+ * site_config.whatsapp (editable in /admin/site-config/whatsapp).
+ */
 export default function WhatsAppWidget() {
   const { pathname } = useLocation()
+  const { config, loading } = useConfig()
+  const wa = config.whatsapp
 
-  if (HIDDEN_ROUTES.includes(pathname)) return null
+  if (loading || !wa.enabled || !wa.phone) return null
+  if (wa.hidden_routes.includes(pathname)) return null
+  if (!config.feature_flags.whatsapp_enabled) return null
 
-  let message = 'I need some help'
+  let message = wa.default_message || 'I need some help'
 
   const productMatch = pathname.match(/^\/products\/(.+)$/)
   if (productMatch) {
@@ -23,7 +26,7 @@ export default function WhatsAppWidget() {
     }
   }
 
-  const url = `https://wa.me/${PHONE}?text=${encodeURIComponent(message)}`
+  const url = `https://wa.me/${wa.phone}?text=${encodeURIComponent(message)}`
 
   return (
     <a

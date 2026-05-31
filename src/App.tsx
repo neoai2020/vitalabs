@@ -5,6 +5,8 @@ import { CartProvider } from './lib/cart'
 import CartDrawer from './components/CartDrawer'
 import WhatsAppWidget from './components/WhatsAppWidget'
 import { AdminRoutes } from './admin/AdminRoutes'
+import { ConfigProvider } from './lib/config/ConfigProvider'
+import { TrackingBoot } from './lib/tracking/TrackingBoot'
 import LandingPage from './pages/LandingPage'
 import ProductsPage from './pages/ProductsPage'
 import ProductDetailPage from './pages/ProductDetailPage'
@@ -102,9 +104,11 @@ export default function App() {
 
   return (
     <AuthProvider>
+      <ConfigProvider>
       <CartProvider>
       <ScrollToTop />
       <CartDrawer />
+      <TrackingBoot />
       <Routes>
         {/* Main site */}
         <Route path="/" element={<LandingPage />} />
@@ -139,6 +143,7 @@ export default function App() {
       {showToggle && <ThemeToggle />}
       <WhatsAppWidget />
       </CartProvider>
+      </ConfigProvider>
     </AuthProvider>
   )
 }

@@ -1,11 +1,17 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Outlet } from 'react-router-dom'
 import { useAuth } from '../members/context/AuthContext'
-import { AdminBrandProvider } from './context/AdminBrandContext'
+import { AdminBrandProvider, useAdminBrand } from './context/AdminBrandContext'
+import { ConfigProvider } from '../lib/config/ConfigProvider'
 import { AdminNav } from './components/AdminNav'
 import { BrandSwitcher } from './components/BrandSwitcher'
 import { Button } from './components/ui/Button'
 import './admin.css'
+
+function AdminConfigGate({ children }: { children: ReactNode }) {
+  const { brand } = useAdminBrand()
+  return <ConfigProvider brand={brand}>{children}</ConfigProvider>
+}
 
 export function AdminLayout() {
   const { user, logout } = useAuth()
@@ -13,6 +19,7 @@ export function AdminLayout() {
 
   return (
     <AdminBrandProvider>
+      <AdminConfigGate>
       <div className="admin-root flex min-h-screen flex-col">
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-[var(--color-admin-border)] bg-white px-4 shadow-sm">
           <div className="flex items-center gap-3">
@@ -53,6 +60,7 @@ export function AdminLayout() {
           </main>
         </div>
       </div>
+      </AdminConfigGate>
     </AdminBrandProvider>
   )
 }
