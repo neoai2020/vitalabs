@@ -73,6 +73,36 @@ interface JobRow {
   created_at: string
 }
 
+
+/** Supabase's functions.invoke() wraps non-2xx responses as a
+ *  FunctionsHttpError with the generic "Edge Function returned a
+ *  non-2xx status code" message and the actual Response object on
+ *  `.context`. Pulling the JSON body off that Response gives us the
+ *  real error (e.g. "GEMINI_API_KEY not configured", "higgsfield 401:
+ *  Invalid credentials"). */
+async function extractEdgeFnError(err: unknown): Promise<string> {
+  const generic = err instanceof Error ? err.message : 'Edge Function failed'
+  const ctx = (err as { context?: Response | { body?: unknown; error?: string } } | null)?.context
+  if (!ctx) return generic
+  // FunctionsHttpError exposes the raw Response on .context. Cloning so
+  // we can still .text() it if .json() fails.
+  if (ctx instanceof Response) {
+    try {
+      const body = await ctx.clone().json() as { error?: string; details?: unknown }
+      if (typeof body?.error === 'string' && body.error) return body.error
+      if (body?.details) return `${generic} — ${JSON.stringify(body.details).slice(0, 240)}`
+    } catch {
+      const text = await ctx.clone().text().catch(() => '')
+      if (text) return text.slice(0, 240)
+    }
+    return generic
+  }
+  const obj = ctx as { body?: unknown; error?: string }
+  if (typeof obj.error === 'string' && obj.error) return obj.error
+  if (typeof obj.body === 'string' && obj.body) return obj.body.slice(0, 240)
+  return generic
+}
+
 export default function StudioPage() {
   const { brand } = useAdminBrand()
   const queryClient = useQueryClient()
@@ -238,7 +268,7 @@ function StudioForm({ products, productsLoading }: FormProps) {
             prompt_template: hook.prompt_template,
           },
         })
-        if (error) throw new Error(error.message)
+        if (error) throw new Error(await extractEdgeFnError(error))
         const res = data as { ok?: boolean; creatives?: unknown[]; errors?: string[]; error?: string }
         if (!res?.ok) throw new Error(res?.error ?? 'Generation failed')
         const made = res.creatives?.length ?? 0
@@ -267,7 +297,7 @@ function StudioForm({ products, productsLoading }: FormProps) {
           duration_s: duration,
         },
       })
-      if (error) throw new Error(error.message)
+      if (error) throw new Error(await extractEdgeFnError(error))
       const res = data as { ok?: boolean; error?: string; job_id?: string }
       if (!res?.ok) throw new Error(res?.error ?? 'Submission failed')
       setGenerationNote(`Job submitted. We'll keep polling — video usually takes 30-120 seconds.`)
