@@ -9,6 +9,7 @@ import WhatsAppPage from './pages/site-config/WhatsAppPage'
 import SeoPage from './pages/site-config/SeoPage'
 import FeatureFlagsPage from './pages/site-config/FeatureFlagsPage'
 import ThemePage from './pages/site-config/ThemePage'
+import MetaAdsPage from './pages/site-config/MetaAdsPage'
 import ProductsListPage from './pages/content/ProductsListPage'
 import ProductEditPage from './pages/content/ProductEditPage'
 import ReviewsPage from './pages/content/ReviewsPage'
@@ -54,6 +55,7 @@ export function AdminRoutes() {
                   <Route path="seo" element={<SeoPage />} />
                   <Route path="feature-flags" element={<FeatureFlagsPage />} />
                   <Route path="theme" element={<ThemePage />} />
+                  <Route path="meta-ads" element={<MetaAdsPage />} />
                 </Route>
 
                 <Route path="content">

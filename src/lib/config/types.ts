@@ -50,6 +50,15 @@ export interface ThemeConfig {
   accent_color: string
 }
 
+export interface MetaAdsConfig {
+  /** Ad account id including the `act_` prefix, e.g. `act_1234567890`. */
+  ad_account_id: string
+  /** Page id that owns the ads (creator side of object_story_spec). */
+  page_id: string
+  /** Optional — Instagram actor id to enable Instagram placements. */
+  instagram_actor_id: string
+}
+
 export interface SiteConfig {
   tracking: TrackingConfig
   brand_info: BrandInfoConfig
@@ -57,6 +66,7 @@ export interface SiteConfig {
   seo_defaults: SeoDefaultsConfig
   feature_flags: FeatureFlagsConfig
   theme: ThemeConfig
+  meta_ads: MetaAdsConfig
 }
 
 export type SiteConfigKey = keyof SiteConfig
@@ -99,6 +109,12 @@ export const DEFAULT_THEME: ThemeConfig = {
   accent_color: '#5E89A4',
 }
 
+export const DEFAULT_META_ADS: MetaAdsConfig = {
+  ad_account_id: '',
+  page_id: '',
+  instagram_actor_id: '',
+}
+
 export const DEFAULT_CONFIG: SiteConfig = {
   tracking: DEFAULT_TRACKING,
   brand_info: DEFAULT_BRAND_INFO,
@@ -106,4 +122,5 @@ export const DEFAULT_CONFIG: SiteConfig = {
   seo_defaults: DEFAULT_SEO,
   feature_flags: DEFAULT_FEATURE_FLAGS,
   theme: DEFAULT_THEME,
+  meta_ads: DEFAULT_META_ADS,
 }

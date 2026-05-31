@@ -179,6 +179,7 @@ const NAV: NavGroup[] = [
       { to: '/admin/site-config/seo', label: 'SEO defaults', icon: Icon.Globe },
       { to: '/admin/site-config/feature-flags', label: 'Feature flags', icon: Icon.Flag },
       { to: '/admin/site-config/theme', label: 'Theme', icon: Icon.Palette },
+      { to: '/admin/site-config/meta-ads', label: 'Meta Ads', icon: Icon.Megaphone },
     ],
   },
   {
