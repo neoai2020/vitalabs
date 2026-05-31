@@ -1,16 +1,23 @@
 /**
- * Submits a video ad generation request to the Higgsfield API and
+ * Submits a video ad generation request to the Higgsfield v2 API and
  * records an ad_jobs row so the Studio UI can poll for completion.
  *
  * Two-step flow because video gen is slow (30-120s):
- *   1. This function POSTs the prompt to Higgsfield and stores the
- *      generation_id as external_id on a new ad_jobs row.
- *   2. poll-ad-jobs picks up running jobs, asks Higgsfield for status,
- *      and when ready downloads the video into ad-creatives storage
- *      + creates the matching ad_creatives row.
+ *   1. This function POSTs the prompt to the model-specific Higgsfield
+ *      endpoint (e.g. /v1/image2video/dop) and stores the returned
+ *      request_id as external_id on a new ad_jobs row.
+ *   2. poll-ad-jobs picks up running jobs, hits Higgsfield's
+ *      /requests/{request_id}/status, and when ready downloads the
+ *      video into ad-creatives storage + creates the matching
+ *      ad_creatives row.
  *
  * Studio UI auto-polls poll-ad-jobs every 10s while there are running
  * jobs for the active brand.
+ *
+ * Auth: Higgsfield v2 expects `Authorization: Key KEY_ID:KEY_SECRET`.
+ * We read credentials from either:
+ *   - HIGGSFIELD_API_KEY containing the full "KEY_ID:KEY_SECRET" string, OR
+ *   - HIGGSFIELD_API_KEY + HIGGSFIELD_API_SECRET separately.
  *
  * Body: {
  *   brand, product_id, model_id, preset?, prompt, aspect_ratio, duration_s
@@ -21,7 +28,7 @@ import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { handleOptions, jsonResponse } from '../_shared/cors.ts'
 
-const HIGGSFIELD_API_BASE = Deno.env.get('HIGGSFIELD_API_BASE') ?? 'https://api.higgsfield.ai'
+const HIGGSFIELD_API_BASE = Deno.env.get('HIGGSFIELD_API_BASE') ?? 'https://platform.higgsfield.ai'
 
 type Brand = 'vitalabs' | 'peptiva'
 
@@ -40,15 +47,31 @@ const BRAND_NAMES: Record<Brand, string> = {
   peptiva: 'Peptiva',
 }
 
-/** Maps our curated model ids to Higgsfield's provider model strings.
- *  Centralised so we can adjust without touching the UI. */
-const PROVIDER_MODEL_MAP: Record<string, string> = {
-  veo3: 'veo-3',
-  'sora2-video': 'sora-2',
-  kling3: 'kling-3',
-  seedance2: 'seedance-2',
-  'wan2-6': 'wan-2.6',
-  'higgsfield-dop': 'higgsfield-dop',
+/** Maps our curated model ids to Higgsfield's endpoint + payload shape.
+ *  Centralised so we can adjust without touching the UI.
+ *
+ *  Only `higgsfield-dop` is verified against the v2 API. The other
+ *  partner-model paths are best-guess and will throw a clear error if
+ *  Higgsfield rejects them — the operator can ping us to verify the
+ *  endpoint with their account before we open up the model selector. */
+interface ModelConfig {
+  endpoint: string
+  /** Builds the input payload for this model's endpoint. */
+  buildInput: (opts: { prompt: string; image_url: string | null; duration_s: number; aspect_ratio: string }) => Record<string, unknown>
+}
+
+const MODEL_CONFIGS: Record<string, ModelConfig> = {
+  'higgsfield-dop': {
+    endpoint: '/v1/image2video/dop',
+    buildInput: ({ prompt, image_url, duration_s }) => ({
+      model: 'dop-turbo',
+      prompt,
+      input_images: image_url
+        ? [{ type: 'image_url', image_url }]
+        : [],
+      duration: duration_s,
+    }),
+  },
 }
 
 serve(async (req: Request) => {
@@ -56,9 +79,12 @@ serve(async (req: Request) => {
   if (pre) return pre
   if (req.method !== 'POST') return jsonResponse({ error: 'Method not allowed' }, 405)
 
-  const apiKey = Deno.env.get('HIGGSFIELD_API_KEY')
-  if (!apiKey) {
-    return jsonResponse({ ok: false, error: 'HIGGSFIELD_API_KEY not configured' }, 500)
+  const credentials = resolveHiggsfieldCredentials()
+  if (!credentials) {
+    return jsonResponse({
+      ok: false,
+      error: 'HIGGSFIELD_API_KEY not configured. Set it as "KEY_ID:KEY_SECRET" or set HIGGSFIELD_API_KEY and HIGGSFIELD_API_SECRET separately. Keys come from https://cloud.higgsfield.ai under API settings.',
+    }, 500)
   }
 
   const authHeader = req.headers.get('Authorization')
@@ -85,9 +111,12 @@ serve(async (req: Request) => {
     return jsonResponse({ ok: false, error: 'brand, product_id, model_id, and prompt are required' }, 400)
   }
 
-  const providerModel = PROVIDER_MODEL_MAP[body.model_id]
-  if (!providerModel) {
-    return jsonResponse({ ok: false, error: `unsupported model_id: ${body.model_id}` }, 400)
+  const modelConfig = MODEL_CONFIGS[body.model_id]
+  if (!modelConfig) {
+    return jsonResponse({
+      ok: false,
+      error: `Model "${body.model_id}" is not yet enabled. Only "higgsfield-dop" is verified against the Higgsfield v2 API. Other partner models (Veo, Sora, Kling, Seedance, Wan) require endpoint paths we'll enable once verified against your account.`,
+    }, 400)
   }
 
   const admin = createClient(
@@ -112,28 +141,23 @@ serve(async (req: Request) => {
     brand: body.brand,
   })
 
-  // Resolution + duration must align with what the chosen model supports —
-  // we validated the duration in the Studio UI but enforce ceiling here too.
-  const resolution = body.aspect_ratio === '9:16' ? '720p' : '1080p'
   const duration = Math.max(5, Math.min(20, Math.round(body.duration_s)))
 
-  const submission: Record<string, unknown> = {
-    model: providerModel,
-    prompt: filledPrompt,
-    duration,
-    resolution,
-    aspect_ratio: body.aspect_ratio,
-  }
-  if (product.image_url) {
-    submission.image_url = product.image_url
+  const submission = {
+    input: modelConfig.buildInput({
+      prompt: filledPrompt,
+      image_url: product.image_url,
+      duration_s: duration,
+      aspect_ratio: body.aspect_ratio,
+    }),
   }
 
   let submitRes: Response
   try {
-    submitRes = await fetch(`${HIGGSFIELD_API_BASE}/v1/generate`, {
+    submitRes = await fetch(`${HIGGSFIELD_API_BASE}${modelConfig.endpoint}`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Key ${credentials}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(submission),
@@ -144,17 +168,24 @@ serve(async (req: Request) => {
 
   if (!submitRes.ok) {
     const errBody = await submitRes.text().catch(() => '')
-    return jsonResponse({ ok: false, error: `higgsfield ${submitRes.status}: ${errBody.slice(0, 300)}` }, 502)
+    return jsonResponse({
+      ok: false,
+      error: `higgsfield ${submitRes.status}: ${errBody.slice(0, 300)}`,
+    }, 502)
   }
 
   const submitJson = await submitRes.json().catch(() => ({}))
-  const generationId =
-    submitJson?.generation_id ??
+  const requestId =
+    submitJson?.request_id ??
     submitJson?.id ??
-    submitJson?.data?.task_id ??
+    submitJson?.data?.request_id ??
     null
-  if (!generationId) {
-    return jsonResponse({ ok: false, error: 'higgsfield returned no generation id', details: submitJson }, 502)
+  if (!requestId) {
+    return jsonResponse({
+      ok: false,
+      error: 'higgsfield returned no request_id',
+      details: submitJson,
+    }, 502)
   }
 
   const { data: job, error: jobErr } = await admin
@@ -163,11 +194,11 @@ serve(async (req: Request) => {
       brand: body.brand,
       kind: 'generate_video',
       status: 'running',
-      external_id: String(generationId),
+      external_id: String(requestId),
       params: {
         product_id: body.product_id,
         model_id: body.model_id,
-        provider_model: providerModel,
+        endpoint: modelConfig.endpoint,
         preset: body.preset ?? null,
         prompt: filledPrompt,
         aspect_ratio: body.aspect_ratio,
@@ -184,10 +215,25 @@ serve(async (req: Request) => {
   return jsonResponse({
     ok: true,
     job_id: job.id,
-    external_id: String(generationId),
+    external_id: String(requestId),
     status: 'running',
   })
 })
+
+
+/** Resolves Higgsfield credentials into the "KEY_ID:KEY_SECRET" string
+ *  the v2 API wants in the Authorization header. Returns null if neither
+ *  shape is present. */
+function resolveHiggsfieldCredentials(): string | null {
+  const key = Deno.env.get('HIGGSFIELD_API_KEY')?.trim()
+  if (!key) return null
+  if (key.includes(':')) return key
+  const secret = Deno.env.get('HIGGSFIELD_API_SECRET')?.trim()
+  if (secret) return `${key}:${secret}`
+  // Single token without secret won't authenticate against v2 — return null
+  // so the caller can surface a helpful error instead of a 401 from Higgsfield.
+  return null
+}
 
 
 function fillPromptTokens(opts: {

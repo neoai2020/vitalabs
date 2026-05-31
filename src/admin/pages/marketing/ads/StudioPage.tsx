@@ -187,10 +187,12 @@ function StudioForm({ products, productsLoading }: FormProps) {
   const [customPrompt, setCustomPrompt] = useState('')
   const [variantsN, setVariantsN] = useState(4)
 
-  // Video
-  const [presetId, setPresetId] = useState<PresetId | ''>('ugc')
-  const [videoModelId, setVideoModelId] = useState<VideoModelId>('wan2-6')
-  const [duration, setDuration] = useState(8)
+  // Video — only higgsfield-dop is verified against the v2 API today.
+  // Other partner models are listed in VIDEO_MODELS for roadmap visibility
+  // but flagged comingSoon and filtered out of the picker.
+  const [presetId, setPresetId] = useState<PresetId | ''>('tv_spot')
+  const [videoModelId, setVideoModelId] = useState<VideoModelId>('higgsfield-dop')
+  const [duration, setDuration] = useState(5)
   const [videoPrompt, setVideoPrompt] = useState('')
 
   // Generation lifecycle (image only for now; video added in Phase 3).
@@ -201,12 +203,16 @@ function StudioForm({ products, productsLoading }: FormProps) {
   const product = products.find(p => p.id === productId) ?? null
 
   /* When operator picks a preset, mirror its suggested model + prefill
-   * the prompt so they can edit instead of starting from a blank box. */
+   * the prompt so they can edit instead of starting from a blank box.
+   * If the preset's suggested model isn't enabled yet (coming-soon),
+   * fall back to higgsfield-dop so the operator never lands on an
+   * unreachable model. */
   const applyPreset = (id: PresetId) => {
     setPresetId(id)
     const preset = findPreset(id)
     if (preset) {
-      setVideoModelId(preset.suggested_model)
+      const suggested = VIDEO_MODELS.find(m => m.id === preset.suggested_model)
+      setVideoModelId(suggested && !suggested.comingSoon ? preset.suggested_model : 'higgsfield-dop')
       setVideoPrompt(preset.prompt_template)
     }
   }
@@ -500,9 +506,16 @@ function VideoForm({ presetId, applyPreset, videoModelId, setVideoModelId, durat
           onChange={e => setVideoModelId(e.target.value as VideoModelId)}
           className="mt-1 h-10 w-full rounded-md border border-[var(--color-admin-border-strong)] bg-[var(--color-admin-surface)] px-3 text-sm text-[var(--color-admin-text)]"
         >
-          {VIDEO_MODELS.map(m => (
+          {VIDEO_MODELS.filter(m => !m.comingSoon).map(m => (
             <option key={m.id} value={m.id}>{m.label}</option>
           ))}
+          {VIDEO_MODELS.some(m => m.comingSoon) ? (
+            <optgroup label="Coming soon (verify endpoint with your account first)">
+              {VIDEO_MODELS.filter(m => m.comingSoon).map(m => (
+                <option key={m.id} value={m.id} disabled>{m.label}</option>
+              ))}
+            </optgroup>
+          ) : null}
         </select>
         <p className="mt-1 text-xs text-[var(--color-admin-muted)]">
           {VIDEO_MODELS.find(m => m.id === videoModelId)?.description}

@@ -70,13 +70,25 @@ export const IMAGE_MODELS: ImageModel[] = [
   },
 ]
 
+/* Only `higgsfield-dop` is verified against Higgsfield's v2 API
+ * (`/v1/image2video/dop`). Other partner models are listed for
+ * roadmap visibility but disabled in the picker until we verify their
+ * endpoints against the operator's account. */
 export const VIDEO_MODELS: VideoModel[] = [
+  {
+    id: 'higgsfield-dop',
+    label: 'Higgsfield DOP',
+    description: 'Director-of-photography model. Image-to-video camera moves on the product photo. Verified live.',
+    durations_s: [5, 10],
+    aspect_ratios: ['9:16', '1:1', '16:9'],
+  },
   {
     id: 'veo3',
     label: 'Veo 3',
     description: 'Google\'s flagship for cinematic motion and natural human performances.',
     durations_s: [8, 16],
     aspect_ratios: ['9:16', '1:1', '16:9'],
+    comingSoon: true,
   },
   {
     id: 'sora2-video',
@@ -84,6 +96,7 @@ export const VIDEO_MODELS: VideoModel[] = [
     description: 'Strong creative control, good for surreal / lifestyle ads.',
     durations_s: [10, 20],
     aspect_ratios: ['9:16', '1:1', '16:9'],
+    comingSoon: true,
   },
   {
     id: 'kling3',
@@ -91,6 +104,7 @@ export const VIDEO_MODELS: VideoModel[] = [
     description: 'Detailed product close-ups; reliable for unboxing-style shots.',
     durations_s: [5, 10],
     aspect_ratios: ['9:16', '1:1', '16:9'],
+    comingSoon: true,
   },
   {
     id: 'seedance2',
@@ -98,6 +112,7 @@ export const VIDEO_MODELS: VideoModel[] = [
     description: 'Energetic motion, good for hyper-cuts and transformation ads.',
     durations_s: [6, 12],
     aspect_ratios: ['9:16', '1:1'],
+    comingSoon: true,
   },
   {
     id: 'wan2-6',
@@ -105,13 +120,7 @@ export const VIDEO_MODELS: VideoModel[] = [
     description: 'Realistic human talking-heads; the workhorse for UGC.',
     durations_s: [8, 16],
     aspect_ratios: ['9:16', '1:1'],
-  },
-  {
-    id: 'higgsfield-dop',
-    label: 'Higgsfield DOP',
-    description: 'Director-of-photography model; camera moves on a product still.',
-    durations_s: [5, 10],
-    aspect_ratios: ['9:16', '1:1', '16:9'],
+    comingSoon: true,
   },
 ]
 

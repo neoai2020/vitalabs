@@ -15,13 +15,26 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { handleOptions, jsonResponse } from '../_shared/cors.ts'
 import { generateAdCopy } from '../_shared/adCopy.ts'
 
-const HIGGSFIELD_API_BASE = Deno.env.get('HIGGSFIELD_API_BASE') ?? 'https://api.higgsfield.ai'
+const HIGGSFIELD_API_BASE = Deno.env.get('HIGGSFIELD_API_BASE') ?? 'https://platform.higgsfield.ai'
 
 type Brand = 'vitalabs' | 'peptiva'
 
 const BRAND_NAMES: Record<Brand, string> = {
   vitalabs: 'Vita Labs',
   peptiva: 'Peptiva',
+}
+
+
+/** Resolves Higgsfield credentials into the "KEY_ID:KEY_SECRET" string
+ *  the v2 API wants in the Authorization header. Returns null if neither
+ *  shape is present. */
+function resolveHiggsfieldCredentials(): string | null {
+  const key = Deno.env.get('HIGGSFIELD_API_KEY')?.trim()
+  if (!key) return null
+  if (key.includes(':')) return key
+  const secret = Deno.env.get('HIGGSFIELD_API_SECRET')?.trim()
+  if (secret) return `${key}:${secret}`
+  return null
 }
 
 interface JobStatus {
@@ -37,8 +50,13 @@ serve(async (req: Request) => {
   if (pre) return pre
   if (req.method !== 'POST') return jsonResponse({ error: 'Method not allowed' }, 405)
 
-  const apiKey = Deno.env.get('HIGGSFIELD_API_KEY')
-  if (!apiKey) return jsonResponse({ ok: false, error: 'HIGGSFIELD_API_KEY not configured' }, 500)
+  const credentials = resolveHiggsfieldCredentials()
+  if (!credentials) {
+    return jsonResponse({
+      ok: false,
+      error: 'HIGGSFIELD_API_KEY not configured. Set it as "KEY_ID:KEY_SECRET" or set HIGGSFIELD_API_KEY and HIGGSFIELD_API_SECRET separately.',
+    }, 500)
+  }
 
   const authHeader = req.headers.get('Authorization')
   if (!authHeader) return jsonResponse({ ok: false, error: 'unauthorized' }, 401)
@@ -95,7 +113,7 @@ serve(async (req: Request) => {
     }
 
     try {
-      const status = await fetchProviderStatus(job.external_id, apiKey)
+      const status = await fetchProviderStatus(job.external_id, credentials)
 
       if (status.terminal === 'done' && status.video_url) {
         const creativeId = await finaliseSuccess({
@@ -153,11 +171,13 @@ interface ProviderStatus {
   error?: string
 }
 
-/** Hits Higgsfield's status endpoint and normalises the response so the
- *  caller doesn't have to care about field naming variations. */
-async function fetchProviderStatus(externalId: string, apiKey: string): Promise<ProviderStatus> {
-  const res = await fetch(`${HIGGSFIELD_API_BASE}/v1/status/${encodeURIComponent(externalId)}`, {
-    headers: { Authorization: `Bearer ${apiKey}` },
+/** Hits Higgsfield v2's `/requests/{request_id}/status` endpoint and
+ *  normalises the response so the caller doesn't have to care about
+ *  field naming variations. The v2 completion payload looks like:
+ *    { status: 'completed', request_id, images: [{url}], video: {url} } */
+async function fetchProviderStatus(externalId: string, credentials: string): Promise<ProviderStatus> {
+  const res = await fetch(`${HIGGSFIELD_API_BASE}/requests/${encodeURIComponent(externalId)}/status`, {
+    headers: { Authorization: `Key ${credentials}` },
   })
   if (!res.ok) {
     const body = await res.text().catch(() => '')
@@ -165,21 +185,30 @@ async function fetchProviderStatus(externalId: string, apiKey: string): Promise<
   }
   const json = await res.json()
 
-  // Status field comes back as 'pending' | 'running' | 'in_progress' |
-  // 'completed' | 'succeeded' | 'failed' | 'error' depending on the
-  // provider — normalise them all.
+  // v2 status values: queued | in_progress | completed | failed | nsfw
+  // Also handle a few legacy/synonymous values just in case.
   const raw = String(json?.status ?? '').toLowerCase()
   if (['completed', 'succeeded', 'success', 'done'].includes(raw)) {
-    return {
-      terminal: 'done',
-      video_url: json?.video_url ?? json?.result?.video_url ?? json?.data?.video_url ?? undefined,
-      preview_url: json?.preview_url ?? json?.result?.preview_url ?? json?.data?.preview_url ?? undefined,
-    }
+    const videoUrl =
+      json?.video?.url ??
+      json?.result?.video?.url ??
+      json?.data?.video?.url ??
+      json?.video_url ??
+      undefined
+    const previewUrl =
+      json?.images?.[0]?.url ??
+      json?.preview?.url ??
+      json?.thumbnail?.url ??
+      json?.preview_url ??
+      undefined
+    return { terminal: 'done', video_url: videoUrl, preview_url: previewUrl }
   }
-  if (['failed', 'error'].includes(raw)) {
+  if (['failed', 'error', 'nsfw'].includes(raw)) {
     return {
       terminal: 'failed',
-      error: json?.error ?? json?.message ?? 'provider reported failure',
+      error: raw === 'nsfw'
+        ? 'content flagged by Higgsfield moderation (credits refunded)'
+        : (json?.error ?? json?.message ?? 'provider reported failure'),
     }
   }
   return { terminal: 'pending' }
