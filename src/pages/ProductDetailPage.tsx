@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useParams, Link, Navigate } from 'react-router-dom'
-import { PEPTIDES, getPeptideById } from '../data/peptides'
 import { getProductContent } from '../data/productContent'
 import { useCart } from '../lib/cart'
+import { usePeptide, usePeptides } from '../lib/usePeptides'
 import SiteNav from '../components/SiteNav'
 import SiteFooter from '../components/SiteFooter'
 import { TrustpilotStrip } from '../components/TrustpilotBadge'
@@ -216,9 +216,11 @@ function DosageCalculator({ doses, compound }: { doses: { label: string; mg: str
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const product = id ? getPeptideById(id) : undefined
+  const { peptide: product, loading } = usePeptide(id)
+  const { peptides: allPeptides } = usePeptides()
   const [selectedDose, setSelectedDose] = useState(0)
 
+  if (loading) return null
   if (!product) return <Navigate to="/products" replace />
 
   const reviews = PRODUCT_REVIEWS[product.id] || DEFAULT_REVIEWS
@@ -226,7 +228,7 @@ export default function ProductDetailPage() {
   const content = getProductContent(product.id)
   const categoryImg = CATEGORY_IMAGES[product.category] || '/images/cellular-repair-hero.png'
 
-  const relatedProducts = PEPTIDES.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 3)
+  const relatedProducts = allPeptides.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 3)
 
   return (
     <div className="st">

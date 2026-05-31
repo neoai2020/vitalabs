@@ -8,6 +8,13 @@ import WhatsAppPage from './pages/site-config/WhatsAppPage'
 import SeoPage from './pages/site-config/SeoPage'
 import FeatureFlagsPage from './pages/site-config/FeatureFlagsPage'
 import ThemePage from './pages/site-config/ThemePage'
+import ProductsListPage from './pages/content/ProductsListPage'
+import ProductEditPage from './pages/content/ProductEditPage'
+import ReviewsPage from './pages/content/ReviewsPage'
+import FaqsPage from './pages/content/FaqsPage'
+import ContentBlocksPage from './pages/content/ContentBlocksPage'
+import LegalPagesPage from './pages/content/LegalPagesPage'
+import QuizPage from './pages/content/QuizPage'
 
 /**
  * All /admin/* routes. Wrapped in <RequireAdmin> so unauthenticated users
@@ -31,6 +38,17 @@ export function AdminRoutes() {
             <Route path="seo" element={<SeoPage />} />
             <Route path="feature-flags" element={<FeatureFlagsPage />} />
             <Route path="theme" element={<ThemePage />} />
+          </Route>
+
+          <Route path="content">
+            <Route index element={<Navigate to="products" replace />} />
+            <Route path="products" element={<ProductsListPage />} />
+            <Route path="products/:id" element={<ProductEditPage />} />
+            <Route path="reviews" element={<ReviewsPage />} />
+            <Route path="faqs" element={<FaqsPage />} />
+            <Route path="blocks" element={<ContentBlocksPage />} />
+            <Route path="legal" element={<LegalPagesPage />} />
+            <Route path="quiz" element={<QuizPage />} />
           </Route>
 
           <Route path="*" element={<DashboardPage />} />

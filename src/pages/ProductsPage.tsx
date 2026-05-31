@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { PEPTIDES } from '../data/peptides'
 import SiteNav from '../components/SiteNav'
 import SiteFooter from '../components/SiteFooter'
+import { usePeptides } from '../lib/usePeptides'
 
 const CATEGORY_FILTERS = [
   { label: 'All Products', slug: '' },
@@ -25,9 +25,10 @@ export default function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const activeCategory = searchParams.get('category') || ''
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default')
+  const { peptides } = usePeptides()
 
   const filtered = useMemo(() => {
-    let result = PEPTIDES
+    let result = peptides
     if (activeCategory) {
       result = result.filter((p) => categoryToSlug(p.category) === activeCategory)
     }
@@ -37,7 +38,7 @@ export default function ProductsPage() {
       result = [...result].sort((a, b) => b.doses[0].price - a.doses[0].price)
     }
     return result
-  }, [activeCategory, sortBy])
+  }, [activeCategory, sortBy, peptides])
 
   return (
     <div className="st">
