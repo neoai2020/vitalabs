@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { fireCapiEvent, newEventId } from '../lib/tracking/capi'
+import { newEventId } from '../lib/tracking/capi'
+import { waitForFbq } from '../lib/tracking/pixelLoaders'
 import { trackEvent } from '../lib/analytics'
 
 interface OrderInfo {
@@ -29,10 +30,13 @@ export default function OrderCompletePage() {
 
   useEffect(() => {
     window.scrollTo(0, 0)
-    try {
-      const stored = sessionStorage.getItem('vitalabs-last-order')
-      if (stored) {
+    let cancelled = false
+    void (async () => {
+      try {
+        const stored = sessionStorage.getItem('vitalabs-last-order')
+        if (!stored) return
         const parsed = JSON.parse(stored) as OrderInfo
+        if (cancelled) return
         setOrder(parsed)
 
         // First-party analytics: completed checkout. Powers conversion
@@ -44,35 +48,24 @@ export default function OrderCompletePage() {
           },
         })
 
-        // Fire Facebook Purchase event on BOTH browser pixel and server-side
-        // Conversions API using the same event_id so Meta dedupes. CAPI is a
-        // backup signal for users with ad-blockers / iOS ITP that drop the
-        // browser pixel — recovers ~10–30% of conversions.
+        // Fire the Meta Purchase pixel. Uprails redirects here via a hard
+        // navigation, so the page is a cold load — `useTracking()` injects
+        // fbevents.js only after `ConfigProvider`'s async fetch resolves,
+        // which races with this effect. Without the wait, `window.fbq` is
+        // undefined the moment we get here and the event is silently lost.
         if (parsed.amount) {
           const valueInPounds = parsed.amount / 100
           const eventId = newEventId('Purchase')
-          if (typeof window.fbq === 'function') {
+          const ready = await waitForFbq(8000)
+          if (cancelled) return
+          if (ready && typeof window.fbq === 'function') {
             window.fbq('track', 'Purchase', {
               value: valueInPounds,
               currency: 'GBP',
             }, { eventID: eventId })
+          } else {
+            console.warn('[OrderComplete] Meta pixel never loaded — Purchase event skipped')
           }
-          void fireCapiEvent({
-            eventId,
-            eventName: 'Purchase',
-            email: parsed.customerEmail,
-            phone: parsed.customerPhone,
-            firstName: parsed.customerName?.split(' ')[0],
-            lastName: parsed.customerName?.split(' ').slice(1).join(' '),
-            country: parsed.shippingAddress?.country,
-            customData: {
-              value: valueInPounds,
-              currency: 'GBP',
-              content_ids: parsed.items?.map(i => i.sku),
-              content_type: 'product',
-              num_items: parsed.items?.length ?? 1,
-            },
-          })
         }
 
         if (!webhookSent.current && parsed.customerEmail) {
@@ -91,8 +84,9 @@ export default function OrderCompletePage() {
             },
           }).catch(err => console.error('[OrderComplete] order webhook failed:', err))
         }
-      }
-    } catch { /* ignore */ }
+      } catch { /* ignore */ }
+    })()
+    return () => { cancelled = true }
   }, [])
 
   return (

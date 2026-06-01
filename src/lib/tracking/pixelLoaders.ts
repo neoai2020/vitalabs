@@ -58,6 +58,33 @@ export function trackMetaPageView(): void {
   window.fbq('track', 'PageView')
 }
 
+/**
+ * Resolves once `window.fbq` is callable, or after `timeoutMs` if the pixel
+ * never loads. Needed because `useTracking` injects the pixel only after
+ * `ConfigProvider` resolves its async fetch — fires on the order-complete
+ * page (cold landing via Uprails return_url) race that boot, so callers
+ * must wait or the Purchase event silently no-ops.
+ *
+ * Returns true if fbq became available, false on timeout. Callers should
+ * still fall back to CAPI on the server when this returns false.
+ */
+export function waitForFbq(timeoutMs = 5000): Promise<boolean> {
+  if (!isBrowser()) return Promise.resolve(false)
+  if (typeof window.fbq === 'function') return Promise.resolve(true)
+  return new Promise<boolean>(resolve => {
+    const start = Date.now()
+    const interval = window.setInterval(() => {
+      if (typeof window.fbq === 'function') {
+        window.clearInterval(interval)
+        resolve(true)
+      } else if (Date.now() - start >= timeoutMs) {
+        window.clearInterval(interval)
+        resolve(false)
+      }
+    }, 50)
+  })
+}
+
 export function loadGoogleTag(tagId: string): void {
   if (!isBrowser() || !tagId) return
   const key = `gtag:${tagId}`
