@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { newEventId } from '../lib/tracking/capi'
 import { waitForFbq } from '../lib/tracking/pixelLoaders'
 import { trackEvent } from '../lib/analytics'
 
@@ -55,14 +54,13 @@ export default function OrderCompletePage() {
         // undefined the moment we get here and the event is silently lost.
         if (parsed.amount) {
           const valueInPounds = parsed.amount / 100
-          const eventId = newEventId('Purchase')
           const ready = await waitForFbq(8000)
           if (cancelled) return
           if (ready && typeof window.fbq === 'function') {
             window.fbq('track', 'Purchase', {
               value: valueInPounds,
               currency: 'GBP',
-            }, { eventID: eventId })
+            })
           } else {
             console.warn('[OrderComplete] Meta pixel never loaded — Purchase event skipped')
           }

@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { useConfig } from '../config/ConfigProvider'
 import { trackPageView } from '../analytics'
 import {
+  BRAND_META_PIXEL_DEFAULTS,
   loadGoogleTag,
   loadMetaPixel,
   loadSnapPixel,
@@ -25,7 +26,7 @@ import {
  *  - SPA route changes correctly fire PageView (pre-existing bug fix)
  */
 export function useTracking() {
-  const { config, loading } = useConfig()
+  const { brand, config, loading } = useConfig()
   const { pathname } = useLocation()
 
   // Initial load: inject script tags for each enabled pixel and fire the
@@ -33,12 +34,15 @@ export function useTracking() {
   useEffect(() => {
     if (loading) return
     const { tracking } = config
-    if (tracking.meta.enabled && tracking.meta.pixel_id) loadMetaPixel(tracking.meta.pixel_id)
+    // Meta pixel: admin-configured value wins; otherwise fall back to the
+    // hard-coded per-brand default so a fresh / mis-seeded DB still tracks.
+    const metaPixelId = tracking.meta.pixel_id || BRAND_META_PIXEL_DEFAULTS[brand]
+    if (tracking.meta.enabled && metaPixelId) loadMetaPixel(metaPixelId)
     if (tracking.google_tag.enabled && tracking.google_tag.tag_id) loadGoogleTag(tracking.google_tag.tag_id)
     if (tracking.tiktok.enabled && tracking.tiktok.pixel_id) loadTikTokPixel(tracking.tiktok.pixel_id)
     if (tracking.snap.enabled && tracking.snap.pixel_id) loadSnapPixel(tracking.snap.pixel_id)
     if (tracking.twitter.enabled && tracking.twitter.pixel_id) loadTwitterPixel(tracking.twitter.pixel_id)
-  }, [loading, config])
+  }, [loading, config, brand])
 
   // SPA route-change PageView (skipped on first render since the loaders
   // above already fired the initial PageView).

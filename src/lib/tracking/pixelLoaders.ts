@@ -5,6 +5,7 @@
  *
  * All loaders run client-side only; they bail out cleanly on SSR.
  */
+import type { Brand } from '../config/brand'
 
 declare global {
   interface Window {
@@ -16,6 +17,17 @@ declare global {
     snaptr?: ((...args: unknown[]) => void) & { queue?: unknown[]; handleRequest?: unknown }
     twq?: ((...args: unknown[]) => void) & { version?: string; queue?: unknown[] }
   }
+}
+
+/**
+ * Hard-coded fallback Meta pixel IDs per brand. Used when `site_config`
+ * has an empty pixel_id (e.g. fresh DB, admin cleared the field). The
+ * admin panel value in /admin → Site Config → Tracking always wins when
+ * it's a non-empty string.
+ */
+export const BRAND_META_PIXEL_DEFAULTS: Record<Brand, string> = {
+  vitalabs: '1009611958106175',
+  peptiva: '1360736692779319',
 }
 
 const LOADED = new Set<string>()
