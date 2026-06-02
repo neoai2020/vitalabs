@@ -8271,21 +8271,22 @@ h1, h2, h3 {
     padding: 1.25rem 1rem 1.5rem;
   }
 
+  /* Switch from grid to flex column on mobile so `order` reliably places
+     the summary ABOVE the form when expanded. */
   .ck-grid {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 1.5rem;
   }
 
-  /* On mobile, drop the vertical separator and put the summary above
-     the form (revealed by the collapsible bar). */
   .ck-left {
     padding-right: 0;
     border-right: none;
-    order: 0;
+    order: 1;
   }
 
   .ck-right {
-    order: -1;
+    order: 0;
     position: static;
     display: none;
     gap: 1rem;

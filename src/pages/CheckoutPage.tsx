@@ -165,8 +165,10 @@ export default function CheckoutPage() {
 
   const [promo, setPromo] = useState<AppliedPromo | null>(null)
 
-  // Mobile-only collapsible summary toggle.
-  const [summaryOpen, setSummaryOpen] = useState(false)
+  // Mobile-only collapsible summary toggle. Defaults open so the order
+  // summary is visible at the top of the page on mobile — users can tap
+  // the bar to collapse if they want more room for the form.
+  const [summaryOpen, setSummaryOpen] = useState(true)
 
   const customerIdRef = useRef<string | null>(null)
   const hyperRef = useRef<ReturnType<typeof getHyperInstance> | null>(null)
