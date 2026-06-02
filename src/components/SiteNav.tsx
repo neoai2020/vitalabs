@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useCart } from '../lib/cart'
+import { getBrand, getBrandLogo, BRAND_LABELS } from '../lib/config/brand'
 
 export default function SiteNav() {
   const { pathname } = useLocation()
@@ -16,7 +17,7 @@ export default function SiteNav() {
     <header className="sn">
       <div className="sn-inner">
         <Link to="/" className="sn-logo">
-          <img src="/images/logo.svg" alt="Vita Labs" className="sn-logo-img" />
+          <img src={getBrandLogo()} alt={BRAND_LABELS[getBrand()]} className="sn-logo-img" />
         </Link>
 
         <nav className={`sn-links ${mobileOpen ? 'sn-links--open' : ''}`}>

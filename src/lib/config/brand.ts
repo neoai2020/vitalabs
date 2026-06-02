@@ -23,3 +23,15 @@ export const BRAND_LABELS: Record<Brand, string> = {
   vitalabs: 'Vita Labs',
   peptiva: 'Peptiva',
 }
+
+/** Per-brand logo asset. Each brand ships its own wordmark; both files
+ *  live in /public/images/. */
+export const BRAND_LOGOS: Record<Brand, string> = {
+  vitalabs: '/images/logo.svg',
+  peptiva: '/images/logo-peptiva.png',
+}
+
+/** Convenience: the logo for the currently-resolved brand. */
+export function getBrandLogo(): string {
+  return BRAND_LOGOS[getBrand()]
+}

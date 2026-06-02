@@ -10,7 +10,7 @@ import {
 import { useCart } from '../lib/cart'
 import { redeemPromoCode } from '../lib/marketing'
 import { trackEvent } from '../lib/analytics'
-import { getBrand } from '../lib/config/brand'
+import { getBrand, getBrandLogo, BRAND_LABELS } from '../lib/config/brand'
 
 type Status = 'idle' | 'loading' | 'ready' | 'submitting' | 'succeeded' | 'failed'
 
@@ -423,7 +423,7 @@ export default function CheckoutPage() {
       {/* Secure header */}
       <header className="ck-header">
         <div className="ck-header-inner">
-          <Link to="/" className="ck-logo"><img src="/images/logo.svg" alt="Vita Labs" className="ck-logo-img" /></Link>
+          <Link to="/" className="ck-logo"><img src={getBrandLogo()} alt={BRAND_LABELS[getBrand()]} className="ck-logo-img" /></Link>
           <div className="ck-header-right">
             <svg className="ck-lock-icon" viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
               <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />

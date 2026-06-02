@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { getBrand, getBrandLogo, BRAND_LABELS } from '../lib/config/brand'
 
 export default function SiteFooter() {
   return (
@@ -6,7 +7,7 @@ export default function SiteFooter() {
       <div className="st-footer-inner">
         <div className="st-footer-grid">
           <div className="st-footer-col st-footer-brand">
-            <img src="/images/logo.svg" alt="Vita Labs" className="st-footer-logo" />
+            <img src={getBrandLogo()} alt={BRAND_LABELS[getBrand()]} className="st-footer-logo" />
             <p>The UK's leading peptide research platform. Personalised protocols backed by peer-reviewed science.</p>
           </div>
           <div className="st-footer-col">
