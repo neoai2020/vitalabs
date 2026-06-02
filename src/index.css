@@ -8212,19 +8212,28 @@ h1, h2, h3 {
   letter-spacing: -0.01em;
 }
 
-/* ── Mobile-only BOTTOM sticky "Total" collapsible bar ──
-   Sits fixed to the viewport bottom on mobile and toggles the same
-   summaryOpen state as the top bar, with a richer visual treatment
-   (product thumbnail + item count + price + chevron). */
+/* ── Mobile-only inline summary revealed by the bottom "Total" bar ──
+   Sits above the bottom bar in normal document flow. */
+.ck-mobile-bottom-summary {
+  display: none;
+  padding: 1rem 1.25rem 1.25rem;
+  background: #fff;
+  border-top: 1px solid var(--ck-line);
+}
+
+[data-theme="dark"] .ck-mobile-bottom-summary {
+  background: var(--bg-surface);
+  border-color: var(--border);
+}
+
+/* ── Mobile-only BOTTOM static "Total" collapsible bar ──
+   Sits at the bottom of the page in normal flow (not floating). Reveals
+   `.ck-mobile-bottom-summary` directly above when toggled, so the
+   collapse is visible where the user tapped. */
 .ck-mobile-total-bar {
   display: none;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
   width: 100%;
-  padding: 12px 18px;
+  padding: 14px 18px;
   background: #fff;
   border: none;
   border-top: 1px solid var(--ck-line);
@@ -8236,7 +8245,6 @@ h1, h2, h3 {
   cursor: pointer;
   user-select: none;
   text-align: left;
-  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.06);
 }
 
 [data-theme="dark"] .ck-mobile-total-bar {
@@ -8323,8 +8331,7 @@ h1, h2, h3 {
 
 @media (max-width: 840px) {
   .ck-wrap {
-    /* Reserve bottom space for the sticky "Total" bar (~70px) */
-    padding: 1.25rem 1rem 5.5rem;
+    padding: 1.25rem 1rem 1.5rem;
   }
 
   /* Switch from grid to flex column on mobile so `order` reliably places
@@ -8356,6 +8363,7 @@ h1, h2, h3 {
 
   .ck-mobile-summary-bar { display: flex; }
   .ck-mobile-total-bar { display: flex; }
+  .ck-mobile-bottom-summary { display: block; }
 
   /* Tighter section spacing on mobile */
   .ck-section { margin-bottom: 1.5rem; }
@@ -8363,7 +8371,7 @@ h1, h2, h3 {
 }
 
 @media (max-width: 560px) {
-  .ck-wrap { padding: 1rem 0.85rem 5.5rem; }
+  .ck-wrap { padding: 1rem 0.85rem 1.5rem; }
 
   /* Stack city + county on small phones — labels need full width */
   .ck-field-row {

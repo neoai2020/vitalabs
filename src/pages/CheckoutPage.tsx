@@ -165,11 +165,12 @@ export default function CheckoutPage() {
 
   const [promo, setPromo] = useState<AppliedPromo | null>(null)
 
-  // Mobile-only collapsible summary toggle. Defaults closed — both the
-  // top "Order summary" bar and the bottom sticky "Total" bar drive this
-  // single state so tapping either one expands the right column above
-  // the form.
+  // Mobile-only collapsible summary toggles. Top bar drives `summaryOpen`
+  // (reveals the right-column summary above the form); bottom bar drives
+  // `bottomSummaryOpen` (reveals an inline summary right above itself, so
+  // the collapse is visibly local to where the user tapped).
   const [summaryOpen, setSummaryOpen] = useState(false)
+  const [bottomSummaryOpen, setBottomSummaryOpen] = useState(false)
 
   const customerIdRef = useRef<string | null>(null)
   const hyperRef = useRef<ReturnType<typeof getHyperInstance> | null>(null)
@@ -779,14 +780,51 @@ export default function CheckoutPage() {
         </div>
       </div>
 
-      {/* Mobile-only: sticky bottom "Total" collapsible bar with product
-          thumbnail, item count, grand total, and chevron. Toggles the same
-          summaryOpen state as the top bar. Hidden on desktop via CSS. */}
+      {/* Mobile-only: inline summary panel revealed by the bottom "Total"
+          bar. Sits right above the bar so the collapse animation is visible
+          where the user tapped. Hidden on desktop via CSS. */}
+      {bottomSummaryOpen && (
+        <div className="ck-mobile-bottom-summary">
+          <div className="ck-summary">
+            {state.items.map((item, i) => (
+              <div key={i} className="ck-summary-product">
+                {item.image && (
+                  <img src={item.image} alt={item.sku} className="ck-summary-img" />
+                )}
+                <div className="ck-summary-info">
+                  <h3>{item.sku}</h3>
+                  <p className="ck-summary-compound">{item.compound}</p>
+                </div>
+                <span className="ck-summary-item-price">{item.displayPrice}</span>
+              </div>
+            ))}
+
+            <div className="ck-summary-row">
+              <span>Subtotal</span>
+              <span>{state.displayPrice}</span>
+            </div>
+            <div className="ck-summary-row">
+              <span>Shipping</span>
+              <span className="ck-green">Free</span>
+            </div>
+            {promo && promo.discount > 0 ? (
+              <div className="ck-summary-row" style={{ color: '#16a34a' }}>
+                <span>Promo ({promo.code})</span>
+                <span>−£{promo.discount.toFixed(2)}</span>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      )}
+
+      {/* Mobile-only: static bottom "Total" collapsible bar with product
+          thumbnail, item count, grand total, and chevron. Hidden on
+          desktop via CSS. */}
       <button
         type="button"
-        className={`ck-mobile-total-bar ${summaryOpen ? 'is-open' : ''}`}
-        onClick={() => setSummaryOpen(o => !o)}
-        aria-expanded={summaryOpen}
+        className={`ck-mobile-total-bar ${bottomSummaryOpen ? 'is-open' : ''}`}
+        onClick={() => setBottomSummaryOpen(o => !o)}
+        aria-expanded={bottomSummaryOpen}
       >
         <span className="ck-mobile-total-left">
           {state.items[0]?.image ? (
