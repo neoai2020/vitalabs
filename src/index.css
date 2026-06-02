@@ -8165,23 +8165,23 @@ h1, h2, h3 {
 
 .ck-footer p { margin: 0 0 0.2rem; }
 
-/* ── Mobile-only collapsible "Total" bar with thumbnail + price ── */
+/* ── Mobile-only TOP "Order summary" collapsible bar ── */
 .ck-mobile-summary-bar {
   display: none;
   width: 100%;
-  padding: 14px 18px;
-  background: #fff;
+  padding: 14px 22px;
+  background: #f6f6f6;
   border: none;
-  border-top: 1px solid var(--ck-line);
   border-bottom: 1px solid var(--ck-line);
   align-items: center;
   justify-content: space-between;
   font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
   color: var(--ck-ink);
   cursor: pointer;
   user-select: none;
   text-align: left;
-  gap: 12px;
 }
 
 [data-theme="dark"] .ck-mobile-summary-bar {
@@ -8193,13 +8193,68 @@ h1, h2, h3 {
 .ck-mobile-summary-left {
   display: flex;
   align-items: center;
+  gap: 8px;
+}
+
+.ck-mobile-summary-chev {
+  transition: transform 0.2s ease;
+  color: currentColor;
+  flex-shrink: 0;
+}
+
+.ck-mobile-summary-bar.is-open .ck-mobile-summary-chev {
+  transform: rotate(180deg);
+}
+
+.ck-mobile-summary-total {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* ── Mobile-only BOTTOM sticky "Total" collapsible bar ──
+   Sits fixed to the viewport bottom on mobile and toggles the same
+   summaryOpen state as the top bar, with a richer visual treatment
+   (product thumbnail + item count + price + chevron). */
+.ck-mobile-total-bar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  width: 100%;
+  padding: 12px 18px;
+  background: #fff;
+  border: none;
+  border-top: 1px solid var(--ck-line);
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: inherit;
+  color: var(--ck-ink);
+  cursor: pointer;
+  user-select: none;
+  text-align: left;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="dark"] .ck-mobile-total-bar {
+  background: var(--bg-surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.ck-mobile-total-left {
+  display: flex;
+  align-items: center;
   gap: 12px;
   min-width: 0;
 }
 
-.ck-mobile-summary-thumb {
-  width: 48px;
-  height: 48px;
+.ck-mobile-total-thumb {
+  width: 44px;
+  height: 44px;
   border-radius: 8px;
   object-fit: cover;
   flex-shrink: 0;
@@ -8207,58 +8262,58 @@ h1, h2, h3 {
   border: 1px solid var(--ck-line);
 }
 
-[data-theme="dark"] .ck-mobile-summary-thumb { border-color: var(--border); }
+[data-theme="dark"] .ck-mobile-total-thumb { border-color: var(--border); }
 
-.ck-mobile-summary-thumb--placeholder { background: #fce7f3; }
+.ck-mobile-total-thumb--placeholder { background: #fce7f3; }
 
-.ck-mobile-summary-label {
+.ck-mobile-total-label {
   display: flex;
   align-items: baseline;
   gap: 8px;
   min-width: 0;
 }
 
-.ck-mobile-summary-label strong {
+.ck-mobile-total-label strong {
   font-size: 17px;
   font-weight: 700;
   color: inherit;
 }
 
-.ck-mobile-summary-items {
+.ck-mobile-total-items {
   font-size: 13px;
   color: var(--ck-ink-soft);
   font-weight: 500;
 }
 
-[data-theme="dark"] .ck-mobile-summary-items { color: var(--text-secondary); }
+[data-theme="dark"] .ck-mobile-total-items { color: var(--text-secondary); }
 
-.ck-mobile-summary-right {
+.ck-mobile-total-right {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
 }
 
-.ck-mobile-summary-chev {
-  transition: transform 0.2s ease;
-  color: var(--ck-ink-soft);
-  flex-shrink: 0;
-}
-
-[data-theme="dark"] .ck-mobile-summary-chev { color: var(--text-secondary); }
-
-.ck-mobile-summary-bar.is-open .ck-mobile-summary-chev {
-  transform: rotate(180deg);
-}
-
-.ck-mobile-summary-total {
+.ck-mobile-total-amt {
   font-size: 17px;
   font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--ck-ink);
 }
 
-[data-theme="dark"] .ck-mobile-summary-total { color: var(--text); }
+[data-theme="dark"] .ck-mobile-total-amt { color: var(--text); }
+
+.ck-mobile-total-chev {
+  transition: transform 0.2s ease;
+  color: var(--ck-ink-soft);
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .ck-mobile-total-chev { color: var(--text-secondary); }
+
+.ck-mobile-total-bar.is-open .ck-mobile-total-chev {
+  transform: rotate(180deg);
+}
 
 /* ═══ CHECKOUT RESPONSIVE ═══ */
 @media (max-width: 1024px) {
@@ -8268,7 +8323,8 @@ h1, h2, h3 {
 
 @media (max-width: 840px) {
   .ck-wrap {
-    padding: 1.25rem 1rem 1.5rem;
+    /* Reserve bottom space for the sticky "Total" bar (~70px) */
+    padding: 1.25rem 1rem 5.5rem;
   }
 
   /* Switch from grid to flex column on mobile so `order` reliably places
@@ -8299,6 +8355,7 @@ h1, h2, h3 {
   .ck-grid.is-summary-open .ck-right { display: flex; }
 
   .ck-mobile-summary-bar { display: flex; }
+  .ck-mobile-total-bar { display: flex; }
 
   /* Tighter section spacing on mobile */
   .ck-section { margin-bottom: 1.5rem; }
@@ -8306,7 +8363,7 @@ h1, h2, h3 {
 }
 
 @media (max-width: 560px) {
-  .ck-wrap { padding: 1rem 0.85rem 1.5rem; }
+  .ck-wrap { padding: 1rem 0.85rem 5.5rem; }
 
   /* Stack city + county on small phones — labels need full width */
   .ck-field-row {
@@ -8314,10 +8371,12 @@ h1, h2, h3 {
     gap: 0;
   }
 
-  .ck-mobile-summary-bar { padding: 12px 14px; }
-  .ck-mobile-summary-thumb { width: 44px; height: 44px; }
-  .ck-mobile-summary-label strong { font-size: 16px; }
-  .ck-mobile-summary-total { font-size: 16px; }
+  .ck-mobile-summary-bar { padding: 12px 16px; font-size: 15px; }
+  .ck-mobile-summary-total { font-size: 18px; }
+  .ck-mobile-total-bar { padding: 10px 14px; }
+  .ck-mobile-total-thumb { width: 40px; height: 40px; }
+  .ck-mobile-total-label strong { font-size: 16px; }
+  .ck-mobile-total-amt { font-size: 16px; }
 
   .ck-btn--pay { height: 52px; font-size: 1rem; }
 

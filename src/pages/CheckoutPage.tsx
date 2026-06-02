@@ -165,10 +165,11 @@ export default function CheckoutPage() {
 
   const [promo, setPromo] = useState<AppliedPromo | null>(null)
 
-  // Mobile-only collapsible summary toggle. Defaults open so the order
-  // summary is visible at the top of the page on mobile — users can tap
-  // the bar to collapse if they want more room for the form.
-  const [summaryOpen, setSummaryOpen] = useState(true)
+  // Mobile-only collapsible summary toggle. Defaults closed — both the
+  // top "Order summary" bar and the bottom sticky "Total" bar drive this
+  // single state so tapping either one expands the right column above
+  // the form.
+  const [summaryOpen, setSummaryOpen] = useState(false)
 
   const customerIdRef = useRef<string | null>(null)
   const hyperRef = useRef<ReturnType<typeof getHyperInstance> | null>(null)
@@ -449,8 +450,8 @@ export default function CheckoutPage() {
         </div>
       )}
 
-      {/* Mobile-only: collapsible "Total" bar showing a product thumbnail,
-          item count, and grand total. Tapping toggles the right column.
+      {/* Mobile-only: simple "Order summary" collapsible bar at the top.
+          Tapping toggles the right column visibility on narrow screens.
           Hidden on desktop via CSS. */}
       <button
         type="button"
@@ -459,28 +460,12 @@ export default function CheckoutPage() {
         aria-expanded={summaryOpen}
       >
         <span className="ck-mobile-summary-left">
-          {state.items[0]?.image ? (
-            <img
-              src={state.items[0].image}
-              alt=""
-              className="ck-mobile-summary-thumb"
-            />
-          ) : (
-            <span className="ck-mobile-summary-thumb ck-mobile-summary-thumb--placeholder" aria-hidden="true" />
-          )}
-          <span className="ck-mobile-summary-label">
-            <strong>Total</strong>
-            <span className="ck-mobile-summary-items">
-              {state.quantity} {state.quantity === 1 ? 'item' : 'items'}
-            </span>
-          </span>
-        </span>
-        <span className="ck-mobile-summary-right">
-          <span className="ck-mobile-summary-total">£{totalGBP.toFixed(2)}</span>
+          Order summary
           <svg className="ck-mobile-summary-chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="6 9 12 15 18 9" />
           </svg>
         </span>
+        <span className="ck-mobile-summary-total">£{totalGBP.toFixed(2)}</span>
       </button>
 
       <div className="ck-wrap">
@@ -793,6 +778,40 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
+
+      {/* Mobile-only: sticky bottom "Total" collapsible bar with product
+          thumbnail, item count, grand total, and chevron. Toggles the same
+          summaryOpen state as the top bar. Hidden on desktop via CSS. */}
+      <button
+        type="button"
+        className={`ck-mobile-total-bar ${summaryOpen ? 'is-open' : ''}`}
+        onClick={() => setSummaryOpen(o => !o)}
+        aria-expanded={summaryOpen}
+      >
+        <span className="ck-mobile-total-left">
+          {state.items[0]?.image ? (
+            <img
+              src={state.items[0].image}
+              alt=""
+              className="ck-mobile-total-thumb"
+            />
+          ) : (
+            <span className="ck-mobile-total-thumb ck-mobile-total-thumb--placeholder" aria-hidden="true" />
+          )}
+          <span className="ck-mobile-total-label">
+            <strong>Total</strong>
+            <span className="ck-mobile-total-items">
+              {state.quantity} {state.quantity === 1 ? 'item' : 'items'}
+            </span>
+          </span>
+        </span>
+        <span className="ck-mobile-total-right">
+          <span className="ck-mobile-total-amt">£{totalGBP.toFixed(2)}</span>
+          <svg className="ck-mobile-total-chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </span>
+      </button>
 
       <footer className="ck-footer">
         <p>Vita Labs Ltd · UK-regulated laboratory · Sold for research use only</p>
