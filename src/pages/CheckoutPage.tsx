@@ -149,9 +149,12 @@ export default function CheckoutPage() {
   const [status, setStatus] = useState<Status>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
-  const [customerName, setCustomerName] = useState('')
+  const [customerFirstName, setCustomerFirstName] = useState('')
+  const [customerLastName, setCustomerLastName] = useState('')
   const [customerEmail, setCustomerEmail] = useState(state?.email ?? '')
   const [customerPhone, setCustomerPhone] = useState('')
+
+  const customerName = `${customerFirstName} ${customerLastName}`.trim()
 
   const [shippingCountry, setShippingCountry] = useState('GB')
   const [shippingAddress1, setShippingAddress1] = useState('')
@@ -280,7 +283,7 @@ export default function CheckoutPage() {
     e.preventDefault()
     if (!hyperRef.current || !widgetsRef.current || status === 'submitting') return
 
-    if (!customerName.trim() || !customerEmail.trim() || !customerPhone.trim()) {
+    if (!customerFirstName.trim() || !customerLastName.trim() || !customerEmail.trim() || !customerPhone.trim()) {
       setErrorMsg('Please fill in your name, email, and phone number.')
       return
     }
@@ -301,13 +304,12 @@ export default function CheckoutPage() {
 
     if (!customerIdRef.current) {
       try {
-        const nameParts = customerName.trim().split(/\s+/)
-        const firstName = nameParts[0] || ''
-        const lastName = nameParts.slice(1).join(' ') || ''
+        const firstName = customerFirstName.trim()
+        const lastName = customerLastName.trim()
 
         const { customerId } = await createCustomer({
           email: customerEmail.trim(),
-          name: customerName.trim(),
+          name: customerName,
           phone: customerPhone.trim(),
           address: {
             line1: shippingAddress1.trim(),
@@ -393,7 +395,7 @@ export default function CheckoutPage() {
       setErrorMsg(err instanceof Error ? err.message : 'Payment failed')
       setInitCount(c => c + 1)
     }
-  }, [status, state, customerName, customerEmail, customerPhone, shippingCountry, shippingAddress1, shippingAddress2, shippingCity, shippingCounty, shippingPostcode])
+  }, [status, state, customerFirstName, customerLastName, customerEmail, customerPhone, shippingCountry, shippingAddress1, shippingAddress2, shippingCity, shippingCounty, shippingPostcode])
 
   if (!state) {
     return (
@@ -445,8 +447,8 @@ export default function CheckoutPage() {
         </div>
       )}
 
-      {/* Mobile-only: collapsible "Order summary" bar at the very top.
-          Tapping toggles the right column visibility on narrow screens.
+      {/* Mobile-only: collapsible "Total" bar showing a product thumbnail,
+          item count, and grand total. Tapping toggles the right column.
           Hidden on desktop via CSS. */}
       <button
         type="button"
@@ -455,22 +457,38 @@ export default function CheckoutPage() {
         aria-expanded={summaryOpen}
       >
         <span className="ck-mobile-summary-left">
-          Order summary
+          {state.items[0]?.image ? (
+            <img
+              src={state.items[0].image}
+              alt=""
+              className="ck-mobile-summary-thumb"
+            />
+          ) : (
+            <span className="ck-mobile-summary-thumb ck-mobile-summary-thumb--placeholder" aria-hidden="true" />
+          )}
+          <span className="ck-mobile-summary-label">
+            <strong>Total</strong>
+            <span className="ck-mobile-summary-items">
+              {state.quantity} {state.quantity === 1 ? 'item' : 'items'}
+            </span>
+          </span>
+        </span>
+        <span className="ck-mobile-summary-right">
+          <span className="ck-mobile-summary-total">£{totalGBP.toFixed(2)}</span>
           <svg className="ck-mobile-summary-chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="6 9 12 15 18 9" />
           </svg>
         </span>
-        <span className="ck-mobile-summary-total">£{totalGBP.toFixed(2)}</span>
       </button>
 
       <div className="ck-wrap">
         <div className={`ck-grid ${summaryOpen ? 'is-summary-open' : ''}`}>
           {/* LEFT COLUMN: Form */}
           <div className="ck-left">
-            {/* Customer / Contact */}
+            {/* Customer / Contact — just email, with prominent black border */}
             <section className="ck-section">
               <h2 className="ck-section-title">Contact</h2>
-              <div className="ck-field">
+              <div className="ck-field ck-field--prominent">
                 <input
                   id="ck-email"
                   type="email"
@@ -482,32 +500,6 @@ export default function CheckoutPage() {
                   required
                 />
                 <label htmlFor="ck-email" className="ck-label">Email *</label>
-              </div>
-              <div className="ck-field">
-                <input
-                  id="ck-name"
-                  type="text"
-                  className="ck-input"
-                  placeholder=" "
-                  value={customerName}
-                  onChange={e => setCustomerName(e.target.value)}
-                  autoComplete="name"
-                  required
-                />
-                <label htmlFor="ck-name" className="ck-label">Full name *</label>
-              </div>
-              <div className="ck-field">
-                <input
-                  id="ck-phone"
-                  type="tel"
-                  className="ck-input"
-                  placeholder=" "
-                  value={customerPhone}
-                  onChange={e => setCustomerPhone(e.target.value)}
-                  autoComplete="tel"
-                  required
-                />
-                <label htmlFor="ck-phone" className="ck-label">Phone *</label>
               </div>
             </section>
 
@@ -531,6 +523,35 @@ export default function CheckoutPage() {
                   <option value="AE">United Arab Emirates</option>
                 </select>
                 <label htmlFor="ck-country" className="ck-label">Country / Region</label>
+              </div>
+
+              <div className="ck-field-row">
+                <div className="ck-field">
+                  <input
+                    id="ck-firstname"
+                    type="text"
+                    className="ck-input"
+                    placeholder=" "
+                    value={customerFirstName}
+                    onChange={e => setCustomerFirstName(e.target.value)}
+                    autoComplete="given-name"
+                    required
+                  />
+                  <label htmlFor="ck-firstname" className="ck-label">First name *</label>
+                </div>
+                <div className="ck-field">
+                  <input
+                    id="ck-lastname"
+                    type="text"
+                    className="ck-input"
+                    placeholder=" "
+                    value={customerLastName}
+                    onChange={e => setCustomerLastName(e.target.value)}
+                    autoComplete="family-name"
+                    required
+                  />
+                  <label htmlFor="ck-lastname" className="ck-label">Last name *</label>
+                </div>
               </div>
 
               <div className="ck-field">
@@ -602,6 +623,20 @@ export default function CheckoutPage() {
                   {region.postcode}{shippingCountry !== 'AE' ? ' *' : ''}
                   {region.postcodePlaceholder ? ` — e.g. ${region.postcodePlaceholder}` : ''}
                 </label>
+              </div>
+
+              <div className="ck-field">
+                <input
+                  id="ck-phone"
+                  type="tel"
+                  className="ck-input"
+                  placeholder=" "
+                  value={customerPhone}
+                  onChange={e => setCustomerPhone(e.target.value)}
+                  autoComplete="tel"
+                  required
+                />
+                <label htmlFor="ck-phone" className="ck-label">Phone *</label>
               </div>
             </section>
 
@@ -688,46 +723,6 @@ export default function CheckoutPage() {
               </form>
             </section>
 
-            {/* Guarantee boxes */}
-            <div className="ck-guarantees">
-              <div className="ck-guarantee">
-                <div className="ck-guarantee-icon">
-                  <svg viewBox="0 0 20 20" fill="currentColor" width="22" height="22"><path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5C17.944 5.678 18 6.379 18 7.1c0 5.523-3.626 9.132-8 11.9-4.374-2.768-8-6.377-8-11.9 0-.721.056-1.422.166-2.1z" clipRule="evenodd" /></svg>
-                </div>
-                <div>
-                  <strong>30-Day Money-Back Guarantee</strong>
-                  <p>Not satisfied? Full refund, no questions asked.</p>
-                </div>
-              </div>
-              <div className="ck-guarantee">
-                <div className="ck-guarantee-icon">
-                  <svg viewBox="0 0 20 20" fill="currentColor" width="22" height="22"><path fillRule="evenodd" d="M7 2a1 1 0 00-.707 1.707L7 4.414v3.758a1 1 0 01-.293.707l-4 4C1.817 13.769 2.432 15 3.414 15H9v2a1 1 0 102 0v-2h5.586c.982 0 1.597-1.231.707-2.121l-4-4A1 1 0 0113 8.172V4.414l.707-.707A1 1 0 0013 2H7zm2 6.172V4h2v4.172a3 3 0 00.879 2.12l1.168 1.169a.25.25 0 01-.177.426H6.13a.25.25 0 01-.177-.426l1.168-1.169A3 3 0 009 8.172z" clipRule="evenodd" /></svg>
-                </div>
-                <div>
-                  <strong>99.3%+ Purity Verified</strong>
-                  <p>Every batch tested in our UK-regulated laboratory. COA included.</p>
-                </div>
-              </div>
-              <div className="ck-guarantee">
-                <div className="ck-guarantee-icon">
-                  <svg viewBox="0 0 20 20" fill="currentColor" width="22" height="22"><path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" /><path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1v-5h2.05a2.5 2.5 0 014.9 0H19a1 1 0 001-1v-2a1 1 0 00-.293-.707l-3-3A1 1 0 0016 3h-2a1 1 0 00-1 1v5H4V5a1 1 0 00-1-1z" /></svg>
-                </div>
-                <div>
-                  <strong>Free Tracked Shipping</strong>
-                  <p>Dispatched within 24 hours. Discreet, tamper-proof packaging.</p>
-                </div>
-              </div>
-              <div className="ck-guarantee">
-                <div className="ck-guarantee-icon">
-                  <svg viewBox="0 0 20 20" fill="currentColor" width="22" height="22"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
-                </div>
-                <div>
-                  <strong>Bank-Level Security</strong>
-                  <p>256-bit SSL encryption. Your details never touch our servers.</p>
-                </div>
-              </div>
-            </div>
-
             <button
               type="button"
               className="ck-back"
@@ -786,52 +781,15 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Social proof */}
+            {/* Social proof — bigger, headline style */}
             <div className="ck-social-proof">
               <div className="ck-social-stars">★★★★★</div>
               <div className="ck-social-text">
                 <strong>4.9/5</strong> Excellent! <span className="ck-social-count">(2,847 reviews)</span>
               </div>
             </div>
-
-            {/* Guarantee */}
-            <div className="ck-guarantee-box">
-              <div className="ck-guarantee-header">
-                <svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20"><path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5C17.944 5.678 18 6.379 18 7.1c0 5.523-3.626 9.132-8 11.9-4.374-2.768-8-6.377-8-11.9 0-.721.056-1.422.166-2.1z" clipRule="evenodd" /></svg>
-                <strong>Vita Labs Guarantee</strong>
-              </div>
-              <p>
-                We offer a full refund or replacement within 30 days from the date of purchase, no questions asked. Every batch is independently tested with 99.3%+ purity verification.
-              </p>
-            </div>
-
-            {/* Need help */}
-            <div className="ck-help-box">
-              <strong>Need Help?</strong>
-              <p>Email us at <a href="mailto:support@vitalabs.io">support@vitalabs.io</a></p>
-            </div>
           </div>
         </div>
-      </div>
-
-      {/* Mobile sticky CTA */}
-      <div className="ck-mobile-sticky">
-        <div className="ck-mobile-sticky-info">
-          <span className="ck-mobile-sticky-total">Total: £{totalGBP.toFixed(2)}</span>
-          <span className="ck-mobile-sticky-ship">Free tracked shipping</span>
-        </div>
-        <button
-          type="button"
-          className="ck-btn ck-btn--pay ck-btn--mobile"
-          disabled={status !== 'ready'}
-          onClick={(e) => {
-            const form = document.querySelector('.ck-form') as HTMLFormElement
-            if (form) form.requestSubmit()
-            else handleSubmit(e as unknown as React.FormEvent)
-          }}
-        >
-          {status === 'submitting' ? 'Processing...' : 'Pay Now'}
-        </button>
       </div>
 
       <footer className="ck-footer">
