@@ -8554,3 +8554,476 @@ h1, h2, h3 {
   .oc-card h1 { font-size: 1.35rem; }
   .oc-guarantees { flex-direction: column; align-items: center; gap: 0.4rem; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   RETA DARK LANDING PAGE — .lp-reta-* namespace
+   Scoped: only applies to /lp/reta. Self-contained, dark-page palette.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.lp-reta {
+  --lp-bg: #ffffff;
+  --lp-bg-alt: #f7f5f1;
+  --lp-bg-dark: #0a1612;
+  --lp-bg-dark2: #0e1f1a;
+  --lp-ink: #0a0a0a;
+  --lp-ink-soft: #2d2d2d;
+  --lp-muted: #6b6b6b;
+  --lp-line: #e6e2d8;
+  --lp-line-dark: rgba(255,255,255,0.08);
+  --lp-accent: #0f766e;       /* deep teal */
+  --lp-accent-2: #14b8a6;     /* lighter teal */
+  --lp-accent-amber: #c89a45; /* warm amber */
+  --lp-green-cta: #0e8a52;
+  --lp-green-cta-hi: #11a064;
+  --lp-warn: #c14d23;
+
+  background: var(--lp-bg);
+  color: var(--lp-ink);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  line-height: 1.55;
+  min-height: 100vh;
+  position: relative;
+  padding-bottom: 84px; /* sticky mobile cta clearance */
+}
+
+/* Reset a few inherited rules so the LP renders independent of /admin or main site. */
+.lp-reta * { box-sizing: border-box; }
+.lp-reta button { font-family: inherit; cursor: pointer; }
+.lp-reta a { color: inherit; }
+.lp-reta img { display: block; max-width: 100%; height: auto; }
+.lp-reta h1, .lp-reta h2, .lp-reta h3 { font-family: 'Fraunces', 'Playfair Display', Georgia, 'Times New Roman', serif; line-height: 1.1; letter-spacing: -0.01em; margin: 0; color: var(--lp-ink); }
+.lp-reta p { margin: 0; }
+
+/* ── Promo bar ─────────────────────────────────────────────────────── */
+.lp-reta-promobar { background: #0a0a0a; color: #fff; font-size: 0.78rem; }
+.lp-reta-promobar-inner {
+  max-width: 1180px; margin: 0 auto; padding: 0.65rem 1rem;
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  flex-wrap: wrap; text-align: center;
+}
+.lp-reta-promobar-dot { width: 8px; height: 8px; background: #14b8a6; border-radius: 50%; box-shadow: 0 0 8px #14b8a6; animation: lpDot 1.4s ease-in-out infinite; }
+.lp-reta-promobar-time { font-variant-numeric: tabular-nums; font-weight: 700; color: #fed670; margin-left: 0.25rem; }
+@keyframes lpDot { 50% { opacity: 0.35; } }
+
+/* ── Header ────────────────────────────────────────────────────────── */
+.lp-reta-header { border-bottom: 1px solid var(--lp-line); background: #fff; }
+.lp-reta-header-inner {
+  max-width: 1180px; margin: 0 auto; padding: 0.8rem 1rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.lp-reta-logo { display: flex; align-items: center; gap: 0.55rem; }
+.lp-reta-logo-mark {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border-radius: 50%; background: var(--lp-accent); color: #fff; font-weight: 700; font-size: 0.9rem;
+}
+.lp-reta-logo-text { font-weight: 700; font-size: 1.05rem; letter-spacing: -0.01em; }
+.lp-reta-header-trust { display: inline-flex; align-items: center; gap: 0.35rem; color: #4a4a4a; font-size: 0.78rem; font-weight: 500; }
+
+/* ── Hero ──────────────────────────────────────────────────────────── */
+.lp-reta-hero { padding: 2.25rem 1rem 2.75rem; }
+.lp-reta-hero-grid {
+  max-width: 1180px; margin: 0 auto;
+  display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 3rem; align-items: center;
+}
+.lp-reta-eyebrow {
+  display: inline-flex; align-items: center;
+  padding: 0.32rem 0.6rem; border-radius: 999px;
+  background: rgba(15,118,110,0.08); color: var(--lp-accent);
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; margin-bottom: 1rem;
+}
+.lp-reta-eyebrow-dark {
+  display: inline-block;
+  padding: 0.32rem 0.6rem; border-radius: 999px;
+  background: rgba(20,184,166,0.16); color: #2dd4bf;
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; margin-bottom: 1rem;
+}
+.lp-reta-h1 {
+  font-size: clamp(2.2rem, 4.6vw, 3.4rem);
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+.lp-reta-h1 em { font-style: italic; color: var(--lp-accent); font-family: inherit; }
+.lp-reta-hero-sub { font-size: 1.05rem; color: var(--lp-ink-soft); margin-bottom: 1.5rem; max-width: 36rem; }
+.lp-reta-hero-bullets { list-style: none; padding: 0; margin: 0 0 1.5rem; display: flex; flex-direction: column; gap: 0.7rem; }
+.lp-reta-hero-bullets li { display: flex; gap: 0.7rem; font-size: 0.95rem; color: var(--lp-ink-soft); }
+.lp-reta-hero-bullets li svg { flex-shrink: 0; margin-top: 0.15rem; }
+.lp-reta-hero-bullets li strong { color: var(--lp-ink); font-weight: 600; }
+
+.lp-reta-cta-primary, .lp-reta-cta-buy {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.95rem 1.5rem; border-radius: 999px;
+  background: var(--lp-green-cta); color: #fff;
+  border: none; font-weight: 700; font-size: 1rem;
+  letter-spacing: -0.01em;
+  box-shadow: 0 10px 30px rgba(14,138,82,0.28), inset 0 1px 0 rgba(255,255,255,0.2);
+  transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+.lp-reta-cta-primary:hover, .lp-reta-cta-buy:hover { background: var(--lp-green-cta-hi); transform: translateY(-1px); box-shadow: 0 14px 36px rgba(14,138,82,0.36); }
+.lp-reta-cta-secondary {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.7rem 1.1rem; border-radius: 999px;
+  background: transparent; color: var(--lp-accent);
+  border: 1.5px solid var(--lp-accent);
+  font-weight: 700; font-size: 0.92rem; margin-top: 0.6rem;
+}
+.lp-reta-cta-secondary:hover { background: var(--lp-accent); color: #fff; }
+
+.lp-reta-hero-microtrust { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 1.1rem; }
+.lp-reta-microtrust-item { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; color: var(--lp-muted); }
+.lp-reta-stars { display: inline-flex; gap: 1px; }
+
+.lp-reta-hero-image-wrap {
+  position: relative;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 30px 80px -20px rgba(10,22,18,0.45), 0 2px 12px rgba(10,22,18,0.08);
+}
+.lp-reta-hero-image { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; }
+.lp-reta-hero-imgbadge {
+  position: absolute; bottom: 18px; left: 18px;
+  background: rgba(0,0,0,0.78); color: #fff;
+  padding: 0.5rem 0.85rem; border-radius: 10px;
+  display: flex; flex-direction: column; line-height: 1;
+  font-family: 'Fraunces', Georgia, serif;
+  backdrop-filter: blur(6px);
+}
+.lp-reta-hero-imgbadge strong { font-size: 1.4rem; font-weight: 700; }
+.lp-reta-hero-imgbadge span { font-size: 0.65rem; letter-spacing: 0.1em; opacity: 0.7; margin-top: 0.2rem; }
+
+/* ── Trust strip ───────────────────────────────────────────────────── */
+.lp-reta-truststrip { background: var(--lp-bg-alt); border-top: 1px solid var(--lp-line); border-bottom: 1px solid var(--lp-line); padding: 1.5rem 1rem; }
+.lp-reta-truststrip-inner {
+  max-width: 1180px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; text-align: center;
+}
+.lp-reta-trust-item { display: flex; flex-direction: column; gap: 0.2rem; }
+.lp-reta-trust-num { font-family: 'Fraunces', Georgia, serif; font-size: 1.8rem; font-weight: 600; color: var(--lp-accent); }
+.lp-reta-trust-label { font-size: 0.78rem; color: var(--lp-muted); letter-spacing: 0.01em; }
+
+/* ── Quote section ─────────────────────────────────────────────────── */
+.lp-reta-quote { padding: 3rem 1rem; background: #fff; }
+.lp-reta-quote-inner { max-width: 720px; margin: 0 auto; text-align: center; }
+.lp-reta-quote-inner blockquote { font-family: 'Fraunces', Georgia, serif; font-size: 1.4rem; font-style: italic; color: var(--lp-ink); margin: 0.8rem 0 1.3rem; line-height: 1.4; }
+.lp-reta-quote-attrib { display: inline-flex; align-items: center; gap: 0.7rem; text-align: left; }
+.lp-reta-quote-attrib img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+.lp-reta-quote-name { font-weight: 600; }
+.lp-reta-quote-meta { font-size: 0.78rem; color: var(--lp-muted); display: block; }
+.lp-reta-verified { color: var(--lp-accent); font-weight: 600; font-size: 0.74rem; margin-left: 0.3rem; }
+
+/* ── Shipping ──────────────────────────────────────────────────────── */
+.lp-reta-shipping { padding: 0 1rem 2rem; }
+.lp-reta-shipping-inner {
+  max-width: 760px; margin: 0 auto;
+  border: 1px solid var(--lp-line); border-radius: 14px; background: var(--lp-bg-alt);
+  padding: 1rem 1.2rem;
+  display: flex; align-items: center; gap: 1rem;
+}
+.lp-reta-shipping-icon { color: var(--lp-accent); flex-shrink: 0; }
+.lp-reta-shipping-text { display: flex; flex-direction: column; }
+.lp-reta-shipping-text strong { font-weight: 600; font-size: 0.95rem; }
+.lp-reta-shipping-text span { font-size: 0.82rem; color: var(--lp-muted); }
+
+/* ── Stat hook ─────────────────────────────────────────────────────── */
+.lp-reta-stathook { padding: 4rem 1rem; text-align: center; background: #fff; }
+.lp-reta-stathook-inner { max-width: 760px; margin: 0 auto; }
+.lp-reta-stathook-eyebrow { font-size: 0.74rem; font-weight: 700; letter-spacing: 0.12em; color: var(--lp-muted); margin-bottom: 1.1rem; }
+.lp-reta-h2 {
+  font-size: clamp(2rem, 4.2vw, 3rem);
+  font-weight: 600; margin-bottom: 1.2rem;
+}
+.lp-reta-h2 em { font-style: italic; color: var(--lp-accent); }
+.lp-reta-h2-accent { color: var(--lp-accent); }
+.lp-reta-h2-accent2 { color: var(--lp-accent-2); }
+.lp-reta-h2-light { color: var(--lp-muted); font-weight: 500; }
+.lp-reta-stathook-body { font-size: 1.08rem; color: var(--lp-ink-soft); margin-bottom: 1rem; }
+.lp-reta-citation { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px dashed var(--lp-line); font-size: 0.75rem; color: var(--lp-muted); font-style: italic; }
+
+/* ── Problem section ───────────────────────────────────────────────── */
+.lp-reta-problem { padding: 4rem 1rem; background: var(--lp-bg-alt); }
+.lp-reta-section-inner { max-width: 1080px; margin: 0 auto; }
+.lp-reta-problem-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.3rem; margin-top: 2.2rem; }
+.lp-reta-problem-card { background: #fff; border-radius: 14px; padding: 1.6rem; border: 1px solid var(--lp-line); }
+.lp-reta-problem-num { font-family: 'Fraunces', Georgia, serif; font-size: 0.95rem; font-weight: 700; color: var(--lp-accent); margin-bottom: 0.6rem; letter-spacing: 0.05em; }
+.lp-reta-problem-card h3 { font-size: 1.2rem; margin-bottom: 0.6rem; }
+.lp-reta-problem-card p { color: var(--lp-ink-soft); font-size: 0.95rem; }
+.lp-reta-problem-card em { color: var(--lp-ink); font-style: italic; }
+
+/* ── Voice ─────────────────────────────────────────────────────────── */
+.lp-reta-voice { padding: 4.5rem 1rem; background: #fff; }
+.lp-reta-voice-inner { max-width: 720px; text-align: center; }
+.lp-reta-voice-text { text-align: left; display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem; }
+.lp-reta-voice-text p { font-size: 1.05rem; color: var(--lp-ink-soft); }
+.lp-reta-voice-text em { color: var(--lp-ink); font-style: italic; }
+.lp-reta-voice-text strong { color: var(--lp-ink); font-weight: 600; }
+
+/* ── Solution ──────────────────────────────────────────────────────── */
+.lp-reta-solution { padding: 4rem 1rem; background: var(--lp-bg-alt); }
+.lp-reta-solution-eyebrow { font-size: 0.74rem; font-weight: 700; letter-spacing: 0.12em; color: var(--lp-muted); margin-bottom: 0.8rem; }
+.lp-reta-solution-grid { display: grid; grid-template-columns: 0.85fr 1fr; gap: 2.5rem; align-items: center; margin-top: 2rem; }
+.lp-reta-solution-image img { border-radius: 16px; box-shadow: 0 20px 40px -10px rgba(10,22,18,0.18); }
+.lp-reta-solution-text p { font-size: 1.02rem; color: var(--lp-ink-soft); margin-bottom: 1rem; }
+.lp-reta-solution-list { list-style: none; padding: 0; margin: 1rem 0 0; display: flex; flex-direction: column; gap: 0.6rem; }
+.lp-reta-solution-list li { display: flex; gap: 0.65rem; font-size: 0.95rem; color: var(--lp-ink-soft); }
+.lp-reta-solution-list li svg { flex-shrink: 0; margin-top: 0.15rem; }
+
+/* ── Trial chart ───────────────────────────────────────────────────── */
+.lp-reta-chart { padding: 4rem 1rem; background: #fff; }
+.lp-reta-chart-header { text-align: center; max-width: 720px; margin: 0 auto 2.2rem; }
+.lp-reta-chart-eyebrow { font-size: 0.74rem; font-weight: 700; letter-spacing: 0.12em; color: var(--lp-muted); margin-bottom: 0.8rem; display: block; }
+.lp-reta-chart-sub { color: var(--lp-ink-soft); font-size: 1rem; }
+.lp-reta-chart-card {
+  background: var(--lp-bg-alt); border-radius: 18px; padding: 2rem;
+  border: 1px solid var(--lp-line);
+  max-width: 760px; margin: 0 auto;
+}
+.lp-reta-chart-bars { display: flex; flex-direction: column; gap: 1rem; }
+.lp-reta-chart-row { display: grid; grid-template-columns: 180px 1fr; gap: 1rem; align-items: center; }
+.lp-reta-chart-rowlabel { font-size: 0.88rem; font-weight: 500; color: var(--lp-ink-soft); text-align: right; }
+.lp-reta-chart-track { background: rgba(0,0,0,0.04); border-radius: 8px; height: 38px; overflow: hidden; position: relative; }
+.lp-reta-chart-fill {
+  height: 100%; border-radius: 8px; transition: width 0.8s cubic-bezier(0.2,0.8,0.2,1);
+  display: flex; align-items: center; padding-right: 0.7rem; justify-content: flex-end;
+}
+.lp-reta-chart-fillnum { color: #fff; font-weight: 700; font-size: 0.86rem; font-variant-numeric: tabular-nums; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+.lp-reta-chart-foot { margin-top: 1.4rem; padding-top: 1rem; border-top: 1px dashed rgba(0,0,0,0.12); color: var(--lp-muted); font-size: 0.72rem; }
+
+/* ── Mechanism (dark section) ──────────────────────────────────────── */
+.lp-reta-mechanism { background: var(--lp-bg-dark); color: #e7e7e7; padding: 4.5rem 1rem; }
+.lp-reta-mechanism .lp-reta-h2 { color: #f5f5f5; }
+.lp-reta-mechanism .lp-reta-h2-light { color: rgba(245,245,245,0.55); }
+.lp-reta-mechanism-sub { color: rgba(231,231,231,0.7); font-size: 1.05rem; max-width: 56ch; margin-bottom: 2.4rem; }
+.lp-reta-mech-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+.lp-reta-mech-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px; padding: 1.6rem;
+}
+.lp-reta-mech-card-hi { background: linear-gradient(160deg, rgba(20,184,166,0.18), rgba(20,184,166,0.04)); border-color: rgba(20,184,166,0.35); }
+.lp-reta-mech-receptor {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: rgba(20,184,166,0.16); color: #5eead4;
+  width: auto; padding: 0.3rem 0.65rem; border-radius: 8px;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+}
+.lp-reta-mech-card h3 { color: #f5f5f5; font-size: 1.15rem; margin-bottom: 0.5rem; }
+.lp-reta-mech-card p { color: rgba(231,231,231,0.75); font-size: 0.94rem; }
+
+/* ── Before / after ────────────────────────────────────────────────── */
+.lp-reta-ba { padding: 4.5rem 1rem; background: #fff; }
+.lp-reta-ba-sub { color: var(--lp-muted); font-size: 0.92rem; max-width: 64ch; margin: 0 0 2rem; }
+.lp-reta-ba-list { display: flex; flex-direction: column; gap: 2rem; margin-bottom: 1.5rem; }
+.lp-reta-ba-row {
+  margin: 0;
+  display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem; align-items: center;
+}
+.lp-reta-ba-row:nth-child(even) { grid-template-columns: 1fr 1.5fr; }
+.lp-reta-ba-row:nth-child(even) figcaption { order: -1; }
+.lp-reta-ba-row img { border-radius: 14px; box-shadow: 0 20px 40px -16px rgba(10,22,18,0.22); }
+.lp-reta-ba-row blockquote { font-family: 'Fraunces', Georgia, serif; font-size: 1.25rem; font-style: italic; color: var(--lp-ink); line-height: 1.4; margin: 0 0 0.85rem; }
+.lp-reta-ba-attrib strong { font-weight: 600; font-size: 0.95rem; }
+.lp-reta-ba-attrib span { display: block; font-size: 0.78rem; color: var(--lp-muted); }
+.lp-reta-ba-disc { color: var(--lp-muted); font-size: 0.78rem; font-style: italic; background: var(--lp-bg-alt); padding: 0.9rem 1.1rem; border-radius: 10px; }
+
+/* ── Usage steps ───────────────────────────────────────────────────── */
+.lp-reta-steps { padding: 4.5rem 1rem; background: var(--lp-bg-alt); }
+.lp-reta-steps-sub { color: var(--lp-ink-soft); margin-bottom: 2rem; max-width: 56ch; }
+.lp-reta-steps-list { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+.lp-reta-steps-list li { background: #fff; border: 1px solid var(--lp-line); border-radius: 14px; padding: 1.7rem; }
+.lp-reta-step-num { font-family: 'Fraunces', Georgia, serif; font-size: 2.1rem; font-weight: 600; color: var(--lp-accent); margin-bottom: 0.4rem; line-height: 1; }
+.lp-reta-steps-list h3 { font-size: 1.18rem; margin-bottom: 0.5rem; }
+.lp-reta-steps-list p { color: var(--lp-ink-soft); font-size: 0.95rem; }
+
+/* ── Features ──────────────────────────────────────────────────────── */
+.lp-reta-features { padding: 4.5rem 1rem; background: #fff; }
+.lp-reta-features-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.2rem 2rem; margin-top: 2rem; }
+.lp-reta-feature-item { display: flex; gap: 0.85rem; align-items: flex-start; }
+.lp-reta-feature-item svg { flex-shrink: 0; margin-top: 0.18rem; }
+.lp-reta-feature-item strong { display: block; font-weight: 600; font-size: 1rem; margin-bottom: 0.2rem; }
+.lp-reta-feature-item span { color: var(--lp-ink-soft); font-size: 0.92rem; }
+
+/* ── Founder ───────────────────────────────────────────────────────── */
+.lp-reta-founder { padding: 4.5rem 1rem; background: var(--lp-bg-alt); }
+.lp-reta-founder-grid { display: grid; grid-template-columns: 0.8fr 1.05fr; gap: 2.5rem; align-items: center; }
+.lp-reta-founder-image img { border-radius: 16px; box-shadow: 0 24px 50px -12px rgba(10,22,18,0.28); }
+.lp-reta-founder-text p { font-size: 1.05rem; color: var(--lp-ink-soft); margin: 0.9rem 0; }
+.lp-reta-founder-text strong { color: var(--lp-ink); }
+.lp-reta-founder-lab { margin-top: 1.3rem; border-radius: 12px; }
+
+/* ── Stacked proof ─────────────────────────────────────────────────── */
+.lp-reta-proof { padding: 4.5rem 1rem; background: #fff; }
+.lp-reta-proof-head { text-align: center; max-width: 640px; margin: 0 auto 2.2rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+.lp-reta-proof-sub { color: var(--lp-muted); font-size: 0.94rem; }
+.lp-reta-proof-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+.lp-reta-proof-card {
+  background: var(--lp-bg-alt); border-radius: 14px; padding: 1.6rem;
+  border: 1px solid var(--lp-line);
+  display: flex; flex-direction: column; gap: 0.7rem;
+}
+.lp-reta-proof-card h3 { font-size: 1.12rem; }
+.lp-reta-proof-card p { color: var(--lp-ink-soft); font-size: 0.93rem; flex: 1; }
+.lp-reta-proof-card footer { display: flex; align-items: center; gap: 0.7rem; padding-top: 0.8rem; border-top: 1px solid var(--lp-line); }
+.lp-reta-proof-card footer img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+.lp-reta-proof-card footer strong { font-weight: 600; font-size: 0.9rem; }
+.lp-reta-proof-meta { display: block; font-size: 0.72rem; color: var(--lp-muted); }
+
+/* ── Bonus ─────────────────────────────────────────────────────────── */
+.lp-reta-bonus { padding: 4.5rem 1rem; background: var(--lp-bg-alt); }
+.lp-reta-bonus-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; align-items: center; }
+.lp-reta-bonus-image img { border-radius: 16px; box-shadow: 0 22px 44px -14px rgba(10,22,18,0.22); }
+.lp-reta-bonus-text p { color: var(--lp-ink-soft); margin: 0.9rem 0; font-size: 1.02rem; }
+.lp-reta-bonus-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.55rem; margin-top: 1rem; }
+.lp-reta-bonus-list li { display: flex; gap: 0.65rem; font-size: 0.95rem; color: var(--lp-ink-soft); }
+.lp-reta-bonus-list svg { flex-shrink: 0; margin-top: 0.15rem; }
+
+/* ── Bundles ───────────────────────────────────────────────────────── */
+.lp-reta-bundles { padding: 5rem 1rem; background: #fff; scroll-margin-top: 2rem; }
+.lp-reta-bundles-sub { color: var(--lp-ink-soft); margin-bottom: 2rem; max-width: 60ch; }
+.lp-reta-bundle-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; margin-top: 1.5rem; }
+.lp-reta-bundle-card {
+  position: relative; background: #fff;
+  border: 2px solid var(--lp-line); border-radius: 16px; padding: 1.6rem 1.4rem;
+  text-align: left;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  font-family: inherit; color: inherit; cursor: pointer;
+  display: flex; flex-direction: column; gap: 0.8rem;
+}
+.lp-reta-bundle-card:hover { border-color: rgba(15,118,110,0.45); transform: translateY(-2px); }
+.lp-reta-bundle-active { border-color: var(--lp-accent); box-shadow: 0 0 0 4px rgba(15,118,110,0.08); }
+.lp-reta-bundle-popular { border-color: rgba(15,118,110,0.3); }
+.lp-reta-bundle-badge {
+  position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+  background: var(--lp-accent); color: #fff;
+  padding: 0.3rem 0.9rem; border-radius: 999px;
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+.lp-reta-bundle-popular .lp-reta-bundle-badge { background: var(--lp-accent); }
+.lp-reta-bundle-radio {
+  width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--lp-line);
+  flex-shrink: 0; position: relative;
+}
+.lp-reta-bundle-active .lp-reta-bundle-radio { border-color: var(--lp-accent); }
+.lp-reta-bundle-active .lp-reta-bundle-radio::after {
+  content: ''; position: absolute; inset: 3px;
+  border-radius: 50%; background: var(--lp-accent);
+}
+.lp-reta-bundle-head h3 { font-family: 'Fraunces', Georgia, serif; font-size: 1.25rem; font-weight: 600; }
+.lp-reta-bundle-sublabel { color: var(--lp-muted); font-size: 0.85rem; }
+.lp-reta-bundle-price { display: flex; align-items: baseline; gap: 0.5rem; }
+.lp-reta-bundle-now { font-family: 'Fraunces', Georgia, serif; font-size: 1.85rem; font-weight: 600; color: var(--lp-ink); }
+.lp-reta-bundle-baseline { color: var(--lp-muted); font-size: 0.95rem; text-decoration: line-through; }
+.lp-reta-bundle-perweek { font-size: 0.82rem; color: var(--lp-muted); }
+.lp-reta-bundle-save { color: var(--lp-accent); font-weight: 600; font-size: 0.85rem; }
+.lp-reta-bundle-incl { list-style: none; padding: 0; margin: 0.4rem 0 0; display: flex; flex-direction: column; gap: 0.35rem; }
+.lp-reta-bundle-incl li { display: flex; gap: 0.5rem; font-size: 0.82rem; color: var(--lp-ink-soft); }
+.lp-reta-bundle-incl svg { width: 16px; height: 16px; flex-shrink: 0; }
+.lp-reta-bundle-cta-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.9rem; margin-top: 2rem; }
+.lp-reta-cta-buy { padding: 1.1rem 2rem; font-size: 1.05rem; }
+.lp-reta-bundle-pays { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; color: var(--lp-muted); font-size: 0.78rem; align-items: center; }
+.lp-reta-bundle-pays svg { width: 13px; height: 13px; }
+
+/* ── Guarantee ─────────────────────────────────────────────────────── */
+.lp-reta-guarantee { padding: 4rem 1rem; background: linear-gradient(180deg, var(--lp-bg-alt), #fff); }
+.lp-reta-guarantee-inner { display: flex; gap: 2rem; align-items: center; max-width: 880px; margin: 0 auto; }
+.lp-reta-guarantee-badge {
+  flex-shrink: 0;
+  width: 130px; height: 130px; border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff, #f3f0e8);
+  border: 3px solid var(--lp-accent);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center;
+}
+.lp-reta-guarantee-30 { font-family: 'Fraunces', Georgia, serif; font-size: 2.6rem; font-weight: 700; color: var(--lp-accent); line-height: 1; }
+.lp-reta-guarantee-day { font-size: 0.72rem; letter-spacing: 0.15em; font-weight: 700; color: var(--lp-accent); }
+.lp-reta-guarantee-text p { color: var(--lp-ink-soft); margin-top: 0.6rem; }
+
+/* ── FAQ ───────────────────────────────────────────────────────────── */
+.lp-reta-faq { padding: 4.5rem 1rem; background: #fff; }
+.lp-reta-faq-list { display: flex; flex-direction: column; gap: 0.7rem; margin-top: 1.5rem; }
+.lp-reta-faq-item { border: 1px solid var(--lp-line); border-radius: 12px; background: #fff; overflow: hidden; transition: background 0.15s ease; }
+.lp-reta-faq-open { background: var(--lp-bg-alt); border-color: rgba(15,118,110,0.25); }
+.lp-reta-faq-q {
+  width: 100%; padding: 1.1rem 1.3rem;
+  background: transparent; border: none;
+  display: flex; align-items: center; justify-content: space-between;
+  text-align: left; font-weight: 600; font-size: 1.02rem; color: var(--lp-ink);
+}
+.lp-reta-faq-toggle { font-size: 1.4rem; color: var(--lp-accent); font-weight: 400; }
+.lp-reta-faq-a { padding: 0 1.3rem 1.2rem; color: var(--lp-ink-soft); font-size: 0.95rem; line-height: 1.6; }
+
+/* ── Footer / disclaimer ───────────────────────────────────────────── */
+.lp-reta-footer { background: var(--lp-bg-dark); color: rgba(255,255,255,0.65); padding: 3rem 1rem 5rem; }
+.lp-reta-footer .lp-reta-section-inner { display: flex; flex-direction: column; gap: 1.5rem; }
+.lp-reta-footer-disc { font-size: 0.78rem; line-height: 1.7; color: rgba(255,255,255,0.55); border-left: 2px solid rgba(20,184,166,0.4); padding: 0.4rem 0 0.4rem 1rem; }
+.lp-reta-footer-disc strong { color: #fed670; letter-spacing: 0.06em; }
+.lp-reta-footer-meta { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; font-size: 0.72rem; color: rgba(255,255,255,0.45); padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.07); }
+
+/* ── Sticky mobile CTA ─────────────────────────────────────────────── */
+.lp-reta-sticky {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  padding: 0.7rem 0.9rem calc(0.7rem + env(safe-area-inset-bottom, 0));
+  background: rgba(255,255,255,0.94);
+  border-top: 1px solid var(--lp-line);
+  backdrop-filter: blur(10px);
+  z-index: 50;
+  display: none;
+}
+.lp-reta-sticky-btn {
+  width: 100%; padding: 0.95rem 1.2rem; border-radius: 999px;
+  background: var(--lp-green-cta); color: #fff;
+  border: none; font-weight: 700; font-size: 1rem;
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  box-shadow: 0 8px 22px rgba(14,138,82,0.34);
+}
+
+/* ── Responsive ────────────────────────────────────────────────────── */
+@media (max-width: 960px) {
+  .lp-reta-hero-grid { grid-template-columns: 1fr; gap: 1.8rem; }
+  .lp-reta-hero-image-wrap { order: -1; }
+  .lp-reta-problem-grid,
+  .lp-reta-mech-grid,
+  .lp-reta-steps-list,
+  .lp-reta-proof-grid,
+  .lp-reta-bundle-grid { grid-template-columns: 1fr; }
+  .lp-reta-truststrip-inner { grid-template-columns: repeat(2, 1fr); gap: 1.2rem; }
+  .lp-reta-solution-grid,
+  .lp-reta-founder-grid,
+  .lp-reta-bonus-grid { grid-template-columns: 1fr; gap: 1.6rem; }
+  .lp-reta-ba-row,
+  .lp-reta-ba-row:nth-child(even) { grid-template-columns: 1fr; }
+  .lp-reta-ba-row:nth-child(even) figcaption { order: 0; }
+  .lp-reta-features-grid { grid-template-columns: 1fr; }
+  .lp-reta-chart-row { grid-template-columns: 110px 1fr; }
+  .lp-reta-guarantee-inner { flex-direction: column; text-align: center; }
+  .lp-reta-sticky { display: block; }
+}
+
+@media (max-width: 560px) {
+  .lp-reta-h1 { font-size: 2rem; }
+  .lp-reta-h2 { font-size: 1.85rem; }
+  .lp-reta-hero,
+  .lp-reta-stathook,
+  .lp-reta-problem,
+  .lp-reta-voice,
+  .lp-reta-solution,
+  .lp-reta-chart,
+  .lp-reta-mechanism,
+  .lp-reta-ba,
+  .lp-reta-steps,
+  .lp-reta-features,
+  .lp-reta-founder,
+  .lp-reta-proof,
+  .lp-reta-bonus,
+  .lp-reta-bundles,
+  .lp-reta-guarantee,
+  .lp-reta-faq { padding-left: 1rem; padding-right: 1rem; padding-top: 3rem; padding-bottom: 3rem; }
+  .lp-reta-chart-rowlabel { font-size: 0.78rem; }
+  .lp-reta-chart-card { padding: 1.2rem; }
+  .lp-reta-promobar-inner { font-size: 0.74rem; }
+  .lp-reta-truststrip-inner { gap: 0.8rem; }
+  .lp-reta-trust-num { font-size: 1.4rem; }
+}

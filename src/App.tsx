@@ -25,6 +25,7 @@ import TSLPage from './pages/TSLPage'
 import CheckoutPage from './pages/CheckoutPage'
 import TestPaymentPage from './pages/TestPaymentPage'
 import OrderCompletePage from './pages/OrderCompletePage'
+import RetaLandingPage from './pages/RetaLandingPage'
 import ThemeToggle from './components/ThemeToggle'
 import { AuthProvider, useAuth } from './members/context/AuthContext'
 import MembersLayout from './members/components/MembersLayout'
@@ -79,12 +80,14 @@ function ScrollToTop() {
 export default function App() {
   const { pathname } = useLocation()
   const isAdminRoute = pathname.startsWith('/admin')
+  const isLpRoute = pathname.startsWith('/lp/')
   const hideThemeToggle =
     pathname === '/' ||
     pathname.startsWith('/quiz') ||
     pathname.startsWith('/products') ||
     ['/capture', '/results', '/upsell', '/tsl', '/checkout', '/order-complete', '/terms', '/privacy', '/refund-policy', '/disclaimer', '/shipping'].includes(pathname) ||
     pathname.startsWith('/members') ||
+    pathname.startsWith('/lp/') ||
     isAdminRoute
   const showToggle = !hideThemeToggle
   const [queryClient] = useState(() => new QueryClient({
@@ -108,7 +111,7 @@ export default function App() {
       <ConfigProvider>
       <CartProvider>
       <ScrollToTop />
-      <Banner />
+      {!isLpRoute && <Banner />}
       <CartDrawer />
       <TrackingBoot />
       <Routes>
@@ -137,13 +140,17 @@ export default function App() {
         <Route path="/test-payment" element={<TestPaymentPage />} />
         <Route path="/order-complete" element={<OrderCompletePage />} />
 
+        {/* Dark / unlinked landing pages — for paid ad campaigns only.
+            Not in nav, not in sitemap, noindex,nofollow set inline. */}
+        <Route path="/lp/reta" element={<RetaLandingPage />} />
+
         {/* Members area */}
         <Route path="/members/*" element={<MembersRoutes />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       {showToggle && <ThemeToggle />}
-      <WhatsAppWidget />
+      {!isLpRoute && <WhatsAppWidget />}
       </CartProvider>
       </ConfigProvider>
     </AuthProvider>
