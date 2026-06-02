@@ -15,7 +15,11 @@ function isBrand(value: string): value is Brand {
 
 export function getBrand(): Brand {
   const fromEnv = import.meta.env.VITE_BRAND
-  if (typeof fromEnv === 'string' && isBrand(fromEnv)) return fromEnv
+  if (typeof fromEnv === 'string') {
+    // Be lenient about casing — VITE_BRAND=Peptiva should still resolve.
+    const normalized = fromEnv.trim().toLowerCase()
+    if (isBrand(normalized)) return normalized
+  }
   return 'vitalabs'
 }
 
