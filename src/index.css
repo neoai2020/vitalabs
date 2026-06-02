@@ -8365,6 +8365,14 @@ h1, h2, h3 {
   .ck-mobile-total-bar { display: flex; }
   .ck-mobile-bottom-summary { display: block; }
 
+  /* Shrink the social-proof block on mobile — desktop sizing reads as
+     oversized on a phone. */
+  .ck-social-proof { padding: 0.7rem 0.9rem; gap: 0.6rem; }
+  .ck-social-stars { font-size: 1rem; letter-spacing: 1px; }
+  .ck-social-text { font-size: 0.85rem; }
+  .ck-social-text strong { font-size: 0.95rem; }
+  .ck-social-count { font-size: 0.8rem; }
+
   /* Tighter section spacing on mobile */
   .ck-section { margin-bottom: 1.5rem; }
   .ck-section-title { font-size: 1.1rem; }
