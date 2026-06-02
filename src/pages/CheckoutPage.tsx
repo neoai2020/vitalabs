@@ -725,18 +725,28 @@ export default function CheckoutPage() {
             <div className="ck-summary">
               <h2 className="ck-summary-title">Order summary</h2>
 
-              {state.items.map((item, i) => (
-                <div key={i} className="ck-summary-product">
-                  {item.image && (
-                    <img src={item.image} alt={item.sku} className="ck-summary-img" />
-                  )}
-                  <div className="ck-summary-info">
-                    <h3>{item.sku}</h3>
-                    <p className="ck-summary-compound">{item.compound}</p>
+              {state.items.map((item, i) => {
+                const qty = state.items.length === 1 ? state.quantity : 1
+                return (
+                  <div key={i} className="ck-summary-product">
+                    <span className="ck-summary-img-wrap">
+                      {item.image ? (
+                        <img src={item.image} alt={item.sku} className="ck-summary-img" />
+                      ) : (
+                        <span className="ck-summary-img ck-summary-img--placeholder" aria-hidden="true" />
+                      )}
+                      <span className="ck-summary-qty-badge" aria-label={`Quantity ${qty}`}>
+                        {qty}
+                      </span>
+                    </span>
+                    <div className="ck-summary-info">
+                      <h3>{item.sku}</h3>
+                      <p className="ck-summary-compound">{item.compound}</p>
+                    </div>
+                    <span className="ck-summary-item-price">{item.displayPrice}</span>
                   </div>
-                  <span className="ck-summary-item-price">{item.displayPrice}</span>
-                </div>
-              ))}
+                )
+              })}
 
               {/* Promo code moved up — sits between the products and the totals so
                   customers see it before scrolling past the subtotal. */}
@@ -786,18 +796,28 @@ export default function CheckoutPage() {
       {bottomSummaryOpen && (
         <div className="ck-mobile-bottom-summary">
           <div className="ck-summary">
-            {state.items.map((item, i) => (
-              <div key={i} className="ck-summary-product">
-                {item.image && (
-                  <img src={item.image} alt={item.sku} className="ck-summary-img" />
-                )}
-                <div className="ck-summary-info">
-                  <h3>{item.sku}</h3>
-                  <p className="ck-summary-compound">{item.compound}</p>
+            {state.items.map((item, i) => {
+              const qty = state.items.length === 1 ? state.quantity : 1
+              return (
+                <div key={i} className="ck-summary-product">
+                  <span className="ck-summary-img-wrap">
+                    {item.image ? (
+                      <img src={item.image} alt={item.sku} className="ck-summary-img" />
+                    ) : (
+                      <span className="ck-summary-img ck-summary-img--placeholder" aria-hidden="true" />
+                    )}
+                    <span className="ck-summary-qty-badge" aria-label={`Quantity ${qty}`}>
+                      {qty}
+                    </span>
+                  </span>
+                  <div className="ck-summary-info">
+                    <h3>{item.sku}</h3>
+                    <p className="ck-summary-compound">{item.compound}</p>
+                  </div>
+                  <span className="ck-summary-item-price">{item.displayPrice}</span>
                 </div>
-                <span className="ck-summary-item-price">{item.displayPrice}</span>
-              </div>
-            ))}
+              )
+            })}
 
             <div className="ck-summary-row">
               <span>Subtotal</span>

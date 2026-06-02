@@ -7764,8 +7764,15 @@ h1, h2, h3 {
 .ck-summary-product {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 18px;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.ck-summary-img-wrap {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-block;
+  line-height: 0;
 }
 
 .ck-summary-img {
@@ -7775,10 +7782,38 @@ h1, h2, h3 {
   border-radius: 10px;
   border: 1px solid var(--ck-line);
   background: #f3f4f6;
-  flex-shrink: 0;
+  display: block;
 }
 
+.ck-summary-img--placeholder { background: #fce7f3; }
+
 [data-theme="dark"] .ck-summary-img { border-color: var(--border); }
+
+/* Quantity badge — small dark pill perched on the top-right of the
+   product thumbnail, mirroring Shopify-style summaries. */
+.ck-summary-qty-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--ck-ink, #111827);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 22px;
+  text-align: center;
+  letter-spacing: 0;
+  box-shadow: 0 0 0 2px #fff;
+}
+
+[data-theme="dark"] .ck-summary-qty-badge {
+  background: var(--text);
+  color: var(--bg);
+  box-shadow: 0 0 0 2px var(--bg-surface);
+}
 
 .ck-summary-info { flex: 1; min-width: 0; }
 
@@ -8396,10 +8431,18 @@ h1, h2, h3 {
 
   .ck-btn--pay { height: 52px; font-size: 1rem; }
 
-  .ck-summary-img { width: 56px; height: 56px; }
-  .ck-summary-info h3 { font-size: 14px; }
+  .ck-summary-img { width: 60px; height: 60px; }
+  .ck-summary-qty-badge {
+    top: -6px;
+    right: -6px;
+    min-width: 20px;
+    height: 20px;
+    line-height: 20px;
+    font-size: 11px;
+  }
+  .ck-summary-info h3 { font-size: 15px; font-weight: 700; }
   .ck-summary-compound { font-size: 13px; }
-  .ck-summary-item-price { font-size: 14px; }
+  .ck-summary-item-price { font-size: 15px; font-weight: 600; }
 
   .ck-summary-title,
   .ck-section-title { font-size: 1.05rem; }
