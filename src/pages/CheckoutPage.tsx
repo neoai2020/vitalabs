@@ -59,32 +59,32 @@ function PromoSection({ subtotalGBP, onChange }: PromoSectionProps) {
   }
 
   return (
-    <div className="ck-promo" style={{ marginTop: 12 }}>
+    <div className="ck-promo">
       {applied ? (
-        <div className="ck-promo-applied" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 8, background: '#ecfdf5', color: '#065f46', fontSize: 13 }}>
+        <div className="ck-promo-applied">
           <span><strong>{applied.code}</strong> applied — £{applied.discount.toFixed(2)} off</span>
-          <button type="button" onClick={clear} style={{ background: 'transparent', border: 'none', color: '#065f46', cursor: 'pointer', textDecoration: 'underline', fontSize: 12 }}>Remove</button>
+          <button type="button" onClick={clear} className="ck-promo-remove">Remove</button>
         </div>
       ) : (
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div className="ck-promo-row">
           <input
             type="text"
-            placeholder="Promo code"
+            placeholder="Discount code or gift card"
             value={code}
             onChange={e => setCode(e.target.value)}
-            style={{ flex: 1, padding: '8px 12px', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 13 }}
+            className="ck-promo-input"
           />
           <button
             type="button"
             onClick={apply}
             disabled={validating || !code.trim()}
-            style={{ padding: '8px 14px', borderRadius: 6, border: '1px solid #143F66', background: '#143F66', color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer', opacity: validating || !code.trim() ? 0.6 : 1 }}
+            className="ck-promo-apply"
           >
             {validating ? 'Checking…' : 'Apply'}
           </button>
         </div>
       )}
-      {error ? <p style={{ marginTop: 6, fontSize: 12, color: '#b91c1c' }}>{error}</p> : null}
+      {error ? <p className="ck-promo-error">{error}</p> : null}
     </div>
   )
 }
@@ -101,6 +101,23 @@ function useCountdown(startMinutes: number) {
   const mins = Math.floor(seconds / 60)
   const secs = seconds % 60
   return { mins, secs, expired: seconds === 0 }
+}
+
+/** Per-country labels for the state/postcode fields. We only ship to four
+ *  countries, but each one calls the admin area + postal code something
+ *  different — using the local term reduces friction at checkout. */
+function getRegionLabels(country: string): { state: string; postcode: string; postcodePlaceholder: string } {
+  switch (country) {
+    case 'US':
+      return { state: 'State', postcode: 'ZIP Code', postcodePlaceholder: '10001' }
+    case 'AE':
+      return { state: 'Emirate', postcode: 'Postal code (optional)', postcodePlaceholder: '' }
+    case 'IE':
+      return { state: 'County', postcode: 'Eircode', postcodePlaceholder: 'D02 XY45' }
+    case 'GB':
+    default:
+      return { state: 'County', postcode: 'Postcode', postcodePlaceholder: 'SW1A 1AA' }
+  }
 }
 
 export default function CheckoutPage() {
@@ -144,6 +161,9 @@ export default function CheckoutPage() {
   const [shippingPostcode, setShippingPostcode] = useState('')
 
   const [promo, setPromo] = useState<AppliedPromo | null>(null)
+
+  // Mobile-only collapsible summary toggle.
+  const [summaryOpen, setSummaryOpen] = useState(false)
 
   const customerIdRef = useRef<string | null>(null)
   const hyperRef = useRef<ReturnType<typeof getHyperInstance> | null>(null)
@@ -265,8 +285,14 @@ export default function CheckoutPage() {
       return
     }
 
-    if (!shippingAddress1.trim() || !shippingCity.trim() || !shippingPostcode.trim()) {
+    if (!shippingAddress1.trim() || !shippingCity.trim()) {
       setErrorMsg('Please fill in your shipping address.')
+      return
+    }
+
+    // Postcode is required for GB / IE / US; AE doesn't always have one.
+    if (shippingCountry !== 'AE' && !shippingPostcode.trim()) {
+      setErrorMsg('Please enter your postcode.')
       return
     }
 
@@ -383,6 +409,9 @@ export default function CheckoutPage() {
     )
   }
 
+  const region = getRegionLabels(shippingCountry)
+  const totalGBP = (state.amount / 100) - (promo?.discount ?? 0)
+
   return (
     <div className="ck-page">
       {/* Secure header */}
@@ -416,216 +445,248 @@ export default function CheckoutPage() {
         </div>
       )}
 
+      {/* Mobile-only: collapsible "Order summary" bar at the very top.
+          Tapping toggles the right column visibility on narrow screens.
+          Hidden on desktop via CSS. */}
+      <button
+        type="button"
+        className={`ck-mobile-summary-bar ${summaryOpen ? 'is-open' : ''}`}
+        onClick={() => setSummaryOpen(o => !o)}
+        aria-expanded={summaryOpen}
+      >
+        <span className="ck-mobile-summary-left">
+          Order summary
+          <svg className="ck-mobile-summary-chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </span>
+        <span className="ck-mobile-summary-total">£{totalGBP.toFixed(2)}</span>
+      </button>
+
       <div className="ck-wrap">
-        <div className="ck-grid">
+        <div className={`ck-grid ${summaryOpen ? 'is-summary-open' : ''}`}>
           {/* LEFT COLUMN: Form */}
           <div className="ck-left">
-            {/* Customer Information */}
-            <div className="ck-section">
-              <h2 className="ck-section-title">Customer Information</h2>
-              <div className="ck-card">
-                <div className="ck-field">
-                  <label className="ck-label" htmlFor="ck-name">Full Name *</label>
-                  <input
-                    id="ck-name"
-                    type="text"
-                    className="ck-input"
-                    placeholder="John Smith"
-                    value={customerName}
-                    onChange={e => setCustomerName(e.target.value)}
-                    autoComplete="name"
-                    required
-                  />
-                </div>
-                <div className="ck-field">
-                  <label className="ck-label" htmlFor="ck-email">Email Address *</label>
-                  <input
-                    id="ck-email"
-                    type="email"
-                    className="ck-input"
-                    placeholder="you@example.com"
-                    value={customerEmail}
-                    onChange={e => setCustomerEmail(e.target.value)}
-                    autoComplete="email"
-                    required
-                  />
-                  <span className="ck-field-hint">To receive your order confirmation.</span>
-                </div>
-                <div className="ck-field">
-                  <label className="ck-label" htmlFor="ck-phone">Phone Number *</label>
-                  <input
-                    id="ck-phone"
-                    type="tel"
-                    className="ck-input"
-                    placeholder="+44 7700 900000"
-                    value={customerPhone}
-                    onChange={e => setCustomerPhone(e.target.value)}
-                    autoComplete="tel"
-                    required
-                  />
-                  <span className="ck-field-hint">For delivery updates only.</span>
-                </div>
+            {/* Customer / Contact */}
+            <section className="ck-section">
+              <h2 className="ck-section-title">Contact</h2>
+              <div className="ck-field">
+                <input
+                  id="ck-email"
+                  type="email"
+                  className="ck-input"
+                  placeholder=" "
+                  value={customerEmail}
+                  onChange={e => setCustomerEmail(e.target.value)}
+                  autoComplete="email"
+                  required
+                />
+                <label htmlFor="ck-email" className="ck-label">Email *</label>
               </div>
-            </div>
+              <div className="ck-field">
+                <input
+                  id="ck-name"
+                  type="text"
+                  className="ck-input"
+                  placeholder=" "
+                  value={customerName}
+                  onChange={e => setCustomerName(e.target.value)}
+                  autoComplete="name"
+                  required
+                />
+                <label htmlFor="ck-name" className="ck-label">Full name *</label>
+              </div>
+              <div className="ck-field">
+                <input
+                  id="ck-phone"
+                  type="tel"
+                  className="ck-input"
+                  placeholder=" "
+                  value={customerPhone}
+                  onChange={e => setCustomerPhone(e.target.value)}
+                  autoComplete="tel"
+                  required
+                />
+                <label htmlFor="ck-phone" className="ck-label">Phone *</label>
+              </div>
+            </section>
 
             {/* Shipping Address */}
-            <div className="ck-section">
-              <h2 className="ck-section-title">Shipping Address</h2>
-              <div className="ck-card">
+            <section className="ck-section">
+              <h2 className="ck-section-title">Delivery</h2>
+
+              {/* Country select — always has a value, so always treat label as floating */}
+              <div className="ck-field ck-field--select is-filled">
+                <select
+                  id="ck-country"
+                  className="ck-input ck-select"
+                  value={shippingCountry}
+                  onChange={e => setShippingCountry(e.target.value)}
+                  autoComplete="country"
+                  required
+                >
+                  <option value="GB">United Kingdom</option>
+                  <option value="IE">Ireland</option>
+                  <option value="US">United States</option>
+                  <option value="AE">United Arab Emirates</option>
+                </select>
+                <label htmlFor="ck-country" className="ck-label">Country / Region</label>
+              </div>
+
+              <div className="ck-field">
+                <input
+                  id="ck-address1"
+                  type="text"
+                  className="ck-input"
+                  placeholder=" "
+                  value={shippingAddress1}
+                  onChange={e => setShippingAddress1(e.target.value)}
+                  autoComplete="address-line1"
+                  required
+                />
+                <label htmlFor="ck-address1" className="ck-label">Address *</label>
+              </div>
+              <div className="ck-field">
+                <input
+                  id="ck-address2"
+                  type="text"
+                  className="ck-input"
+                  placeholder=" "
+                  value={shippingAddress2}
+                  onChange={e => setShippingAddress2(e.target.value)}
+                  autoComplete="address-line2"
+                />
+                <label htmlFor="ck-address2" className="ck-label">Apartment, suite, etc. (optional)</label>
+              </div>
+
+              <div className="ck-field-row">
                 <div className="ck-field">
-                  <label className="ck-label" htmlFor="ck-country">Country / Region *</label>
-                  <select
-                    id="ck-country"
-                    className="ck-input ck-select"
-                    value={shippingCountry}
-                    onChange={e => setShippingCountry(e.target.value)}
-                    autoComplete="country"
-                    required
-                  >
-                    <option value="GB">United Kingdom</option>
-                    <option value="US">United States</option>
-                    <option value="CA">Canada</option>
-                    <option value="AU">Australia</option>
-                    <option value="IE">Ireland</option>
-                    <option value="DE">Germany</option>
-                    <option value="FR">France</option>
-                    <option value="NL">Netherlands</option>
-                    <option value="BE">Belgium</option>
-                    <option value="IT">Italy</option>
-                    <option value="ES">Spain</option>
-                    <option value="PT">Portugal</option>
-                    <option value="AT">Austria</option>
-                    <option value="CH">Switzerland</option>
-                    <option value="SE">Sweden</option>
-                    <option value="NO">Norway</option>
-                    <option value="DK">Denmark</option>
-                    <option value="FI">Finland</option>
-                    <option value="PL">Poland</option>
-                    <option value="NZ">New Zealand</option>
-                    <option value="SG">Singapore</option>
-                    <option value="AE">United Arab Emirates</option>
-                    <option value="ZA">South Africa</option>
-                    <option value="JP">Japan</option>
-                  </select>
-                </div>
-                <div className="ck-field">
-                  <label className="ck-label" htmlFor="ck-address1">Address *</label>
                   <input
-                    id="ck-address1"
+                    id="ck-city"
                     type="text"
                     className="ck-input"
-                    placeholder="Street address"
-                    value={shippingAddress1}
-                    onChange={e => setShippingAddress1(e.target.value)}
-                    autoComplete="address-line1"
+                    placeholder=" "
+                    value={shippingCity}
+                    onChange={e => setShippingCity(e.target.value)}
+                    autoComplete="address-level2"
                     required
                   />
+                  <label htmlFor="ck-city" className="ck-label">City *</label>
                 </div>
                 <div className="ck-field">
-                  <label className="ck-label" htmlFor="ck-address2">Apartment, suite, etc. (optional)</label>
                   <input
-                    id="ck-address2"
+                    id="ck-county"
                     type="text"
                     className="ck-input"
-                    placeholder="Apartment, suite, unit, etc."
-                    value={shippingAddress2}
-                    onChange={e => setShippingAddress2(e.target.value)}
-                    autoComplete="address-line2"
+                    placeholder=" "
+                    value={shippingCounty}
+                    onChange={e => setShippingCounty(e.target.value)}
+                    autoComplete="address-level1"
                   />
-                </div>
-                <div className="ck-field-row">
-                  <div className="ck-field">
-                    <label className="ck-label" htmlFor="ck-city">City *</label>
-                    <input
-                      id="ck-city"
-                      type="text"
-                      className="ck-input"
-                      placeholder="City"
-                      value={shippingCity}
-                      onChange={e => setShippingCity(e.target.value)}
-                      autoComplete="address-level2"
-                      required
-                    />
-                  </div>
-                  <div className="ck-field">
-                    <label className="ck-label" htmlFor="ck-county">
-                      {shippingCountry === 'US' ? 'State' : shippingCountry === 'CA' ? 'Province' : 'County'}
-                    </label>
-                    <input
-                      id="ck-county"
-                      type="text"
-                      className="ck-input"
-                      placeholder={shippingCountry === 'US' ? 'State' : shippingCountry === 'CA' ? 'Province' : 'County'}
-                      value={shippingCounty}
-                      onChange={e => setShippingCounty(e.target.value)}
-                      autoComplete="address-level1"
-                    />
-                  </div>
-                </div>
-                <div className="ck-field">
-                  <label className="ck-label" htmlFor="ck-postcode">
-                    {shippingCountry === 'US' ? 'ZIP Code' : 'Postcode'} *
-                  </label>
-                  <input
-                    id="ck-postcode"
-                    type="text"
-                    className="ck-input"
-                    placeholder={shippingCountry === 'US' ? '10001' : 'SW1A 1AA'}
-                    value={shippingPostcode}
-                    onChange={e => setShippingPostcode(e.target.value)}
-                    autoComplete="postal-code"
-                    required
-                  />
+                  <label htmlFor="ck-county" className="ck-label">{region.state}</label>
                 </div>
               </div>
-            </div>
 
-            {/* Payment Information */}
-            <div className="ck-section">
-              <h2 className="ck-section-title">Payment Information</h2>
+              <div className="ck-field">
+                <input
+                  id="ck-postcode"
+                  type="text"
+                  className="ck-input"
+                  placeholder=" "
+                  value={shippingPostcode}
+                  onChange={e => setShippingPostcode(e.target.value)}
+                  autoComplete="postal-code"
+                  required={shippingCountry !== 'AE'}
+                />
+                <label htmlFor="ck-postcode" className="ck-label">
+                  {region.postcode}{shippingCountry !== 'AE' ? ' *' : ''}
+                  {region.postcodePlaceholder ? ` — e.g. ${region.postcodePlaceholder}` : ''}
+                </label>
+              </div>
+            </section>
+
+            {/* Shipping method (display-only — we always ship free tracked) */}
+            <section className="ck-section">
+              <h2 className="ck-section-title">Shipping method</h2>
+              <div className="ck-ship-card">
+                <div>
+                  <div className="ck-ship-label">Royal Mail Tracked 48</div>
+                  <div className="ck-ship-sub">2 Business Days</div>
+                </div>
+                <div className="ck-ship-price">Free</div>
+              </div>
+            </section>
+
+            {/* Payment */}
+            <section className="ck-section">
+              <h2 className="ck-section-title">Payment</h2>
               <p className="ck-section-subtitle">All transactions are secure and encrypted.</p>
-              <div className="ck-card">
-                <form onSubmit={handleSubmit} className="ck-form">
-                  {status === 'loading' && (
-                    <div className="ck-payment-element">
-                      <div className="ck-loading">
-                        <div className="ck-spinner" />
-                        <p>Loading secure payment form...</p>
-                      </div>
-                    </div>
-                  )}
-                  <div
-                    ref={paymentContainerRef}
-                    className="ck-payment-element"
-                    style={{ display: status === 'loading' ? 'none' : undefined }}
-                  />
 
-                  {errorMsg && (
-                    <div className="ck-error" role="alert">
-                      {errorMsg}
-                    </div>
-                  )}
-
-                  <button
-                    type="submit"
-                    className="ck-btn ck-btn--pay"
-                    disabled={status !== 'ready'}
-                  >
-                    {status === 'submitting' ? (
-                      <span className="ck-btn-loading">
-                        <span className="ck-btn-spinner" /> Processing...
+              <form onSubmit={handleSubmit} className="ck-form">
+                {/* Credit-card visual shell — the actual card inputs live inside
+                    the Uprails iframe below. The header is purely chrome to
+                    match the mockup. */}
+                <div className="ck-pay-group">
+                  <div className="ck-pay-header">
+                    <span className="ck-radio" />
+                    <span className="ck-pay-title">Credit card</span>
+                    <span className="ck-card-badges">
+                      <span className="ck-card-badge" aria-label="Visa">
+                        <svg viewBox="0 0 48 16" xmlns="http://www.w3.org/2000/svg">
+                          <text x="24" y="13" textAnchor="middle" fontFamily="Arial, Helvetica, sans-serif" fontSize="12" fontWeight="700" fontStyle="italic" fill="#1a1f71" letterSpacing="0.2">VISA</text>
+                        </svg>
                       </span>
-                    ) : (
-                      <>Pay Now — {state.displayPrice}</>
+                      <span className="ck-card-badge" aria-label="Mastercard">
+                        <svg viewBox="0 0 48 30" xmlns="http://www.w3.org/2000/svg">
+                          <circle cx="19.5" cy="15" r="9" fill="#eb001b" />
+                          <circle cx="28.5" cy="15" r="9" fill="#f79e1b" />
+                          <path d="M24 7.8a9 9 0 0 1 0 14.4 9 9 0 0 1 0-14.4z" fill="#ff5f00" />
+                        </svg>
+                      </span>
+                    </span>
+                  </div>
+                  <div className="ck-pay-body">
+                    {status === 'loading' && (
+                      <div className="ck-payment-element">
+                        <div className="ck-loading">
+                          <div className="ck-spinner" />
+                          <p>Loading secure payment form...</p>
+                        </div>
+                      </div>
                     )}
-                  </button>
-                </form>
+                    <div
+                      ref={paymentContainerRef}
+                      className="ck-payment-element"
+                      style={{ display: status === 'loading' ? 'none' : undefined }}
+                    />
+                  </div>
+                </div>
+
+                {errorMsg && (
+                  <div className="ck-error" role="alert">
+                    {errorMsg}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  className="ck-btn ck-btn--pay"
+                  disabled={status !== 'ready'}
+                >
+                  {status === 'submitting' ? (
+                    <span className="ck-btn-loading">
+                      <span className="ck-btn-spinner" /> Processing...
+                    </span>
+                  ) : (
+                    <>Pay Now</>
+                  )}
+                </button>
 
                 <p className="ck-payment-note">
                   Your card details are handled securely by our payment processor and never touch our servers.
                 </p>
-              </div>
-            </div>
+              </form>
+            </section>
 
             {/* Guarantee boxes */}
             <div className="ck-guarantees">
@@ -678,9 +739,8 @@ export default function CheckoutPage() {
 
           {/* RIGHT COLUMN: Summary */}
           <div className="ck-right">
-            {/* Cart Summary */}
-            <div className="ck-card ck-summary-card">
-              <h2 className="ck-section-title">Cart Summary</h2>
+            <div className="ck-summary">
+              <h2 className="ck-summary-title">Order summary</h2>
 
               {state.items.map((item, i) => (
                 <div key={i} className="ck-summary-product">
@@ -695,19 +755,20 @@ export default function CheckoutPage() {
                 </div>
               ))}
 
-              <div className="ck-summary-divider" />
+              {/* Promo code moved up — sits between the products and the totals so
+                  customers see it before scrolling past the subtotal. */}
+              <PromoSection
+                subtotalGBP={state.amount / 100}
+                onChange={setPromo}
+              />
 
               <div className="ck-summary-row">
                 <span>Subtotal</span>
                 <span>{state.displayPrice}</span>
               </div>
               <div className="ck-summary-row">
-                <span>Shipping (UK tracked)</span>
-                <span className="ck-green">FREE</span>
-              </div>
-              <div className="ck-summary-row">
-                <span>Tax</span>
-                <span>£0.00</span>
+                <span>Shipping</span>
+                <span className="ck-green">Free</span>
               </div>
               {promo && promo.discount > 0 ? (
                 <div className="ck-summary-row" style={{ color: '#16a34a' }}>
@@ -716,16 +777,12 @@ export default function CheckoutPage() {
                 </div>
               ) : null}
 
-              <PromoSection
-                subtotalGBP={state.amount / 100}
-                onChange={setPromo}
-              />
-
-              <div className="ck-summary-divider" />
-
-              <div className="ck-summary-row ck-summary-row--total">
-                <span>TOTAL</span>
-                <span>£{((state.amount / 100) - (promo?.discount ?? 0)).toFixed(2)}</span>
+              <div className="ck-summary-total">
+                <span className="ck-summary-total-lbl">Total</span>
+                <span className="ck-summary-total-amt">
+                  <span className="ck-summary-total-cur">GBP</span>
+                  £{totalGBP.toFixed(2)}
+                </span>
               </div>
             </div>
 
@@ -733,7 +790,7 @@ export default function CheckoutPage() {
             <div className="ck-social-proof">
               <div className="ck-social-stars">★★★★★</div>
               <div className="ck-social-text">
-                <strong>9.6/10</strong> Excellent! <span className="ck-social-count">(2,847 reviews)</span>
+                <strong>4.9/5</strong> Excellent! <span className="ck-social-count">(2,847 reviews)</span>
               </div>
             </div>
 
@@ -760,7 +817,7 @@ export default function CheckoutPage() {
       {/* Mobile sticky CTA */}
       <div className="ck-mobile-sticky">
         <div className="ck-mobile-sticky-info">
-          <span className="ck-mobile-sticky-total">Total: {state.displayPrice}</span>
+          <span className="ck-mobile-sticky-total">Total: £{totalGBP.toFixed(2)}</span>
           <span className="ck-mobile-sticky-ship">Free tracked shipping</span>
         </div>
         <button

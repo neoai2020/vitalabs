@@ -7149,15 +7149,23 @@ h1, h2, h3 {
 }
 
 /* ============================================
-   CHECKOUT PAGE — ClickBank-inspired
+   CHECKOUT PAGE — flat / mockup-inspired
    ============================================ */
 
 .ck-page {
+  --ck-ink: #1a1a1a;
+  --ck-ink-soft: #6b7177;
+  --ck-line: #d9dce0;
+  --ck-line-strong: #1a1a1a;
+  --ck-bg-muted: #f5f5f5;
+  --ck-green: #2ba84a;
+  --ck-green-hover: #259544;
   min-height: 100vh;
-  background: #f5f6fa;
+  background: #fff;
   display: flex;
   flex-direction: column;
   font-family: var(--font-body, 'Inter', system-ui, sans-serif);
+  color: var(--ck-ink);
 }
 
 [data-theme="dark"] .ck-page { background: var(--bg); }
@@ -7266,79 +7274,109 @@ h1, h2, h3 {
 
 /* ── Layout ── */
 .ck-wrap {
-  max-width: 960px;
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 1.5rem 1.25rem 3rem;
+  padding: 2rem 1.5rem 3rem;
   flex: 1;
+  width: 100%;
 }
 
 .ck-grid {
   display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 1.75rem;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 3.5rem;
   align-items: start;
 }
 
-/* ── Sections & Cards ── */
-.ck-section { margin-bottom: 1.25rem; }
+/* Vertical separator between the form and the summary, matching the mockup. */
+.ck-left {
+  padding-right: 2.5rem;
+  border-right: 1px solid var(--ck-line);
+}
+
+[data-theme="dark"] .ck-left { border-color: var(--border); }
+
+/* ── Sections ── */
+.ck-section { margin-bottom: 1.75rem; }
+.ck-section:last-of-type { margin-bottom: 1rem; }
 
 .ck-section-title {
   font-family: var(--font-display, 'Plus Jakarta Sans', sans-serif);
-  font-size: 1rem;
+  font-size: 1.25rem;
   font-weight: 700;
-  margin: 0 0 0.15rem;
-  color: #111827;
+  margin: 0 0 0.75rem;
+  color: var(--ck-ink);
+  letter-spacing: -0.01em;
 }
 
 [data-theme="dark"] .ck-section-title { color: var(--text); }
 
 .ck-section-subtitle {
-  font-size: 0.78rem;
-  color: #6b7280;
-  margin: 0 0 0.6rem;
+  font-size: 0.85rem;
+  color: var(--ck-ink-soft);
+  margin: -0.4rem 0 0.85rem;
 }
 
-.ck-card {
-  background: #fff;
-  border: 1px solid #e2e5ec;
-  border-radius: 10px;
-  padding: 1rem 1.15rem;
+/* ── Form fields — floating-label pattern ── */
+.ck-field {
+  position: relative;
+  margin-bottom: 0.65rem;
 }
 
-[data-theme="dark"] .ck-card { background: var(--bg-surface); border-color: var(--border); }
-
-/* ── Form fields ── */
-.ck-field { margin-bottom: 0.75rem; }
 .ck-field:last-child { margin-bottom: 0; }
 
 .ck-label {
-  display: block;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 0.3rem;
+  position: absolute;
+  left: 15px;
+  top: 14px;
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--ck-ink-soft);
+  pointer-events: none;
+  transition: top 0.15s ease, font-size 0.15s ease, color 0.15s ease;
+  background: transparent;
+  margin: 0;
+  max-width: calc(100% - 30px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 [data-theme="dark"] .ck-label { color: var(--text-secondary); }
 
 .ck-input {
   width: 100%;
-  padding: 0.6rem 0.75rem;
-  font-size: 0.88rem;
+  height: 52px;
+  padding: 20px 14px 6px;
+  font-size: 15px;
   font-family: inherit;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  border: 1px solid var(--ck-line);
+  border-radius: 8px;
   background: #fff;
-  color: #111827;
+  color: var(--ck-ink);
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  appearance: none;
 }
 
-.ck-input::placeholder { color: #9ca3af; }
+.ck-input::placeholder { color: transparent; }
 
 .ck-input:focus {
-  border-color: #0f766e;
-  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+  border-color: var(--ck-line-strong);
+  box-shadow: 0 0 0 1px var(--ck-line-strong);
+}
+
+/* Floating-label trigger: animate the label up when the input is focused
+   OR when it has a value (placeholder=" " trick + :not(:placeholder-shown)).
+   `.is-filled` is a manual escape hatch for <select> elements which don't
+   support :placeholder-shown. */
+.ck-input:focus ~ .ck-label,
+.ck-input:not(:placeholder-shown) ~ .ck-label,
+.ck-field.is-filled .ck-label {
+  top: 6px;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--ck-ink-soft);
 }
 
 [data-theme="dark"] .ck-input {
@@ -7349,71 +7387,173 @@ h1, h2, h3 {
 
 [data-theme="dark"] .ck-input:focus {
   border-color: var(--brand);
-  box-shadow: 0 0 0 3px rgba(0, 210, 255, 0.1);
+  box-shadow: 0 0 0 1px var(--brand);
 }
 
-.ck-field-hint {
-  display: block;
-  font-size: 0.7rem;
-  color: #9ca3af;
-  margin-top: 0.2rem;
-}
-
-/* ── Field row (side-by-side) ── */
+/* ── Field row (side-by-side, e.g. City + County) ── */
 .ck-field-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+  gap: 0.65rem;
 }
 
-.ck-field-row .ck-field { margin-bottom: 0.75rem; }
-.ck-field-row .ck-field:last-child { margin-bottom: 0.75rem; }
+.ck-field-row .ck-field { margin-bottom: 0.65rem; }
+.ck-field-row .ck-field:last-child { margin-bottom: 0.65rem; }
 
-/* ── Select (country dropdown) ── */
+/* ── Select (country dropdown) — same chrome as inputs but with chevron ── */
 .ck-select {
   appearance: none;
   -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M2.22 4.47a.75.75 0 0 1 1.06 0L6 7.19l2.72-2.72a.75.75 0 1 1 1.06 1.06L6.53 8.78a.75.75 0 0 1-1.06 0L2.22 5.53a.75.75 0 0 1 0-1.06z'/%3E%3C/svg%3E");
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%231a1a1a' d='M2.22 4.47a.75.75 0 0 1 1.06 0L6 7.19l2.72-2.72a.75.75 0 1 1 1.06 1.06L6.53 8.78a.75.75 0 0 1-1.06 0L2.22 5.53a.75.75 0 0 1 0-1.06z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 0.75rem center;
-  padding-right: 2rem;
+  background-position: right 14px center;
+  padding-right: 2.25rem;
   cursor: pointer;
-  outline: none;
 }
 
 .ck-select:focus-visible {
-  border-color: #0f766e;
-  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
   outline: none;
 }
 
 [data-theme="dark"] .ck-select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3af' d='M2.22 4.47a.75.75 0 0 1 1.06 0L6 7.19l2.72-2.72a.75.75 0 1 1 1.06 1.06L6.53 8.78a.75.75 0 0 1-1.06 0L2.22 5.53a.75.75 0 0 1 0-1.06z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23e2e5ec' d='M2.22 4.47a.75.75 0 0 1 1.06 0L6 7.19l2.72-2.72a.75.75 0 1 1 1.06 1.06L6.53 8.78a.75.75 0 0 1-1.06 0L2.22 5.53a.75.75 0 0 1 0-1.06z'/%3E%3C/svg%3E");
 }
 
-@media (max-width: 480px) {
-  .ck-field-row {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
+/* ── Shipping method card ── */
+.ck-ship-card {
+  border: 1px solid var(--ck-line-strong);
+  border-radius: 8px;
+  padding: 14px 18px;
+  background: var(--ck-bg-muted);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+[data-theme="dark"] .ck-ship-card {
+  background: var(--bg-surface);
+  border-color: var(--border);
+}
+
+.ck-ship-label {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--ck-ink);
+}
+
+[data-theme="dark"] .ck-ship-label { color: var(--text); }
+
+.ck-ship-sub {
+  font-size: 13px;
+  color: var(--ck-ink-soft);
+  margin-top: 3px;
+}
+
+.ck-ship-price {
+  font-weight: 700;
+  font-size: 15px;
+  color: #18a957;
 }
 
 /* ── Payment form ── */
 .ck-form {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
 }
+
+/* Credit-card visual shell — the actual card inputs are rendered by
+   the Uprails iframe inside `.ck-payment-element`. This is just chrome
+   to match the mockup. */
+.ck-pay-group {
+  border: 1px solid var(--ck-line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+[data-theme="dark"] .ck-pay-group { border-color: var(--border); }
+
+.ck-pay-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--ck-line-strong);
+  border-radius: 8px 8px 0 0;
+  margin: -1px;
+  background: #fff;
+}
+
+[data-theme="dark"] .ck-pay-header {
+  background: var(--bg-surface);
+  border-color: var(--border);
+}
+
+.ck-radio {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--ck-ink);
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+}
+.ck-radio::after {
+  content: "";
+  position: absolute;
+  inset: 3.5px;
+  border-radius: 50%;
+  background: var(--ck-ink);
+}
+
+[data-theme="dark"] .ck-radio { border-color: var(--text); }
+[data-theme="dark"] .ck-radio::after { background: var(--text); }
+
+.ck-pay-title {
+  font-weight: 700;
+  font-size: 15px;
+  flex: 1;
+  color: var(--ck-ink);
+}
+
+[data-theme="dark"] .ck-pay-title { color: var(--text); }
+
+.ck-card-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ck-card-badge {
+  height: 26px;
+  width: 40px;
+  border: 1px solid var(--ck-line);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 5px;
+  background: #fff;
+}
+
+.ck-card-badge svg { width: 100%; height: 100%; }
+
+.ck-pay-body {
+  padding: 14px;
+  background: var(--ck-bg-muted);
+}
+
+[data-theme="dark"] .ck-pay-body { background: var(--bg); }
 
 .ck-payment-element {
   min-height: 180px;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: #fff;
+  border: 1px solid var(--ck-line);
   border-radius: 8px;
   padding: 0.85rem;
 }
 
-[data-theme="dark"] .ck-payment-element { background: var(--bg); border-color: var(--border); }
+[data-theme="dark"] .ck-payment-element { background: var(--bg-surface); border-color: var(--border); }
 
 .ck-loading {
   display: flex;
@@ -7449,7 +7589,7 @@ h1, h2, h3 {
 
 [data-theme="dark"] .ck-error { background: #450a0a; border-color: #7f1d1d; color: #fca5a5; }
 
-/* ── Pay button ── */
+/* ── Pay button — bright green, mockup-style ── */
 .ck-btn {
   display: inline-flex;
   align-items: center;
@@ -7457,29 +7597,31 @@ h1, h2, h3 {
   font-weight: 700;
   font-size: 0.95rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   padding: 0.75rem 1.5rem;
   text-decoration: none;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .ck-btn--pay {
   width: 100%;
-  padding: 0.9rem;
+  height: 54px;
+  padding: 0 1rem;
   font-size: 1.05rem;
-  font-weight: 800;
-  background: #16a34a;
+  font-weight: 700;
+  background: var(--ck-green, #2ba84a);
   color: #fff;
-  border-radius: 8px;
+  border-radius: 10px;
   letter-spacing: 0.01em;
   text-transform: none;
+  margin-top: 0.4rem;
 }
 
 .ck-btn--pay:hover:not(:disabled) {
-  background: #15803d;
+  background: var(--ck-green-hover, #259544);
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(22, 163, 74, 0.3);
+  box-shadow: 0 4px 16px rgba(43, 168, 74, 0.25);
 }
 
 .ck-btn--pay:disabled {
@@ -7571,99 +7713,212 @@ h1, h2, h3 {
 
 [data-theme="dark"] .ck-back:hover { color: var(--text); }
 
-/* ── Right column ── */
+/* ── Right column (summary) — flat, no card chrome ── */
 .ck-right {
   position: sticky;
-  top: 120px;
+  top: 96px;
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 1.25rem;
 }
 
-/* ── Cart Summary card ── */
-.ck-summary-card {
-  background: #fff;
-  border: 1px solid #e2e5ec;
-  border-radius: 10px;
-  padding: 1rem 1.15rem;
+.ck-summary {
+  display: flex;
+  flex-direction: column;
 }
 
-[data-theme="dark"] .ck-summary-card { background: var(--bg-surface); border-color: var(--border); }
+.ck-summary-title {
+  font-family: var(--font-display, 'Plus Jakarta Sans', sans-serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 1.25rem;
+  color: var(--ck-ink);
+  letter-spacing: -0.01em;
+}
+
+[data-theme="dark"] .ck-summary-title { color: var(--text); }
 
 .ck-summary-product {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.45rem 0;
+  gap: 14px;
+  margin-bottom: 18px;
 }
-
-.ck-summary-product + .ck-summary-product {
-  border-top: 1px solid #f3f4f6;
-}
-
-[data-theme="dark"] .ck-summary-product + .ck-summary-product { border-color: var(--border); }
 
 .ck-summary-img {
-  width: 48px;
-  height: 48px;
+  width: 64px;
+  height: 64px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 10px;
+  border: 1px solid var(--ck-line);
   background: #f3f4f6;
   flex-shrink: 0;
 }
 
+[data-theme="dark"] .ck-summary-img { border-color: var(--border); }
+
 .ck-summary-info { flex: 1; min-width: 0; }
 
 .ck-summary-info h3 {
-  font-weight: 700;
-  font-size: 0.85rem;
-  margin: 0 0 0.1rem;
-  color: #111827;
+  font-weight: 600;
+  font-size: 15px;
+  margin: 0 0 2px;
+  color: var(--ck-ink);
+  line-height: 1.3;
 }
 
 [data-theme="dark"] .ck-summary-info h3 { color: var(--text); }
 
 .ck-summary-compound {
-  font-size: 0.72rem;
-  color: #6b7280;
+  font-size: 14px;
+  color: var(--ck-ink-soft);
   margin: 0;
 }
 
 .ck-summary-item-price {
-  font-size: 0.88rem;
+  font-size: 15px;
   font-weight: 600;
-  color: #111827;
+  color: var(--ck-ink);
   flex-shrink: 0;
 }
 
 [data-theme="dark"] .ck-summary-item-price { color: var(--text); }
 
-.ck-summary-divider {
-  height: 1px;
-  background: #e5e7eb;
-  margin: 0.5rem 0;
+/* Promo block — sits between product line and totals (top of summary) */
+.ck-promo {
+  margin: 0.5rem 0 1.25rem;
 }
 
-[data-theme="dark"] .ck-summary-divider { background: var(--border); }
+.ck-promo-row {
+  display: flex;
+  gap: 10px;
+}
+
+.ck-promo-input {
+  flex: 1;
+  height: 48px;
+  border: 1px solid var(--ck-line);
+  border-radius: 8px;
+  padding: 0 14px;
+  font-family: inherit;
+  font-size: 15px;
+  background: #fff;
+  color: var(--ck-ink);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ck-promo-input:focus {
+  border-color: var(--ck-line-strong);
+  box-shadow: 0 0 0 1px var(--ck-line-strong);
+}
+
+[data-theme="dark"] .ck-promo-input {
+  background: var(--bg);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.ck-promo-apply {
+  height: 48px;
+  padding: 0 22px;
+  border: none;
+  border-radius: 8px;
+  background: #e3e3e3;
+  color: #545454;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.ck-promo-apply:hover:not(:disabled) { background: #d0d0d0; }
+.ck-promo-apply:disabled { opacity: 0.55; cursor: not-allowed; }
+
+[data-theme="dark"] .ck-promo-apply { background: var(--bg-surface); color: var(--text); }
+
+.ck-promo-applied {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #ecfdf5;
+  color: #065f46;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+[data-theme="dark"] .ck-promo-applied {
+  background: rgba(16, 185, 129, 0.12);
+  color: #6ee7b7;
+}
+
+.ck-promo-remove {
+  background: transparent;
+  border: none;
+  color: inherit;
+  text-decoration: underline;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.ck-promo-error {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #b91c1c;
+}
 
 .ck-summary-row {
   display: flex;
   justify-content: space-between;
-  font-size: 0.82rem;
-  color: #6b7280;
-  padding: 0.2rem 0;
+  font-size: 15px;
+  color: var(--ck-ink);
+  padding: 7px 0;
 }
 
-.ck-summary-row--total {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: #111827;
-  padding: 0.35rem 0 0;
+[data-theme="dark"] .ck-summary-row { color: var(--text); }
+
+.ck-summary-row .ck-green,
+.ck-green { color: #18a957; font-weight: 600; }
+
+/* Grand total — sits below totals with a single hairline divider */
+.ck-summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-top: 1px solid var(--ck-line);
+  padding-top: 18px;
+  margin-top: 10px;
 }
 
-[data-theme="dark"] .ck-summary-row--total { color: var(--text); }
+[data-theme="dark"] .ck-summary-total { border-color: var(--border); }
 
-.ck-green { color: #16a34a; font-weight: 600; }
+.ck-summary-total-lbl {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ck-ink);
+}
+
+[data-theme="dark"] .ck-summary-total-lbl { color: var(--text); }
+
+.ck-summary-total-amt {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ck-ink);
+}
+
+[data-theme="dark"] .ck-summary-total-amt { color: var(--text); }
+
+.ck-summary-total-cur {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ck-ink-soft);
+  margin-right: 6px;
+  letter-spacing: 0.04em;
+}
 
 /* ── Social proof ── */
 .ck-social-proof {
@@ -7882,25 +8137,120 @@ h1, h2, h3 {
 
 .ck-footer p { margin: 0 0 0.2rem; }
 
+/* ── Mobile-only "Order summary" collapsible bar ── */
+.ck-mobile-summary-bar {
+  display: none;
+  width: 100%;
+  padding: 14px 22px;
+  background: #f6f6f6;
+  border: none;
+  border-bottom: 1px solid var(--ck-line);
+  align-items: center;
+  justify-content: space-between;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ck-ink);
+  cursor: pointer;
+  user-select: none;
+  text-align: left;
+}
+
+[data-theme="dark"] .ck-mobile-summary-bar {
+  background: var(--bg-surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.ck-mobile-summary-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ck-mobile-summary-chev {
+  transition: transform 0.2s ease;
+  color: currentColor;
+  flex-shrink: 0;
+}
+
+.ck-mobile-summary-bar.is-open .ck-mobile-summary-chev {
+  transform: rotate(180deg);
+}
+
+.ck-mobile-summary-total {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
 /* ═══ CHECKOUT RESPONSIVE ═══ */
+@media (max-width: 1024px) {
+  .ck-grid { gap: 2.5rem; }
+  .ck-left { padding-right: 1.5rem; }
+}
+
 @media (max-width: 840px) {
+  .ck-wrap {
+    padding: 1.25rem 1rem 5rem;
+  }
+
   .ck-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 1.5rem;
+  }
+
+  /* On mobile, drop the vertical separator and put the summary above
+     the form (revealed by the collapsible bar). */
+  .ck-left {
+    padding-right: 0;
+    border-right: none;
+    order: 0;
   }
 
   .ck-right {
     order: -1;
     position: static;
+    display: none;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--ck-line);
   }
+
+  [data-theme="dark"] .ck-right { border-color: var(--border); }
+
+  .ck-grid.is-summary-open .ck-right { display: flex; }
+
+  .ck-mobile-summary-bar { display: flex; }
 
   .ck-mobile-sticky { display: flex; }
 
-  .ck-wrap { padding-bottom: 5rem; }
+  /* Tighter section spacing on mobile */
+  .ck-section { margin-bottom: 1.5rem; }
+  .ck-section-title { font-size: 1.1rem; }
 }
 
-@media (min-width: 841px) and (max-width: 1024px) {
-  .ck-grid { grid-template-columns: 1fr 320px; }
+@media (max-width: 560px) {
+  .ck-wrap { padding: 1rem 0.85rem 5.5rem; }
+
+  /* Stack city + county on small phones — labels need full width */
+  .ck-field-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .ck-mobile-summary-bar { padding: 12px 16px; font-size: 15px; }
+  .ck-mobile-summary-total { font-size: 18px; }
+
+  .ck-btn--pay { height: 52px; font-size: 1rem; }
+
+  .ck-summary-img { width: 56px; height: 56px; }
+  .ck-summary-info h3 { font-size: 14px; }
+  .ck-summary-compound { font-size: 13px; }
+  .ck-summary-item-price { font-size: 14px; }
+
+  .ck-summary-title,
+  .ck-section-title { font-size: 1.05rem; }
 }
 
 @media (max-width: 480px) {
@@ -7912,6 +8262,8 @@ h1, h2, h3 {
     flex-direction: column;
     gap: 0.4rem;
   }
+
+  .ck-promo-apply { padding: 0 18px; }
 }
 
 /* ═══════════════════════════════════════════
